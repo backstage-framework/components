@@ -1,0 +1,24 @@
+app:
+    jpa.enabled: true
+    jms.enabled: false
+    cache.enabled: false
+    attachments:
+        enabled: true
+        store-type: directory
+        minio:
+            endpoint: http://minio.dnit:9090/
+            access-key: dev
+            secret-key: barbecue
+            bucket: uploads
+        directory:
+            path: uploads
+    audit.enabled: false
+    dicts:
+        ddl:
+            scheme: dicts
+        storage: mongo
+        engines: mongo, postgres
+        default-engine: mongo
+    api:
+        swagger:
+            enabled: false

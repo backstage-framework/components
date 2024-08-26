@@ -1,0 +1,29 @@
+stages:
+    - build
+
+build-job:
+    image: docker:cli
+    stage: build
+    timeout: 10 minutes
+    variables:
+        DOCKER_HOST: tcp://docker:2375/
+        DOCKER_DRIVER: overlay2
+        DOCKER_TLS_CERTDIR: ""
+        DOCKER_IPTABLES_LEGACY: 1
+        DOCKER_BUILDKIT: 1
+        NEXUS_URL: ${NEXUS_URL}
+        NEXUS_LOGIN: ${NEXUS_LOGIN}
+        NEXUS_PASSWORD: ${NEXUS_PASSWORD}
+    services:
+        - docker:dind
+    before_script:
+        - docker --version
+        - until docker info; do sleep 1; done
+    script:
+        - docker build --secret id=NEXUS_URL --secret id=NEXUS_LOGIN --secret id=NEXUS_PASSWORD .
+    tags:
+        - docker
+    rules:
+        - if: $CI_COMMIT_BRANCH =~ /^r\d+.*/
+          exists:
+              - Dockerfile

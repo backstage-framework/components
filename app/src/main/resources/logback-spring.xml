@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+	<springProperty name="customConfig" source="app.logging.logback.custom-config"/>
+	<springProperty name="jsonOutput" source="app.logging.json-output"/>
+
+	<if condition='p("customConfig").equals("true")'>
+		<then>
+			<include optional="true" resource="customLogback.xml"/>
+		</then>
+		<else>
+			<include resource="logback/base.xml"/>
+
+			<logger name="root" level="INFO"/>
+		</else>
+	</if>
+</configuration>

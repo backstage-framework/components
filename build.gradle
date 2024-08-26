@@ -1,0 +1,111 @@
+buildscript {
+	repositories {
+		maven {
+			url backstageNexusUrl
+			credentials(HttpHeaderCredentials) {
+				name = "Deploy-Token"
+				value = backstageNexusToken
+			}
+			authentication {
+				header(HttpHeaderAuthentication)
+			}
+		}
+		mavenCentral()
+	}
+
+	dependencies {
+		classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
+		classpath "com.backstage:gradle-plugins:$gradlePluginsVersion"
+	}
+}
+
+subprojects {
+	apply plugin: 'java'
+	apply plugin: 'idea'
+	apply plugin: 'backstage-checkstyle'
+
+	group 'com.backstage'
+	version "$appVersion"
+
+	repositories {
+		maven {
+			url backstageNexusUrl
+			credentials(HttpHeaderCredentials) {
+				name = "Deploy-Token"
+				value = backstageNexusToken
+			}
+			authentication {
+				header(HttpHeaderAuthentication)
+			}
+		}
+		mavenCentral()
+	}
+
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(sourceJavaVersion)
+		}
+	}
+
+	compileJava.options.encoding = sourceEncoding
+	compileTestJava.options.encoding = sourceEncoding
+
+	pluginManager.withPlugin('maven-publish') {
+		if (pluginManager.hasPlugin('version-catalog')) {
+			return
+		}
+
+		if (project.extensions.findByName('PublishingExtension')) {
+			return
+		}
+
+		javadoc {
+			if (JavaVersion.current().isJava9Compatible()) {
+				options.addBooleanOption('html5', true)
+				options.encoding('UTF-8')
+			}
+		}
+
+		tasks.register('sourceJar', Jar) {
+			archiveClassifier = 'sources'
+			from sourceSets.main.allJava
+		}
+
+		tasks.register('javadocJar', Jar) {
+			archiveClassifier = 'javadoc'
+			from javadoc
+		}
+
+		publishing {
+			publications {
+				maven(MavenPublication) {
+					groupId = project.group
+					artifactId = project.name
+					version = project.version
+
+					from components.java
+					artifact sourceJar
+					artifact javadocJar
+				}
+			}
+
+			repositories {
+				maven {
+					url backstageNexusUrl
+					credentials(HttpHeaderCredentials) {
+						name = "Deploy-Token"
+						value = backstageNexusToken
+					}
+					authentication {
+						header(HttpHeaderAuthentication)
+					}
+				}
+			}
+		}
+	}
+}
+
+wrapper {
+	gradleVersion = '8.10'
+	distributionType = Wrapper.DistributionType.BIN
+}

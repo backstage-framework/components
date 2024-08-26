@@ -1,0 +1,9 @@
+app:
+    jms:
+        enabled: true
+        storeType: persistent
+        store-path: build/jms
+
+    cache:
+        distributed-operations:
+            distributedObjects1: EVICT

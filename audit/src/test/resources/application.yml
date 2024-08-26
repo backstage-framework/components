@@ -1,0 +1,6 @@
+app:
+    datasource:
+      maximumPoolSize: 64
+    audit:
+        ddl:
+            scheme: audit

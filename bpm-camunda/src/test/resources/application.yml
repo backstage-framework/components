@@ -1,0 +1,20 @@
+app:
+    api.swagger.enabled: false
+
+
+    datasource:
+      maximumPoolSize: 64
+
+    bpm:
+        delete-inactive-processes-delay: 1s
+        auto-migrate-processes: true
+
+camunda:
+    bpm:
+        deployment-resource-pattern: bpmn**/
+
+        job-execution:
+            max-wait: 5
+
+        database:
+            schema-name:

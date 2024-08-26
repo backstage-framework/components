@@ -1,0 +1,10 @@
+app:
+    attachments:
+        enabled: true
+        store-type: directory
+        directory:
+            path: uploads
+
+    report:
+        enabled: true
+        store-type: attachment

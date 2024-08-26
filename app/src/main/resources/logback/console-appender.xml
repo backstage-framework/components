@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+	<if condition='p("jsonOutput").equals("true")'>
+		<then>
+			<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+				<encoder class="ch.qos.logback.classic.encoder.JsonEncoder" />
+			</appender>
+		</then>
+		<else>
+			<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+				<encoder>
+					<charset>UTF-8</charset>
+					<pattern>${CONSOLE_LOG_PATTERN}</pattern>
+				</encoder>
+			</appender>
+		</else>
+	</if>
+</included>

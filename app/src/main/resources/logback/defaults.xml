@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<included>
+	<include resource="org/springframework/boot/logging/logback/defaults.xml" />
+
+	<property name="LOG_PATH" value="logs"/>
+	<property name="LOG_NAME" value="app"/>
+	<property name="LOG_FILE" value="${LOG_PATH}/${LOG_NAME}.log"/>
+	<property name="LOG_DATEFORMAT_PATTERN" value="yyyy-MM-dd HH:mm:ss.SSS"/>
+	<property name="FILE_LOG_PATTERN" value="%d{${LOG_DATEFORMAT_PATTERN}} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- ${LOGGED_APPLICATION_NAME:-}[%15.15t] ${LOG_CORRELATION_PATTERN:-}%-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+</included>
