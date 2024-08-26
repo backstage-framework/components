@@ -16,8 +16,8 @@
 
 package com.backstage.app.dict.api.dto.data;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.backstage.app.model.json.AbstractCustomJsonDeserializer;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;

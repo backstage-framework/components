@@ -41,7 +41,7 @@ publishing {
 			url backstageNexusUrl
 			credentials(HttpHeaderCredentials) {
 				name = "Deploy-Token"
-				value = backstageNexusToken
+				value = backstageNexusDeployToken
 			}
 			authentication {
 				header(HttpHeaderAuthentication)

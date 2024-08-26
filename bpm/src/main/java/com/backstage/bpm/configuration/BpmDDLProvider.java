@@ -16,9 +16,9 @@
 
 package com.backstage.bpm.configuration;
 
-import com.backstage.bpm.configuration.properties.BpmProperties;
 import com.backstage.app.database.configuration.ddl.AbstractDDLProvider;
 import com.backstage.app.database.configuration.ddl.DDLConfiguration;
+import com.backstage.bpm.configuration.properties.BpmProperties;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;

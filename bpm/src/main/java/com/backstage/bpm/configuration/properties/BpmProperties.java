@@ -16,9 +16,9 @@
 
 package com.backstage.bpm.configuration.properties;
 
+import com.backstage.app.database.configuration.properties.DDLProperties;
 import com.backstage.bpm.service.workflow.ClasspathWorkflowProvider;
 import com.backstage.bpm.service.workflow.DatabaseWorkflowProvider;
-import com.backstage.app.database.configuration.properties.DDLProperties;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

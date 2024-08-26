@@ -16,10 +16,10 @@
 
 package com.backstage.bpm.domain;
 
+import com.backstage.app.database.model.UuidGeneratedEntity;
 import com.backstage.bpm.conversion.jpa.TaskActionListConverter;
 import com.backstage.bpm.conversion.jpa.TaskParametersConverter;
 import com.backstage.bpm.conversion.jpa.TaskResultConverter;
-import com.backstage.app.database.model.UuidGeneratedEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;

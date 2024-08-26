@@ -24,8 +24,8 @@ import com.backstage.app.database.configuration.jpa.eclipselink.uuid.UuidSequenc
 import com.backstage.app.database.configuration.jpa.eclipselink.uuid.UuidSupportExtension;
 import com.backstage.app.database.configuration.properties.JPAProperties;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.persistence.sessions.SessionCustomizer;
 import org.eclipse.persistence.sessions.Session;
+import org.eclipse.persistence.sessions.SessionCustomizer;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.ApplicationContext;

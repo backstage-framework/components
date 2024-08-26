@@ -17,8 +17,8 @@
 package com.backstage.app.attachment.configuration.properties;
 
 import com.backstage.app.attachment.model.dto.AttachmentDto;
-import com.google.common.collect.Sets;
 import com.backstage.app.database.configuration.properties.DDLProperties;
+import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;

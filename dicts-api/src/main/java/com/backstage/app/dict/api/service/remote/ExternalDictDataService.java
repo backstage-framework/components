@@ -17,8 +17,8 @@
 package com.backstage.app.dict.api.service.remote;
 
 import com.backstage.app.dict.api.constant.RemoteServices;
-import com.backstage.app.dict.api.service.GenericDictDataService;
 import com.backstage.app.dict.api.dto.data.DictItemDto;
+import com.backstage.app.dict.api.service.GenericDictDataService;
 import org.springframework.cloud.openfeign.FeignClient;
 
 /**

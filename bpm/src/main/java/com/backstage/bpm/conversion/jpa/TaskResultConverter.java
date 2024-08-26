@@ -16,9 +16,9 @@
 
 package com.backstage.bpm.conversion.jpa;
 
+import com.backstage.app.database.conversion.jpa.AbstractJsonConverter;
 import com.backstage.bpm.domain.TaskResult;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.backstage.app.database.conversion.jpa.AbstractJsonConverter;
 
 public class TaskResultConverter extends AbstractJsonConverter<TaskResult>
 {

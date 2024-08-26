@@ -16,9 +16,9 @@
 
 package com.backstage.bpm.domain;
 
+import com.backstage.app.database.model.UuidGeneratedEntity;
 import com.backstage.bpm.conversion.jpa.ProcessParametersConverter;
 import com.backstage.bpm.model.EngineType;
-import com.backstage.app.database.model.UuidGeneratedEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

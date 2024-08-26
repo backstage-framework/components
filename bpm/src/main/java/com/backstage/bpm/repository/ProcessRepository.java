@@ -16,8 +16,8 @@
 
 package com.backstage.bpm.repository;
 
-import com.backstage.bpm.domain.Process;
 import com.backstage.app.database.repository.CustomJpaRepository;
+import com.backstage.bpm.domain.Process;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

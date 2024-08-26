@@ -16,9 +16,9 @@
 
 package com.backstage.bpm.model;
 
+import com.backstage.app.database.model.Identity;
 import com.backstage.bpm.domain.Process;
 import com.backstage.bpm.domain.TaskStatus;
-import com.backstage.app.database.model.Identity;
 import lombok.Builder;
 import lombok.Getter;
 

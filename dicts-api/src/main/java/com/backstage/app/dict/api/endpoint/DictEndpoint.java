@@ -17,9 +17,9 @@
 package com.backstage.app.dict.api.endpoint;
 
 import com.backstage.app.api.model.ApiResponse;
-import com.backstage.app.dict.api.dto.DictEnumDto;
 import com.backstage.app.dict.api.configuration.properties.DictsRemoteEndpointProperties;
 import com.backstage.app.dict.api.dto.DictDto;
+import com.backstage.app.dict.api.dto.DictEnumDto;
 import com.backstage.app.dict.api.dto.request.CreateDictEnumRequest;
 import com.backstage.app.dict.api.dto.request.CreateDictRequest;
 import com.backstage.app.dict.api.dto.request.DeleteDictRequest;

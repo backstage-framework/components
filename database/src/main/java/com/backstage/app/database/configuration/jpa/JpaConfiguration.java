@@ -49,7 +49,7 @@ import java.util.Optional;
 @ConditionalOnJpa
 @EnableConfigurationProperties({JpaProperties.class, JPAProperties.class})
 @PropertySource("classpath:jpa.properties")
-@EnableJpaRepositories(value = {AppProperties.DEFAULT_PACKAGE}, repositoryFactoryBeanClass = CustomJpaRepositoryFactoryBean.class)
+@EnableJpaRepositories(repositoryFactoryBeanClass = CustomJpaRepositoryFactoryBean.class)
 public class JpaConfiguration
 {
 	// Убеждаемся, что при активированном DDL, он инициализируется до JPA.

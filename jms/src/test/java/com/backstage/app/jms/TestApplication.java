@@ -16,11 +16,12 @@
 
 package com.backstage.app.jms;
 
+import com.backstage.app.configuration.properties.AppProperties;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.context.annotation.ComponentScan;
 
 @SpringBootConfiguration
-@ComponentScan(value = "com.backstage")
+@ComponentScan(AppProperties.DEFAULT_PACKAGE)
 public class TestApplication
 {
 }

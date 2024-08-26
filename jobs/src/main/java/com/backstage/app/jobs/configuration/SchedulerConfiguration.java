@@ -16,9 +16,9 @@
 
 package com.backstage.app.jobs.configuration;
 
+import com.backstage.app.jobs.configuration.properties.SchedulerProperties;
 import com.backstage.app.jobs.service.AbstractJob;
 import com.backstage.app.jobs.service.JobHealthIndicator;
-import com.backstage.app.jobs.configuration.properties.SchedulerProperties;
 import com.backstage.app.utils.ActuatorUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

@@ -14,14 +14,14 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.attachment;
+package com.backstage.app;
 
 import com.backstage.app.configuration.properties.AppProperties;
-import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.AutoConfigurationPackage;
 import org.springframework.context.annotation.ComponentScan;
 
-@SpringBootConfiguration
+@AutoConfigurationPackage
 @ComponentScan(AppProperties.DEFAULT_PACKAGE)
-public class TestApplication
+public class AppPackage
 {
 }

@@ -17,9 +17,9 @@
 package com.backstage.app.dict.api.service.codegen;
 
 import com.backstage.app.api.utils.RemoteServiceUtils;
-import com.backstage.app.dict.api.service.remote.RemoteDictService;
 import com.backstage.app.dict.api.service.codegen.generator.DictItemModelGenerator;
 import com.backstage.app.dict.api.service.codegen.generator.DictItemServiceGenerator;
+import com.backstage.app.dict.api.service.remote.RemoteDictService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.javapoet.JavaFile;

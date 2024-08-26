@@ -16,8 +16,8 @@
 
 package com.backstage.bpm.conversion.jpa;
 
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.backstage.app.database.conversion.jpa.AbstractMutableJsonConverter;
+import com.fasterxml.jackson.core.type.TypeReference;
 
 import java.util.Map;
 
