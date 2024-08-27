@@ -75,8 +75,13 @@ class UuidSupportExtensionTest extends AbstractTest
 		});
 
 		assertNotNull(saved);
+
+		saved = repository.findByIdEx(saved.getId());
+
+		assertNotNull(saved);
 		assertFalse(saved.getVarcharTables().isEmpty());
 		assertFalse(saved.getVarcharTableMany().isEmpty());
+		assertFalse(saved.getVarcharTables().get(0).getUuidTableMany().isEmpty());
 	}
 
 	@Test

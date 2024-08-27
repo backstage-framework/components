@@ -23,6 +23,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 @Getter
 @Setter
 @Entity
@@ -39,4 +43,10 @@ public class VarcharTable extends UuidGeneratedEntity
 	@Setter(AccessLevel.NONE)
 	@Column(name = "fk_uuid_table", insertable = false, updatable = false)
 	private String uuidTableId;
+
+	@ElementCollection
+	@CollectionTable(name = "uuid_table_varchar_table",
+			joinColumns = @JoinColumn(name = "fk_varchar_table"))
+	@Column(name = "fk_uuid_table", insertable = false, updatable = false)
+	private Set<UUID> uuidTableMany = new HashSet<>();
 }

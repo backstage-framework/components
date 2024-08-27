@@ -19,7 +19,6 @@ package com.backstage.app.database.configuration.jpa.eclipselink.uuid;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.persistence.internal.helper.DatabaseField;
-import org.eclipse.persistence.internal.sessions.AbstractRecord;
 import org.eclipse.persistence.mappings.DatabaseMapping;
 import org.eclipse.persistence.mappings.DirectToFieldMapping;
 import org.eclipse.persistence.mappings.ForeignReferenceMapping;
@@ -32,7 +31,6 @@ import org.eclipse.persistence.tools.schemaframework.SchemaManager;
 import java.sql.Types;
 import java.util.List;
 import java.util.Map;
-import java.util.Vector;
 import java.util.stream.Collectors;
 
 /**
@@ -160,9 +158,9 @@ public class UuidSupportExtension extends SessionEventAdapter
 	}
 
 	private Map<String, Map<String, List<String>>> getAggregatedTableMetadata(SchemaManager schemaManager, String catalog,
-	                                                             String schema, String table, String column, String columnType)
+	                                                                          String schema, String table, String column, String columnType)
 	{
-		return ((Vector<AbstractRecord>) schemaManager.getColumnInfo(catalog, schema, table, column))
+		return schemaManager.getColumnInfo(catalog, schema, table, column)
 				.stream()
 				.filter(metaRecord -> columnType.equalsIgnoreCase((String) metaRecord.get(TYPE_NAME)))
 				.collect(Collectors.groupingBy(metaRecord -> (String) metaRecord.get(TABLE_SCHEM),
