@@ -1,5 +1,6 @@
 buildscript {
 	repositories {
+		maven { url 'https://plugins.gradle.org/m2/' }
 		maven {
 			url backstageNexusUrl
 			credentials(HttpHeaderCredentials) {
@@ -10,11 +11,9 @@ buildscript {
 				header(HttpHeaderAuthentication)
 			}
 		}
-		mavenCentral()
 	}
 
 	dependencies {
-		classpath "org.springframework.boot:spring-boot-gradle-plugin:$springBootVersion"
 		classpath "com.backstage:gradle-plugins:$gradlePluginsVersion"
 	}
 }
@@ -28,6 +27,7 @@ subprojects {
 	version "$appVersion"
 
 	repositories {
+		mavenCentral()
 		maven {
 			url backstageNexusUrl
 			credentials(HttpHeaderCredentials) {
@@ -38,7 +38,6 @@ subprojects {
 				header(HttpHeaderAuthentication)
 			}
 		}
-		mavenCentral()
 	}
 
 	java {
