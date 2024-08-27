@@ -20,6 +20,7 @@ import org.junit.ClassRule;
 import org.springframework.boot.test.util.TestPropertyValues;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
 public class AppDataSourceInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext>
@@ -30,6 +31,9 @@ public class AppDataSourceInitializer implements ApplicationContextInitializer<C
 	@ClassRule
 	public static final PostgreSQLContainer<?> dictDataSource;
 
+	@ClassRule
+	public static final MinIOContainer minio;
+
 	static
 	{
 		appDataSource = new PostgreSQLContainer<>("postgres");
@@ -37,6 +41,9 @@ public class AppDataSourceInitializer implements ApplicationContextInitializer<C
 
 		dictDataSource = new PostgreSQLContainer<>("postgres");
 		dictDataSource.start();
+
+		minio = new MinIOContainer("minio/minio");
+		minio.start();
 	}
 
 	@Override
@@ -54,6 +61,12 @@ public class AppDataSourceInitializer implements ApplicationContextInitializer<C
 				"app.dicts.dataSource.url=" + dictDataSource.getJdbcUrl(),
 				"app.dicts.dataSource.username=" + dictDataSource.getUsername(),
 				"app.dicts.dataSource.password=" + dictDataSource.getPassword()
+		).applyTo(applicationContext.getEnvironment());
+
+		TestPropertyValues.of(
+				"app.attachments.minio.endpoint=" + minio.getS3URL(),
+				"app.attachments.minio.access-key=" + minio.getUserName(),
+				"app.attachments.minio.secret-key=" + minio.getPassword()
 		).applyTo(applicationContext.getEnvironment());
 	}
 }

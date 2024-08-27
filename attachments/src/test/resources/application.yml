@@ -3,9 +3,6 @@ app:
         enabled: true
         store-type: directory
         minio:
-            endpoint: http://minio.dnit:9090/
-            access-key: dev
-            secret-key: barbecue
             bucket: uploads
         directory:
             path: uploads
