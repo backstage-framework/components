@@ -14,11 +14,25 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.jobs.dto.param;
+package com.backstage.app.jobs.model.dto;
 
-import lombok.NoArgsConstructor;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
 
-@NoArgsConstructor
-public class EmptyJobParams implements JobParams
+@Getter
+public class RescheduleJobRequest
 {
+	@Deprecated(forRemoval = true)
+	@Schema(description = "Наименование работы")
+	private String jobName;
+
+	@NotNull
+	@Schema(description = "Тип триггера (CRON/INTERVAL)", required = true)
+	private JobTriggerType triggerType;
+
+	@NotBlank
+	@Schema(description = "Выражение для триггера", required = true)
+	private String expression;
 }

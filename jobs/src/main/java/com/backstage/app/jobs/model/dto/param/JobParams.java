@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.jobs.dto.param;
+package com.backstage.app.jobs.model.dto.param;
 
 /**
  * Example of implementation:

@@ -16,8 +16,8 @@
 
 package com.backstage.bpm.service.job;
 
-import com.backstage.app.jobs.dto.other.JobResult;
-import com.backstage.app.jobs.dto.param.EmptyJobParams;
+import com.backstage.app.jobs.model.dto.other.JobResult;
+import com.backstage.app.jobs.model.dto.param.EmptyJobParams;
 import com.backstage.app.jobs.service.AbstractCronJob;
 import com.backstage.app.jobs.service.JobDescription;
 import com.backstage.bpm.repository.DeployedWorkflowRepository;

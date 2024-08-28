@@ -16,7 +16,7 @@
 
 package com.backstage.app.jobs.service;
 
-import com.backstage.app.jobs.dto.other.JobResult;
+import com.backstage.app.jobs.model.dto.other.JobResult;
 
 public interface JobEventListener
 {

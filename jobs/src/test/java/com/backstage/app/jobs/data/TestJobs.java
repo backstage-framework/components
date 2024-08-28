@@ -16,9 +16,9 @@
 
 package com.backstage.app.jobs.data;
 
-import com.backstage.app.jobs.dto.other.JobResult;
-import com.backstage.app.jobs.dto.param.EmptyJobParams;
-import com.backstage.app.jobs.dto.param.JobParams;
+import com.backstage.app.jobs.model.dto.other.JobResult;
+import com.backstage.app.jobs.model.dto.param.EmptyJobParams;
+import com.backstage.app.jobs.model.dto.param.JobParams;
 import com.backstage.app.jobs.service.AbstractCronJob;
 import com.backstage.app.jobs.service.AbstractFixedDelayJob;
 import com.backstage.app.jobs.service.AbstractManualJob;

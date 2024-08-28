@@ -14,20 +14,11 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.jobs.dto;
+package com.backstage.app.jobs.model.dto.param;
 
-import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Getter
-@AllArgsConstructor(staticName = "of")
-@Schema(description = "План расписания для указанной задачи")
-public class JobTrigger
+@NoArgsConstructor
+public class EmptyJobParams implements JobParams
 {
-	@Schema(description = "Тип триггера (CRON/INTERVAL)")
-	private JobTriggerType triggerType;
-
-	@Schema(description = "Выражение для триггера")
-	private String expression;
 }

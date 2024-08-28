@@ -20,7 +20,7 @@ import com.google.common.collect.Ordering;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.jobs.AbstractTests;
 import com.backstage.app.jobs.data.TestJobs;
-import com.backstage.app.jobs.dto.JobTriggerType;
+import com.backstage.app.jobs.model.dto.JobTriggerType;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;

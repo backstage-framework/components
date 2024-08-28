@@ -14,25 +14,20 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.jobs.dto;
+package com.backstage.app.jobs.model.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @Getter
-public class RescheduleJobRequest
+@AllArgsConstructor(staticName = "of")
+@Schema(description = "План расписания для указанной задачи")
+public class JobTrigger
 {
-	@Deprecated(forRemoval = true)
-	@Schema(description = "Наименование работы")
-	private String jobName;
-
-	@NotNull
-	@Schema(description = "Тип триггера (CRON/INTERVAL)", required = true)
+	@Schema(description = "Тип триггера (CRON/INTERVAL)")
 	private JobTriggerType triggerType;
 
-	@NotBlank
-	@Schema(description = "Выражение для триггера", required = true)
+	@Schema(description = "Выражение для триггера")
 	private String expression;
 }

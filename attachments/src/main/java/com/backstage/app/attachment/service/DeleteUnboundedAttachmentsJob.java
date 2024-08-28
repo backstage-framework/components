@@ -17,8 +17,8 @@
 package com.backstage.app.attachment.service;
 
 import com.backstage.app.attachment.repository.AttachmentRepository;
-import com.backstage.app.jobs.dto.other.JobResult;
-import com.backstage.app.jobs.dto.param.EmptyJobParams;
+import com.backstage.app.jobs.model.dto.other.JobResult;
+import com.backstage.app.jobs.model.dto.param.EmptyJobParams;
 import com.backstage.app.jobs.service.AbstractFixedDelayJob;
 import com.backstage.app.jobs.service.JobDescription;
 import lombok.RequiredArgsConstructor;

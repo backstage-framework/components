@@ -17,9 +17,9 @@
 package com.backstage.app.jobs.endpoint;
 
 import com.backstage.app.api.model.ApiResponse;
-import com.backstage.app.jobs.dto.JobTrigger;
-import com.backstage.app.jobs.dto.RescheduleJobRequest;
-import com.backstage.app.jobs.dto.param.JobParams;
+import com.backstage.app.jobs.model.dto.JobTrigger;
+import com.backstage.app.jobs.model.dto.RescheduleJobRequest;
+import com.backstage.app.jobs.model.dto.param.JobParams;
 import com.backstage.app.jobs.service.JobManager;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;

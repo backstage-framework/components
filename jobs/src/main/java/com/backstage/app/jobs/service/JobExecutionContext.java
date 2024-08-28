@@ -16,7 +16,7 @@
 
 package com.backstage.app.jobs.service;
 
-import com.backstage.app.jobs.dto.param.JobParams;
+import com.backstage.app.jobs.model.dto.param.JobParams;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor

@@ -16,9 +16,9 @@
 
 package com.backstage.app.jobs.service;
 
-import com.backstage.app.jobs.dto.JobTrigger;
-import com.backstage.app.jobs.dto.JobTriggerType;
-import com.backstage.app.jobs.dto.param.JobParams;
+import com.backstage.app.jobs.model.dto.JobTrigger;
+import com.backstage.app.jobs.model.dto.JobTriggerType;
+import com.backstage.app.jobs.model.dto.param.JobParams;
 import org.springframework.scheduling.support.CronTrigger;
 
 /**

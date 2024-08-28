@@ -16,7 +16,7 @@
 
 package com.backstage.app.jobs.service;
 
-import com.backstage.app.jobs.dto.other.JobResult;
+import com.backstage.app.jobs.model.dto.other.JobResult;
 import com.backstage.app.service.health.SimpleHealthIndicatorComponent;
 import lombok.Getter;
 import org.springframework.scheduling.support.SimpleTriggerContext;

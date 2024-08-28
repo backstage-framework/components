@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.jobs.dto;
+package com.backstage.app.jobs.model.dto;
 
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;

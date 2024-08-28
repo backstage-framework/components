@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.jobs.dto.other;
+package com.backstage.app.jobs.model.dto.other;
 
 import lombok.*;
 import org.apache.commons.lang3.exception.ExceptionUtils;

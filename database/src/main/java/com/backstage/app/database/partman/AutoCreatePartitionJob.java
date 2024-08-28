@@ -17,8 +17,8 @@
 package com.backstage.app.database.partman;
 
 import com.backstage.app.database.configuration.properties.PartmanProperties;
-import com.backstage.app.jobs.dto.other.JobResult;
-import com.backstage.app.jobs.dto.param.EmptyJobParams;
+import com.backstage.app.jobs.model.dto.other.JobResult;
+import com.backstage.app.jobs.model.dto.param.EmptyJobParams;
 import com.backstage.app.jobs.service.AbstractCronJob;
 import com.backstage.app.jobs.service.JobDescription;
 import org.springframework.beans.factory.annotation.Qualifier;
