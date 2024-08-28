@@ -16,7 +16,7 @@
 
 package com.backstage.app.dict.service.codegen;
 
-import com.backstage.app.dict.dto.DictConverter;
+import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.service.DictService;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;

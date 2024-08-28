@@ -17,7 +17,7 @@
 package com.backstage.app.dict.repository;
 
 import com.backstage.app.dict.common.CommonTest;
-import com.backstage.app.dict.mongo.MongoDictRepository;
+import com.backstage.app.dict.repository.mongo.MongoDictRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 

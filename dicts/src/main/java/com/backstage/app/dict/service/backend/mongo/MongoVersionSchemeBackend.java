@@ -18,7 +18,7 @@ package com.backstage.app.dict.service.backend.mongo;
 
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.domain.VersionScheme;
-import com.backstage.app.dict.mongo.MongoVersionSchemeRepository;
+import com.backstage.app.dict.repository.mongo.MongoVersionSchemeRepository;
 import com.backstage.app.dict.service.backend.Engine;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import lombok.RequiredArgsConstructor;

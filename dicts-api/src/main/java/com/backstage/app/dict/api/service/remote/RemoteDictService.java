@@ -18,11 +18,11 @@ package com.backstage.app.dict.api.service.remote;
 
 import com.backstage.app.api.model.ApiResponse;
 import com.backstage.app.dict.api.constant.RemoteServices;
-import com.backstage.app.dict.api.dto.DictDto;
-import com.backstage.app.dict.api.dto.DictEnumDto;
-import com.backstage.app.dict.api.dto.request.CreateDictEnumRequest;
-import com.backstage.app.dict.api.dto.request.CreateDictRequest;
-import com.backstage.app.dict.api.dto.request.DeleteDictRequest;
+import com.backstage.app.dict.api.model.dto.DictDto;
+import com.backstage.app.dict.api.model.dto.DictEnumDto;
+import com.backstage.app.dict.api.model.dto.request.CreateDictEnumRequest;
+import com.backstage.app.dict.api.model.dto.request.CreateDictRequest;
+import com.backstage.app.dict.api.model.dto.request.DeleteDictRequest;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.cloud.openfeign.FeignClient;

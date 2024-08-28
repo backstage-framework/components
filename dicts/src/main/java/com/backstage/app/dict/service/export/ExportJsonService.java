@@ -16,10 +16,10 @@
 
 package com.backstage.app.dict.service.export;
 
-import com.backstage.app.dict.api.dto.ExportedDictDto;
+import com.backstage.app.dict.api.model.dto.ExportedDictDto;
+import com.backstage.app.dict.conversion.dto.DictConverter;
+import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.backstage.app.dict.domain.DictItem;
-import com.backstage.app.dict.dto.DictConverter;
-import com.backstage.app.dict.dto.data.DictItemConverter;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;

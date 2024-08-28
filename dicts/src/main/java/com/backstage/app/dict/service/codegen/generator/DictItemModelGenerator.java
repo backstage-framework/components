@@ -17,9 +17,9 @@
 package com.backstage.app.dict.service.codegen.generator;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
-import com.backstage.app.dict.api.dto.DictDto;
-import com.backstage.app.dict.api.dto.DictEnumDto;
-import com.backstage.app.dict.api.dto.DictFieldDto;
+import com.backstage.app.dict.api.model.dto.DictDto;
+import com.backstage.app.dict.api.model.dto.DictEnumDto;
+import com.backstage.app.dict.api.model.dto.DictFieldDto;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.service.codegen.base.AbstractDictItem;
 import com.backstage.app.utils.DateUtils;

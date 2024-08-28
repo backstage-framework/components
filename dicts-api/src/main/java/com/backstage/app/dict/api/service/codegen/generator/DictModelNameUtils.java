@@ -16,9 +16,9 @@
 
 package com.backstage.app.dict.api.service.codegen.generator;
 
-import com.backstage.app.dict.api.dto.DictDto;
-import com.backstage.app.dict.api.dto.DictFieldDto;
-import com.backstage.app.dict.api.dto.DictFieldNameDto;
+import com.backstage.app.dict.api.model.dto.DictDto;
+import com.backstage.app.dict.api.model.dto.DictFieldDto;
+import com.backstage.app.dict.api.model.dto.DictFieldNameDto;
 import com.google.common.base.CaseFormat;
 import lombok.experimental.UtilityClass;
 import org.geojson.GeoJsonObject;

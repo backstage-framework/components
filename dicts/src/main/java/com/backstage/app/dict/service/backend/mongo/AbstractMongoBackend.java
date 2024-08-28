@@ -19,7 +19,7 @@ package com.backstage.app.dict.service.backend.mongo;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictIndex;
-import com.backstage.app.dict.mongo.MongoDictRepository;
+import com.backstage.app.dict.repository.mongo.MongoDictRepository;
 import com.backstage.app.dict.service.migration.DictTransactionProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoTemplate;

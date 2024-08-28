@@ -1,10 +1,10 @@
 package com.backstage.app.dict.data;
 
-import com.backstage.app.dict.api.dto.data.DictItemDto;
-import com.backstage.app.dict.api.dto.data.DictItemRemoteDto;
+import com.backstage.app.dict.api.model.dto.data.DictItemDto;
+import com.backstage.app.dict.api.model.dto.data.DictItemRemoteDto;
 import com.backstage.app.dict.common.CommonTest;
 import com.backstage.app.dict.domain.DictItem;
-import com.backstage.app.dict.dto.data.DictItemConverter;
+import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.params.ParameterizedTest;

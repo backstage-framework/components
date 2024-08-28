@@ -17,10 +17,10 @@
 package com.backstage.app.dict.api.service.codegen.generator;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
-import com.backstage.app.dict.api.dto.DictDto;
-import com.backstage.app.dict.api.dto.DictEnumDto;
-import com.backstage.app.dict.api.dto.DictFieldDto;
-import com.backstage.app.dict.api.dto.data.DictItemDto;
+import com.backstage.app.dict.api.model.dto.DictDto;
+import com.backstage.app.dict.api.model.dto.DictEnumDto;
+import com.backstage.app.dict.api.model.dto.DictFieldDto;
+import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.service.codegen.base.AbstractDictItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;

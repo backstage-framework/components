@@ -16,7 +16,7 @@
 
 package com.backstage.app.dict.api.service.codegen.generator;
 
-import com.backstage.app.dict.api.dto.data.DictItemDto;
+import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.service.codegen.base.AbstractDictItemRemoteService;
 import com.backstage.app.dict.api.service.remote.InternalDictDataService;
 import lombok.RequiredArgsConstructor;

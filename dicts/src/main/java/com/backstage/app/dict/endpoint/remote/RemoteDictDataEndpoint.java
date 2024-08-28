@@ -16,10 +16,10 @@
 
 package com.backstage.app.dict.endpoint.remote;
 
-import com.backstage.app.dict.api.dto.data.DictItemRemoteDto;
+import com.backstage.app.dict.api.model.dto.data.DictItemRemoteDto;
 import com.backstage.app.dict.api.service.remote.InternalDictDataService;
-import com.backstage.app.dict.dto.DictConverter;
-import com.backstage.app.dict.dto.data.DictItemConverter;
+import com.backstage.app.dict.conversion.dto.DictConverter;
+import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.backstage.app.dict.endpoint.GenericDictDataEndpoint;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictService;
