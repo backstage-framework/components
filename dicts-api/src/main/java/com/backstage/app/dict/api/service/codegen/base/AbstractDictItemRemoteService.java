@@ -18,6 +18,7 @@ package com.backstage.app.dict.api.service.codegen.base;
 
 import com.backstage.app.api.utils.RemoteServiceUtils;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
+import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.SearchRequest;
 import com.backstage.app.dict.api.service.remote.InternalDictDataService;
 import com.backstage.app.exception.ObjectNotFoundException;
@@ -41,7 +42,7 @@ public abstract class AbstractDictItemRemoteService<T extends AbstractDictItem>
 			throw new ObjectNotFoundException(Object.class, itemId);
 		}
 
-		return getByIds(List.of(itemId)).get(0);
+		return items.get(0);
 	}
 
 	public List<T> getByIds(List<String> itemIds)
@@ -61,6 +62,25 @@ public abstract class AbstractDictItemRemoteService<T extends AbstractDictItem>
 				.stream()
 				.map(this::buildItem)
 				.collect(Collectors.toList());
+	}
+
+	public long countByFilter(String query)
+	{
+		var searchRequest = BasicSearchRequest.builder()
+				.query(query)
+				.build();
+
+		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.countByFilter(getDictId(), searchRequest));
+	}
+
+	public boolean existsById(String itemId)
+	{
+		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.existsById(getDictId(), itemId));
+	}
+
+	public boolean existsByFilter(String query)
+	{
+		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.existsByFilter(getDictId(), query));
 	}
 
 	protected abstract String getDictId();

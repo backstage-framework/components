@@ -15,7 +15,7 @@
 
 ### Dicts
 - Метод dictDataService.getByIds при передаче пустого списка идентификаторов теперь возвращает пустой список вместо исключения.
-- Добавили метод getByFilter в генерируемый remote клиент к API.
+- Добавили методы getByFilter, countByFilter, existsById, existsByFilter в генерируемый remote клиент к API.
 
 ## 5.0.41 - 2024-08-08
 ### Dicts
