@@ -41,6 +41,7 @@ import java.util.*;
 public class DictItemModelGenerator
 {
 	private static final Set<String> DEFAULT_FIELDS = Set.of(
+			"id",
 			"created",
 			"updated",
 			"deleted",
