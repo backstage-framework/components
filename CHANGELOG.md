@@ -9,6 +9,9 @@
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
 
+### Database
+- При инициализации EntityManager по умолчанию включаются сущности из appProperties.basePackages.
+
 ### Dicts
 - Метод dictDataService.getByIds при передаче пустого списка идентификаторов теперь возвращает пустой список вместо исключения.
 - Добавили метод getByFilter в генерируемый remote клиент к API.

@@ -42,6 +42,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import javax.sql.DataSource;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 @Configuration
 @RequiredArgsConstructor
@@ -56,9 +57,6 @@ public class JpaConfiguration
 	private final Optional<DDLConfiguration> ddlConfiguration;
 
 	private final List<EntityManagerFactoryCustomizer> entityManagerFactoryCustomizers;
-
-	private final JpaProperties jpaProperties;
-	private final AppProperties appProperties;
 
 	@Bean
 	public JpaVendorAdapter jpaVendorAdapter()
@@ -78,8 +76,12 @@ public class JpaConfiguration
 	}
 
 	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(DataSource dataSource, Customizer customizer)
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(AppProperties appProperties, JpaProperties jpaProperties, DataSource dataSource, Customizer customizer)
 	{
+		var packagesToScan = Stream.concat(appProperties.getBasePackages().stream(), entityManagerFactoryCustomizers.stream().flatMap(it -> it.getPackagesToScan().stream()))
+				.distinct()
+				.toArray(String[]::new);
+
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 
 		emf.setDataSource(dataSource);
@@ -87,7 +89,7 @@ public class JpaConfiguration
 		emf.getJpaPropertyMap().putAll(jpaProperties.getProperties());
 		emf.setPersistenceUnitName(appProperties.getModule());
 		emf.setPersistenceUnitPostProcessors(entityManagerFactoryCustomizers.toArray(EntityManagerFactoryCustomizer[]::new));
-		emf.setPackagesToScan(entityManagerFactoryCustomizers.stream().flatMap(it -> it.getPackagesToScan().stream()).toArray(String[]::new));
+		emf.setPackagesToScan(packagesToScan);
 		emf.setMappingResources(entityManagerFactoryCustomizers.stream().flatMap(it -> it.getMappingResources().stream()).toArray(String[]::new));
 
 		return emf;
