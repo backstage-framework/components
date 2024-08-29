@@ -61,7 +61,8 @@ public class CollectionFieldProxy extends AbstractFieldProxy
 
 			var element = collection.iterator().next();
 
-			if (element instanceof String || element instanceof Enum || ClassUtils.isPrimitiveOrWrapper(element.getClass()))
+			if (element instanceof String || element instanceof Enum || element instanceof UUID
+					|| ClassUtils.isPrimitiveOrWrapper(element.getClass()))
 			{
 				tempCollection.addAll(collection);
 			}

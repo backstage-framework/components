@@ -1,4 +1,3 @@
-# Change Log
 ## 5.1.0 - 2024-08-26
 ### Dependency Upgrades
 - Spring Cloud 3.2.9
@@ -9,6 +8,9 @@
 
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
+
+### Cache
+- Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
 
 ### Database
 - При инициализации EntityManager по умолчанию включаются сущности из appProperties.basePackages.
