@@ -21,10 +21,7 @@ import com.backstage.app.cache.utils.proxy.ReadOnlyObjectProxyFactory;
 import org.apache.commons.lang3.ClassUtils;
 
 import java.lang.reflect.Field;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class CollectionFieldProxy extends AbstractFieldProxy
 {

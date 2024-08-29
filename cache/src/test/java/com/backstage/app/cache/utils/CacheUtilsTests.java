@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -56,6 +57,9 @@ public class CacheUtilsTests
 		private List<String> basicList;
 
 		@ForceProxy
+		private Set<UUID> uuidSet;
+
+		@ForceProxy
 		private List<InnerItem> complexList;
 
 		private Map<String, String> ignoredMap;
@@ -66,18 +70,21 @@ public class CacheUtilsTests
 		@ForceProxy
 		private Map<String, InnerItem> complexMap;
 
-		public CacheItem(String id)
+		public CacheItem(UUID id)
 		{
-			this.id = id;
-			this.ignoredId = id;
+			var stringId = id.toString();
 
-			this.ignoredList = List.of(id);
-			this.basicList = List.of(id);
-			this.complexList = List.of(new InnerItem(id));
+			this.id = stringId;
+			this.ignoredId = stringId;
 
-			this.ignoredMap = Map.of(id, id);
-			this.basicMap = Map.of(id, id);
-			this.complexMap = Map.of(id, new InnerItem(id));
+			this.ignoredList = List.of(stringId);
+			this.basicList = List.of(stringId);
+			this.uuidSet = Set.of(id);
+			this.complexList = List.of(new InnerItem(stringId));
+
+			this.ignoredMap = Map.of(stringId, stringId);
+			this.basicMap = Map.of(stringId, stringId);
+			this.complexMap = Map.of(stringId, new InnerItem(stringId));
 		}
 	}
 
@@ -85,7 +92,7 @@ public class CacheUtilsTests
 	public void checkReadOnlyProxy()
 	{
 		// TODO: проверки для @Entity
-		var sourceItem = new CacheItem(UUID.randomUUID().toString());
+		var sourceItem = new CacheItem(UUID.randomUUID());
 		var cachedItem = ReadOnlyObjectProxyFactory.createProxy(sourceItem, CacheItem.class);
 
 		Assertions.assertEquals(sourceItem.getId(), cachedItem.getId());
@@ -95,6 +102,7 @@ public class CacheUtilsTests
 		assertNotNull(sourceItem.getIgnoredList());
 		assertNull(cachedItem.getIgnoredList());
 		assertIterableEquals(sourceItem.getBasicList(), cachedItem.getBasicList());
+		assertIterableEquals(sourceItem.getUuidSet(), cachedItem.getUuidSet());
 		assertIterableEquals(sourceItem.getComplexList(), cachedItem.getComplexList());
 
 		assertNotNull(sourceItem.getIgnoredMap());
