@@ -46,7 +46,7 @@ public class DictItemEndpointGenerator
 				.addAnnotation(generatedAnnotation())
 				.addAnnotation(RestController.class)
 				.addAnnotation(AnnotationSpec.builder(RequestMapping.class)
-						.addMember("value", "$S + $L.$L", "/api/dicts/", modelClassName, DictItemModelGenerator.DICT_ID_FIELD)
+						.addMember("value", "$S + $L.$L", "/api/dicts/", modelClassName, DictItemModelGenerator.FIELD_DICT_ID)
 						.build())
 				.addMethod(MethodSpec.constructorBuilder()
 						.addParameter(serviceClassName, "dictItemService")

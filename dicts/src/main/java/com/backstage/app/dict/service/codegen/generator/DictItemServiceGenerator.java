@@ -53,7 +53,7 @@ public class DictItemServiceGenerator
 						.addAnnotation(Override.class)
 						.addModifiers(Modifier.PROTECTED)
 						.returns(String.class)
-						.addStatement("return $T.$L", modelClassName, DictItemModelGenerator.DICT_ID_FIELD)
+						.addStatement("return $T.$L", modelClassName, DictItemModelGenerator.FIELD_DICT_ID)
 						.build())
 				.addMethod(MethodSpec.methodBuilder("buildItem")
 						.addAnnotation(Override.class)
