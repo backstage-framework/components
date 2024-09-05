@@ -55,7 +55,7 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 		return dictDataService.existsById(getDictId(), itemId);
 	}
 
-	public boolean existsByFilter(Condition condition, Pageable pageable)
+	public boolean existsByFilter(Condition condition)
 	{
 		return dictDataService.existsByFilter(getDictId(), ConditionBuilder.buildQuery(condition));
 	}
