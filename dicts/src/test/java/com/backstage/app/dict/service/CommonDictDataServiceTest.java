@@ -108,6 +108,7 @@ public class CommonDictDataServiceTest extends CommonTest
 			"integerField", 1,
 			"doubleField", 2.558,
 			"timestampField", List.of("2021-08-15T06:00:00.000Z", "2021-08-15T08:00:00.000Z"),
+			"stringFieldMultivalued", List.of("one", "two", "three"),
 			"booleanField", true);
 
 	protected void initDictDataTestableHierarchy(String storageDictId)
@@ -486,10 +487,11 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var dataMap = new HashMap<>(DATA_MAP);
 		dataMap.put("timestampField", List.of("2021-08-15T06:00:00.000Z", "2023-04-15T06:00:00.000Z", "2019-08-15T06:00:00.000Z"));
+		dataMap.put("stringFieldMultivalued", List.of("one", "two", "three"));
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
 
-		var anyQuery = "timestampField any ['2021-08-15T06:00:00'::timestamp, '2001-08-16T08:00:00'::timestamp, '2006-08-16T08:00:00'::timestamp]";
+		var anyQuery = "timestampField any ['2021-08-15T06:00:00'::timestamp, '2001-08-16T08:00:00'::timestamp, '2006-08-16T08:00:00'::timestamp] and stringFieldMultivalued any ['one']";
 
 		var actualIds = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), anyQuery, Pageable.unpaged())
 				.getContent()
@@ -504,10 +506,11 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var dataMap = new HashMap<>(DATA_MAP);
 		dataMap.put("timestampField", List.of("2021-08-15T06:00:00.000Z", "2001-08-16T08:00:00.000Z", "2006-08-16T08:00:00.000Z"));
+		dataMap.put("stringFieldMultivalued", List.of("one", "two", "three"));
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
 
-		var allQuery = "timestampField all ['2021-08-15T06:00:00'::timestamp, '2001-08-16T08:00:00'::timestamp, '2006-08-16T08:00:00'::timestamp]";
+		var allQuery = "timestampField all ['2021-08-15T06:00:00'::timestamp, '2001-08-16T08:00:00'::timestamp, '2006-08-16T08:00:00'::timestamp] and stringFieldMultivalued all ['one', 'two', 'three']";
 
 		var actualIds = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), allQuery, Pageable.unpaged())
 				.getContent()

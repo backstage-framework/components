@@ -264,6 +264,11 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 			return "::timestamp[]";
 		}
 
+		if (value instanceof String)
+		{
+			return "::text[]";
+		}
+
 		return StringUtils.EMPTY;
 	}
 
@@ -272,7 +277,6 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 		if (value instanceof LocalDate localDate)
 		{
 			return Date.valueOf(localDate);
-
 		}
 
 		if (value instanceof LocalDateTime localDateTime)
@@ -281,6 +285,11 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 		}
 
 		if (value instanceof Number)
+		{
+			return value;
+		}
+
+		if (value instanceof String)
 		{
 			return value;
 		}
