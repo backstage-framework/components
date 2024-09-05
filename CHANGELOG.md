@@ -2,6 +2,8 @@
 ### Dependency Upgrades
 - Spring Cloud 3.2.9
 - EclipseLink 4.0.4
+- Flyway 10.17.3
+- ClickHouse JDBC 0.6.5
 
 ### App
 - Реализована возможность запуска в составе приложений, корневой пакет которых отличается от com.backstage.

@@ -41,7 +41,7 @@ dependencies {
 
 	api "org.flywaydb:flyway-core"
 	api "org.flywaydb:flyway-database-postgresql:$flywayVersion"
-	api "org.flywaydb:flyway-database-clickhouse:$flywayVersion"
+	api "org.flywaydb:flyway-database-clickhouse:$flywayClickhouseVersion"
 
 	compileOnly "net.postgis:postgis-jdbc:$postgisVersion"
 	compileOnly "org.geolatte:geolatte-geom:$geolatteVersion"
