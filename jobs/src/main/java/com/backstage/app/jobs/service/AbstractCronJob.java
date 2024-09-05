@@ -19,6 +19,7 @@ package com.backstage.app.jobs.service;
 import com.backstage.app.jobs.model.dto.JobTrigger;
 import com.backstage.app.jobs.model.dto.JobTriggerType;
 import com.backstage.app.jobs.model.dto.param.JobParams;
+import org.intellij.lang.annotations.Language;
 import org.springframework.scheduling.support.CronTrigger;
 
 /**
@@ -31,11 +32,12 @@ public abstract class AbstractCronJob<T extends JobParams> extends AbstractJob<T
 		trigger = new CronTrigger(getCronExpression());
 	}
 
-	public AbstractCronJob(String cronExpression)
+	public AbstractCronJob(@Language("CronExp") String cronExpression)
 	{
 		trigger = new CronTrigger(cronExpression);
 	}
 
+	@Language("CronExp")
 	public abstract String getCronExpression();
 
 	@Override

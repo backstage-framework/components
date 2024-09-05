@@ -19,6 +19,9 @@
 - Метод dictDataService.getByIds при передаче пустого списка идентификаторов теперь возвращает пустой список вместо исключения.
 - Добавили методы getByFilter, countByFilter, existsById, existsByFilter в генерируемый remote клиент к API.
 
+### Jobs
+- Добавили подсветку синтаксиса cron выражений в AbstractCronJob.
+
 ## 5.0.41 - 2024-08-08
 ### Dicts
 - Добавили компоненты для генерации native и remote клиентов к API справочников.
