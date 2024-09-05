@@ -125,6 +125,16 @@ public class CommonTest
 
 		fields.add(
 				DictField.builder()
+						.id("stringFieldMultivalued")
+						.name("строка (множественное)")
+						.type(DictFieldType.STRING)
+						.required(false)
+						.multivalued(true)
+						.build()
+		);
+
+		fields.add(
+				DictField.builder()
 						.id("integerField")
 						.name("число")
 						.type(DictFieldType.INTEGER)
