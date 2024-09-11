@@ -19,8 +19,11 @@ package com.backstage.app.configuration;
 import com.backstage.app.configuration.properties.AppProperties;
 import com.backstage.app.service.user.PermissionService;
 import com.backstage.app.utils.SecurityUtils;
+import lombok.Getter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -28,8 +31,17 @@ import java.util.List;
 
 @Configuration
 @EnableConfigurationProperties({AppProperties.class})
-public class AppConfiguration
+public class AppConfiguration implements ApplicationContextAware
 {
+	@Getter
+	private static ApplicationContext applicationContext;
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext)
+	{
+		AppConfiguration.applicationContext = applicationContext;
+	}
+
 	@Bean
 	@ConditionalOnMissingBean
 	public PermissionService noOpPermissionService()

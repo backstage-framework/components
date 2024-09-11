@@ -13,6 +13,7 @@
 
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
+- Переработали инициализацию CacheManager в CacheUtils.
 
 ### Database
 - При инициализации EntityManager по умолчанию включаются сущности из appProperties.basePackages.

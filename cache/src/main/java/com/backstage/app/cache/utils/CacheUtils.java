@@ -17,17 +17,15 @@
 package com.backstage.app.cache.utils;
 
 import com.backstage.app.cache.utils.proxy.ReadOnlyObjectProxyFactory;
+import com.backstage.app.configuration.AppConfiguration;
 import com.backstage.app.exception.ObjectsNotFoundException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeansException;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
@@ -37,25 +35,13 @@ import java.util.stream.Collectors;
 @Slf4j
 @Component
 @ConditionalOnClass(name = "org.springframework.cache.CacheManager")
-public class CacheUtils implements ApplicationContextAware
+public class CacheUtils
 {
 	private static final int MAX_FETCH_SIZE = 300;
 
 	private static final LoadingCache<String, Object> locks = CacheBuilder.newBuilder().build(CacheLoader.from(Object::new));
 
 	private static CacheManager defaultCacheManager = null;
-
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-	{
-		try
-		{
-			defaultCacheManager = applicationContext.getBean(CacheManager.class);
-		}
-		catch (Exception ignored)
-		{
-			// no handling
-		}
-	}
 
 	public static <T, S> List<T> getCachedItems(Collection<S> objectIds, Function<Collection<S>, Collection<T>> objectSource, String cacheName, Function<T, S> cacheKeyGenerator, Class<T> targetCass)
 	{
@@ -64,16 +50,16 @@ public class CacheUtils implements ApplicationContextAware
 
 	public static <T, S> List<T> getCachedItems(Collection<S> objectIds, Function<Collection<S>, Collection<T>> objectSource, String cacheName, Function<T, S> cacheKeyGenerator, Class<T> targetCass, boolean createProxy)
 	{
-		if (defaultCacheManager == null)
-		{
-			throw new RuntimeException("no default cache manager detected");
-		}
-
 		return getCachedItems(objectIds, objectSource, defaultCacheManager, cacheName, cacheKeyGenerator, targetCass, createProxy);
 	}
 
 	public static <T, S> List<T> getCachedItems(Collection<S> objectIds, Function<Collection<S>, Collection<T>> objectSource, CacheManager cacheManager, String cacheName, Function<T, S> cacheKeyGenerator, Class<T> targetCass, boolean createProxy)
 	{
+		if (defaultCacheManager == null)
+		{
+			defaultCacheManager = initCacheManager();
+		}
+
 		if (objectIds.isEmpty())
 		{
 			return Collections.emptyList();
@@ -163,5 +149,19 @@ public class CacheUtils implements ApplicationContextAware
 				nonCachedItems.add(objectId);
 			}
 		}
+	}
+
+	private static CacheManager initCacheManager()
+	{
+		try
+		{
+			defaultCacheManager = AppConfiguration.getApplicationContext().getBean(CacheManager.class);
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException("no default cache manager detected", e);
+		}
+
+		return defaultCacheManager;
 	}
 }
