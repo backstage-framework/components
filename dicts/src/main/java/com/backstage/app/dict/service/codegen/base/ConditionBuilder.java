@@ -34,6 +34,11 @@ public class ConditionBuilder
 		return DSL.field(name);
 	}
 
+	public <T> Field<T> field(String name, Class<T> type)
+	{
+		return DSL.field(name, type);
+	}
+
 	public String buildQuery(Condition condition)
 	{
 		return DSL_CONTEXT.renderInlined(condition);
