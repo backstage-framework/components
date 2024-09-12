@@ -36,6 +36,6 @@ public class ConditionBuilder
 
 	public String buildQuery(Condition condition)
 	{
-		return DSL_CONTEXT.render(condition);
+		return DSL_CONTEXT.renderInlined(condition);
 	}
 }
