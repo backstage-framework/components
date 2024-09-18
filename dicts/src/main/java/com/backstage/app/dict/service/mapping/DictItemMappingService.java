@@ -34,6 +34,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -239,7 +240,14 @@ public class DictItemMappingService
 			return localDateTime;
 		}
 
-		return LocalDateTime.parse((String) value, DateConstants.ISO_OFFSET_DATE_TIME_MS_FORMATTER);
+		try
+		{
+			return LocalDateTime.parse((String) value, DateConstants.ISO_OFFSET_DATE_TIME_MS_FORMATTER);
+		}
+		catch (DateTimeParseException e)
+		{
+			return LocalDateTime.parse((String) value);
+		}
 	}
 
 	private LocalDateTime mapToLocalDateTime(Date value)

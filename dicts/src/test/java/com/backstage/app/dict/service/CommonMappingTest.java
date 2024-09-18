@@ -69,12 +69,16 @@ public class CommonMappingTest extends CommonTest
 	protected void mapDictDateFields()
 	{
 		Map<String, Object> stringDateMap = Map.of("timestampField", "2021-08-15T06:00:00.000Z");
+		Map<String, Object> stringDateWithoutZoneMap = Map.of("timestampField", "2021-08-15T06:00:00");
+		Map<String, Object> stringDateWithoutZoneMapWithMills = Map.of("timestampField", "2021-08-15T06:00:00.000000");
 		Map<String, Object> objectDateMap = Map.of("timestampField", new Date());
 
 		var dict = dictService.getById(TESTABLE_DICT_ID);
 		var fields = dictService.getDataFieldsByDict(dict);
 
 		dictItemMappingService.mapDictItem(buildDictDataItem(TESTABLE_DICT_ID, stringDateMap), dict, fields);
+		dictItemMappingService.mapDictItem(buildDictDataItem(TESTABLE_DICT_ID, stringDateWithoutZoneMap), dict, fields);
+		dictItemMappingService.mapDictItem(buildDictDataItem(TESTABLE_DICT_ID, stringDateWithoutZoneMapWithMills), dict, fields);
 		dictItemMappingService.mapDictItem(buildDictDataItem(TESTABLE_DICT_ID, objectDateMap), dict, fields);
 	}
 
