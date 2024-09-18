@@ -22,6 +22,7 @@
 - Метод dictDataService.getByIds при передаче пустого списка идентификаторов теперь возвращает пустой список вместо исключения.
 - Добавили методы getByFilter, countByFilter, existsById, existsByFilter в генерируемый remote клиент к API.
 - Добавили принудительный каст для text[] при обработке операторов any/all.
+- Добавили возможность передачи поля TIMESTAMP строкой в формате 'yyyy-MM-dd HH:mm:ss.SSS', 'yyyy-MM-dd HH:mm:ss'.
 
 ### Jobs
 - Добавили подсветку синтаксиса cron выражений в AbstractCronJob.
