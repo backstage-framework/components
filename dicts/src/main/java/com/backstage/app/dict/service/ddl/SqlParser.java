@@ -79,7 +79,7 @@ public class SqlParser
 
 	final Parser<Value<?>> COLUMN_VALUE = Terminals.Identifier.PARSER.map(Id::new).map(ColumnValue::new);
 
-	//fixme KGH-4492 костыль. Исправить, чтобы была возможность обрабатывать только ::json, игнорируя другие касты
+	//fixme Исправить, чтобы была возможность обрабатывать только ::json, игнорируя другие касты
 	final Parser<JsonValue> JSON_VALUE = Parsers.sequence(STRING_VALUE, term("::"), Terminals.Identifier.PARSER, (value, kw, targetType) -> new JsonValue(value.getValue()));
 
 	final Parser<Id> ID = Parsers.or(Terminals.Identifier.PARSER, Terminals.Identifier.PARSER.between(term("\""), term("\""))).map(Id::new);

@@ -116,7 +116,7 @@ public class DictDataValidationService
 		return fieldNameMappingService.mapDictFieldName(field);
 	}
 
-	//TODO: после слияния KGH-4229, актуализировать без проброса userId
+	//TODO: Актуализировать, отказавшись от проброса userId
 	public void validateDictDataItem(String dictId, DictItem dictItem, String userId)
 	{
 		var dataItemMap = dictItem.getData();
