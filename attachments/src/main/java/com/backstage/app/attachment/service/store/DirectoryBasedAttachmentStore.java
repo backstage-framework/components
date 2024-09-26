@@ -25,8 +25,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Component;
 
 import java.io.File;
@@ -79,7 +79,7 @@ public class DirectoryBasedAttachmentStore implements AttachmentStore
 	{
 		try
 		{
-			var resource = new UrlResource(new File(storePath, assignPath(attachment)).toURI());
+			var resource = new FileSystemResource(new File(storePath, assignPath(attachment)));
 
 			if (resource.exists() || resource.isReadable())
 			{
@@ -94,6 +94,11 @@ public class DirectoryBasedAttachmentStore implements AttachmentStore
 		{
 			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_DATA_NOT_AVAILABLE, e);
 		}
+	}
+
+	public Resource getAttachment(Attachment attachment, long offset, Long length)
+	{
+		return getAttachment(attachment);
 	}
 
 	public void saveAttachment(Attachment attachment, InputStream stream)

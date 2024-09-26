@@ -71,9 +71,14 @@ public class AttachmentService
 
 	public Resource getAttachmentData(String attachmentId)
 	{
+		return getAttachmentData(attachmentId, 0L, null);
+	}
+
+	public Resource getAttachmentData(String attachmentId, long offset, Long length)
+	{
 		serviceAdviceList.forEach(it -> it.handleGetAttachmentData(attachmentId));
 
-		return attachmentStore.getAttachment(attachmentRepository.findByIdEx(attachmentId));
+		return attachmentStore.getAttachment(attachmentRepository.findByIdEx(attachmentId), offset, length);
 	}
 
 	public Attachment getAttachment(@NotNull String id)
@@ -228,7 +233,7 @@ public class AttachmentService
 				.created(LocalDateTime.now())
 				.fileName(fileName)
 				.mimeType(mimeType)
-				.size(data.length)
+				.size((long) data.length)
 				.checksum(calculateChecksum(data))
 				.build());
 
@@ -247,7 +252,7 @@ public class AttachmentService
 		attachment.setFileName(fileName);
 		attachment.setMimeType(mimeType);
 		attachment.setUserId(userId);
-		attachment.setSize(data.length);
+		attachment.setSize((long) data.length);
 		attachment.setChecksum(calculateChecksum(data));
 
 		attachmentStore.deleteAttachment(attachment);
