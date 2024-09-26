@@ -24,5 +24,5 @@ public interface Report
 
 	byte[] getData();
 
-	int getSize();
+	long getSize();
 }

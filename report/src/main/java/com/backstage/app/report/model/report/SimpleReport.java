@@ -31,5 +31,5 @@ public class SimpleReport implements Report
 
 	private byte[] data;
 
-	private int size;
+	private long size;
 }
