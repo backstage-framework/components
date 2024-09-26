@@ -301,6 +301,11 @@ public class DateUtils
 		return toZonedDateTime(localDateTime).toEpochSecond();
 	}
 
+	public static long toEpochMilli(LocalDateTime localDateTime)
+	{
+		return toZonedDateTime(localDateTime).toInstant().toEpochMilli();
+	}
+
 	public static boolean isDayBeforeOrEqual(Date date1, Date date2)
 	{
 		return org.apache.commons.lang3.time.DateUtils.isSameDay(date1, date2) || date1.before(date2);

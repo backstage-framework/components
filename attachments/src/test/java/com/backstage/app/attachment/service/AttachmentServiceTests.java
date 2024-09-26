@@ -58,7 +58,7 @@ public class AttachmentServiceTests extends AbstractTests
 		var attachment = attachmentService.addAttachment(Objects.requireNonNull(fileResource.getFilename()), MediaType.IMAGE_PNG_VALUE, UserInfo.SYSTEM_USER_ID, bytes);
 		var savedData = attachmentService.getAttachmentData(attachment.getId());
 
-		assertEquals(attachment.getSize(), (Integer) bytes.length);
+		assertEquals(attachment.getSize(), bytes.length);
 		assertArrayEquals(bytes, IOUtils.toByteArray(savedData.getInputStream()));
 
 		attachmentId = attachment.getId();

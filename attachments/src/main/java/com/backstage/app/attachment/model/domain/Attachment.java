@@ -56,7 +56,7 @@ public class Attachment extends UuidGeneratedEntity
 	private String fileName;
 
 	@Column(nullable = false)
-	private Integer size;
+	private Long size;
 
 	private String checksum;
 

@@ -11,6 +11,9 @@
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
 
+### Attachments
+- Добавили поддержку заголовка Range в AttachmentEndpoint.
+
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
 - Переработали инициализацию CacheManager в CacheUtils.

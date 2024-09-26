@@ -16,17 +16,20 @@
 
 package com.backstage.app.utils;
 
+import lombok.experimental.UtilityClass;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 
+@UtilityClass
 public class HttpUtils
 {
-	public static String buildContentDisposition(boolean inline, String legacyName)
+	public String buildContentDisposition(boolean inline, String legacyName)
 	{
 		return buildContentDisposition(inline, legacyName, legacyName);
 	}
 
-	public static String buildContentDisposition(boolean inline, String legacyName, String unicodeName)
+	public String buildContentDisposition(boolean inline, String legacyName, String unicodeName)
 	{
 		try
 		{

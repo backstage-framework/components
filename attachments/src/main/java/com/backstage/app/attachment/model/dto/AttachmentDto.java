@@ -40,7 +40,7 @@ public class AttachmentDto
 
 	private String fileName;
 
-	private Integer size;
+	private Long size;
 
 	private String url;
 

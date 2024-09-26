@@ -34,6 +34,8 @@ public interface AttachmentStore
 
 	Resource getAttachment(Attachment attachment);
 
+	Resource getAttachment(Attachment attachment, long offset, Long length);
+
 	default void saveAttachment(Attachment attachment, byte[] data)
 	{
 		saveAttachment(attachment, new ByteArrayInputStream(data));
