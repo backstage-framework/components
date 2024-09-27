@@ -66,19 +66,18 @@ public class AttachmentService
 	@PostConstruct
 	public void initialize()
 	{
-		attachmentStore = getAttachmentStore(attachmentProperties.getStoreType());
+		var storeType = attachmentProperties.getStoreType();
+
+		log.info("Primary attachment store type: {}.", storeType);
+
+		attachmentStore = getAttachmentStore(storeType);
 	}
 
 	public Resource getAttachmentData(String attachmentId)
 	{
-		return getAttachmentData(attachmentId, 0L, null);
-	}
-
-	public Resource getAttachmentData(String attachmentId, long offset, Long length)
-	{
 		serviceAdviceList.forEach(it -> it.handleGetAttachmentData(attachmentId));
 
-		return attachmentStore.getAttachment(attachmentRepository.findByIdEx(attachmentId), offset, length);
+		return attachmentStore.getAttachment(attachmentRepository.findByIdEx(attachmentId));
 	}
 
 	public Attachment getAttachment(@NotNull String id)

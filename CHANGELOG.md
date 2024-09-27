@@ -1,9 +1,13 @@
 ## 5.1.0 - 2024-08-26
 ### Dependency Upgrades
-- Spring Cloud 3.2.9
+- Spring Cloud 3.2.10
 - EclipseLink 4.0.4
-- Flyway 10.17.3
+- Flyway 10.18.1
+- Postgresql JDBC 42.7.4
 - ClickHouse JDBC 0.6.5
+- Groovy 4.0.23
+- MinIO 8.5.12
+- Guava 33.3.1-jre
 
 ### App
 - Реализована возможность запуска в составе приложений, корневой пакет которых отличается от com.backstage.
@@ -12,7 +16,7 @@
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
 
 ### Attachments
-- Добавили поддержку заголовка Range в AttachmentEndpoint.
+- Добавили поддержку HTTP заголовка Range в AttachmentEndpoint.
 
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.

@@ -38,7 +38,7 @@ import java.util.UUID;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
-public class AttachmentServiceTests extends AbstractTests
+public abstract class AbstractStoreTests extends AbstractTests
 {
 	@Autowired private TransactionTemplate transactionTemplate;
 

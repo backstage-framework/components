@@ -50,7 +50,14 @@ public class DirectoryBasedAttachmentStore implements AttachmentStore
 		try
 		{
 			storePath = new File(attachmentProperties.getDirectory().getPath());
-			storePath.mkdirs();
+
+			if (!storePath.exists())
+			{
+				if (!storePath.mkdirs())
+				{
+					throw new RuntimeException("failed to create directory: " + storePath.getPath());
+				}
+			}
 
 			log.info("Setting attachment store path: {}.", storePath.getPath());
 
@@ -94,11 +101,6 @@ public class DirectoryBasedAttachmentStore implements AttachmentStore
 		{
 			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_DATA_NOT_AVAILABLE, e);
 		}
-	}
-
-	public Resource getAttachment(Attachment attachment, long offset, Long length)
-	{
-		return getAttachment(attachment);
 	}
 
 	public void saveAttachment(Attachment attachment, InputStream stream)

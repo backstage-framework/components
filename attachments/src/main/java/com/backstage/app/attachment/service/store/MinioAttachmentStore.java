@@ -101,22 +101,15 @@ public class MinioAttachmentStore implements AttachmentStore
 
 	public Resource getAttachment(Attachment attachment)
 	{
-		return getAttachment(attachment, 0L, null);
-	}
-
-	public Resource getAttachment(Attachment attachment, long offset, Long length)
-	{
 		try
 		{
 			var minioResponse = minioClient.getObject(GetObjectArgs.builder()
 					.bucket(bucket)
 					.object(attachment.getId())
-					.offset(offset)
-					.length(length)
 					.build());
 
 			var lastModified = attachment.getUpdated() != null ? attachment.getUpdated() : attachment.getCreated();
-			var contentLength = length != null ? length : attachment.getSize();
+			var contentLength = attachment.getSize();
 
 			return new MinioResource(minioResponse, lastModified, contentLength);
 		}

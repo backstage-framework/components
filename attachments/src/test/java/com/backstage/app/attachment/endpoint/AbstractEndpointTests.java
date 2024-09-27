@@ -14,10 +14,9 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.attachment.controller;
+package com.backstage.app.attachment.endpoint;
 
 import com.backstage.app.attachment.AbstractTests;
-import com.backstage.app.attachment.endpoint.AttachmentEndpoint;
 import com.google.common.io.ByteSource;
 import com.jayway.jsonpath.JsonPath;
 import org.apache.commons.io.IOUtils;
@@ -44,7 +43,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @WebMvcTest(AttachmentEndpoint.class)
 @ImportAutoConfiguration(exclude = SecurityAutoConfiguration.class)
-public class AttachmentEndpointTests extends AbstractTests
+public abstract class AbstractEndpointTests extends AbstractTests
 {
 	@Autowired
 	private MockMvc mvc;
