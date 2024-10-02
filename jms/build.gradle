@@ -28,12 +28,10 @@ dependencies {
 	api "org.springframework.boot:spring-boot-starter-activemq"
 
 	api "org.apache.activemq:activemq-broker"
-	api "org.apache.activemq:activemq-client-jakarta"
+	api "org.apache.activemq:activemq-client"
 	api "org.apache.activemq:activemq-kahadb-store"
 	api "org.apache.activemq:activemq-pool"
 	api "org.apache.activemq:activemq-spring"
-
-	api "javax.jms:javax.jms-api:2.0.1"
 
 	compileOnly "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:$springCloudVersion"
 
