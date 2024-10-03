@@ -74,7 +74,7 @@ public class DictEndpoint
 	@PostMapping("/create")
 	public ApiResponse<DictDto> create(@RequestBody @Valid CreateDictRequest request)
 	{
-		//fixme реализация для KGH-2695, зарефакторить в рамках KGH-2728
+		//fixme Необходим рефакторинг создания enum, как минимум перенос логики на слой сервиса
 		var dict = schemeRequestConverter.convert(request);
 
 		var sourceFields = new ArrayList<>(dict.getFields());
@@ -137,7 +137,7 @@ public class DictEndpoint
 	public ApiResponse<DictDto> update(@RequestBody @Valid CreateDictRequest request)
 	{
 		//		TODO: dictId = отдельным параметром
-		//fixme реализация для KGH-2695, зарефакторить в рамках KGH-2728
+		//fixme Необходим рефакторинг обработки enum-типов, как минимум перенос логики на слой сервиса
 		var dict = schemeRequestConverter.convert(request);
 
 		var sourceFields = new ArrayList<>(dict.getFields());

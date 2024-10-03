@@ -101,7 +101,7 @@ public class CommonDictExportServiceTest extends CommonTest
 //	protected void exportSqlNullItemsIds() throws IOException
 //	{
 //		importJsonService.importDict(INDEBTEDNESS_ID,
-//				new ClassPathResource("kgh_dev_public_indebtedness.json").getInputStream());
+//				new ClassPathResource("indebtedness.json").getInputStream());
 //
 //		Resource stringField = dictExportService.exportToResource(INDEBTEDNESS_ID, ExportedDictFormat.SQL, null);
 //
