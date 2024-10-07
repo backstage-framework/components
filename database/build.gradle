@@ -33,7 +33,9 @@ dependencies {
 		exclude(group: "org.hibernate")
 	}
 
-	api "org.eclipse.persistence:eclipselink:$eclipseLinkVersion"
+	api ("org.eclipse.persistence:eclipselink:$eclipseLinkVersion") {
+		exclude group: "com.sun.xml.bind"
+	}
 
 	api "com.zaxxer:HikariCP"
 	api "org.postgresql:postgresql"
