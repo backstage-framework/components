@@ -18,29 +18,31 @@ package com.backstage.app.dict.common;
 
 public class TestPipeline
 {
-	public static final int FIRST_INIT = 1;
+	public static final int FIRST_INIT = 10;
 
-	public static final int POSTGRES_STORAGE_MIGRATION = 2;
-	public static final int POSTGRES_DICT = 3;
-	public static final int POSTGRES_DICT_DATA = 4;
-	public static final int POSTGRES_DICT_DATA_CONVERSION = 5;
-	public static final int POSTGRES_CLASSPATH_MIGRATION = 6;
-	public static final int POSTGRES_DICT_VALIDATION = 7;
-	public static final int POSTGRES_DICT_DATA_VALIDATION = 8;
-	public static final int POSTGRES_MAPPING = 9;
-	public static final int POSTGRES_EXPORT = 10;
-	public static final int POSTGRES_INTERPRETER = 11;
+	public static final int POSTGRES_STORAGE_MIGRATION = 20;
+	public static final int POSTGRES_DICT = 30;
+	public static final int POSTGRES_DICT_DATA = 40;
+	public static final int POSTGRES_DICT_DATA_CONVERSION = 50;
+	public static final int POSTGRES_CLASSPATH_MIGRATION = 60;
+	public static final int POSTGRES_DICT_VALIDATION = 70;
+	public static final int POSTGRES_DICT_DATA_VALIDATION = 80;
+	public static final int POSTGRES_MAPPING = 90;
+	public static final int POSTGRES_EXPORT = 100;
+	public static final int POSTGRES_INTERPRETER = 110;
+	public static final int POSTGRES_CSV_IMPORT = 120;
 
-	public static final int MONGO_STORAGE_MIGRATION = 12;
-	public static final int MONGO_DICT = 13;
-	public static final int MONGO_DICT_DATA = 14;
-	public static final int MONGO_DICT_DATA_CONVERSION = 15;
-	public static final int MONGO_CLASSPATH_MIGRATION = 16;
-	public static final int MONGO_DICT_VALIDATION = 17;
-	public static final int MONGO_DICT_DATA_VALIDATION = 18;
-	public static final int MONGO_MAPPING = 19;
-	public static final int MONGO_EXPORT = 20;
-	public static final int MONGO_INTERPRETER = 21;
+	public static final int MONGO_STORAGE_MIGRATION = 130;
+	public static final int MONGO_DICT = 140;
+	public static final int MONGO_DICT_DATA = 150;
+	public static final int MONGO_DICT_DATA_CONVERSION = 160;
+	public static final int MONGO_CLASSPATH_MIGRATION = 170;
+	public static final int MONGO_DICT_VALIDATION = 180;
+	public static final int MONGO_DICT_DATA_VALIDATION = 190;
+	public static final int MONGO_MAPPING = 200;
+	public static final int MONGO_EXPORT = 210;
+	public static final int MONGO_INTERPRETER = 220;
+	public static final int MONGO_CSV_IMPORT = 230;
 
 	public static final int DICT_GET_ALL_TEST = -100;
 	public static final int DICT_GET_BY_ID_TEST = -200;
