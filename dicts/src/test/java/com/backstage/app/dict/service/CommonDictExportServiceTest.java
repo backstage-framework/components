@@ -95,16 +95,4 @@ public class CommonDictExportServiceTest extends CommonTest
 		assertTrue(exportedResource.getResource().exists());
 		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
 	}
-
-//	TODO: предусмотреть возможность создавать inner dict с указанными идентификаторами.
-//	 Сейчас после создания items в innerDict получают свои идентификаторы
-//	protected void exportSqlNullItemsIds() throws IOException
-//	{
-//		importJsonService.importDict(INDEBTEDNESS_ID,
-//				new ClassPathResource("indebtedness.json").getInputStream());
-//
-//		Resource stringField = dictExportService.exportToResource(INDEBTEDNESS_ID, ExportedDictFormat.SQL, null);
-//
-//		assertTrue(stringField.exists());
-//	}
 }

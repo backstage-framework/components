@@ -17,11 +17,30 @@
 package com.backstage.app.dict.service.imp;
 
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.exception.dict.DictException;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
 public interface ImportService
 {
+	default List<DictItem> importDict(String dictId, String resourceName)
+	{
+		try (var inputStream = getClass().getResourceAsStream(resourceName))
+		{
+			if (inputStream == null)
+			{
+				throw new IOException("resource not found: " + resourceName);
+			}
+
+			return importDict(dictId, inputStream);
+		}
+		catch (Exception e)
+		{
+			throw new DictException("failed to import dict '%s'".formatted(dictId), e);
+		}
+	}
+
 	List<DictItem> importDict(String dictId, InputStream inputStream);
 }

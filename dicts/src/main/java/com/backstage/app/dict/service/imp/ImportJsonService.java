@@ -16,28 +16,25 @@
 
 package com.backstage.app.dict.service.imp;
 
-import com.backstage.app.dict.api.domain.DictFieldType;
+import com.backstage.app.dict.api.model.dto.ExportedDictDto;
+import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
-import com.backstage.app.dict.domain.DictField;
-import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictPermissionService;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.utils.SecurityUtils;
-import com.backstage.app.utils.StreamCollectors;
 import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
 import java.util.stream.Collectors;
 
-//TODO: перевести импорт на вызов методов DictDataService
-// с параметром DictDataItem вместо мапы
 @Slf4j
 @Service
 @RequiredArgsConstructor
@@ -60,79 +57,24 @@ public class ImportJsonService implements ImportService
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		Set<String> innerDictIds = getInnerDictIds(dictId);
+		ExportedDictDto exportedDict = jsonReader.readFromStream(inputStream, new TypeReference<>() { });
 
-		Map<String, List<Map<String, Object>>> dicts = jsonReader.readFromStream(inputStream, new TypeReference<>() { });
-
-		return Optional.ofNullable(dicts.get(dictId))
-				.map(parsedDict -> saveDict(dictId, innerDictIds, parsedDict, userId))
-				.orElse(List.of());
+		return exportedDict.getItems().stream()
+				.map(item -> mapItem(dictId, item))
+				.map(dictDataService::create)
+				.collect(Collectors.toList());
 	}
 
-	private Set<String> getInnerDictIds(String dictId)
+	private DictDataItem mapItem(String dictId, DictItemDto item)
 	{
-		return dictService.getById(dictId).getFields()
-				.stream()
-				.filter(dictField -> dictField.getType() == DictFieldType.DICT)
-				.map(DictField::getDictRef)
-				.map(DictFieldName::getDictId)
-				.collect(Collectors.toSet());
-	}
+		var result = new HashMap<String, Object>();
 
-	private List<DictItem> saveDict(final String dictId, Set<String> innerDictIds, List<Map<String, Object>> dict, String userId)
-	{
-		var innerDicts = readInnerDicts(innerDictIds, dict);
+		result.put(ServiceFieldConstants.ID, item.getId());
+		result.put(ServiceFieldConstants.CREATED, item.getCreated());
+		result.put(ServiceFieldConstants.UPDATED, item.getUpdated());
 
-		saveInnerDicts(innerDicts, userId);
+		result.putAll(item.getData());
 
-		return dict.stream()
-				.peek(dictData -> innerDictIds.forEach(dictData::remove))
-				.map(dictData -> dictDataService.create(DictDataItem.of(dictId, mapDoc(dictData)), userId))
-				.toList();
-	}
-
-	private void saveInnerDicts(Map<String, List<Map<String, Object>>> innerDicts, String userId)
-	{
-		innerDicts.forEach((dictId, dictDataList) -> {
-			var dictDataItems = dictDataList.stream()
-					.map(it -> DictDataItem.of(dictId, it))
-					.toList();
-
-			dictDataService.createMany(dictId, dictDataItems, userId);
-		});
-	}
-
-	private Map<String, List<Map<String, Object>>> readInnerDicts(Set<String> innerDictIds, List<Map<String, Object>> dict)
-	{
-		return dict.stream()
-				.map(doc -> mapInnerDictDoc(innerDictIds, doc))
-				.map(Map::entrySet)
-				.flatMap(Collection::stream)
-				.distinct()
-				.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toList())));
-	}
-
-	private Map<String, Map<String, Object>> mapInnerDictDoc(Set<String> innerDictIds, Map<String, Object> doc)
-	{
-		return innerDictIds.stream()
-				.filter(id -> doc.get(id) instanceof Map<?, ?> map && map.containsKey(ServiceFieldConstants.ID))
-				.map(id -> Map.entry(id, mapDoc((Map<String, Object>) doc.get(id))))
-				.collect(StreamCollectors.toLinkedHashMap(Map.Entry::getKey, Map.Entry::getValue));
-	}
-
-	private Map<String, Object> mapDoc(Map<String, Object> item)
-	{
-		return item.entrySet()
-				.stream()
-				.map(this::mapDocItem)
-				.filter(entry -> !ServiceFieldConstants.getServiceInsertableFields().contains(entry.getKey()))
-				.collect(StreamCollectors.toLinkedHashMap(Map.Entry::getKey, Map.Entry::getValue));
-	}
-
-	private Map.Entry<String, Object> mapDocItem(Map.Entry<String, Object> entry)
-	{
-		return entry.getKey().equals(ServiceFieldConstants.ID)
-				? Map.entry(ServiceFieldConstants._ID, entry.getValue())
-				: entry;
+		return DictDataItem.of(dictId, result);
 	}
 }
