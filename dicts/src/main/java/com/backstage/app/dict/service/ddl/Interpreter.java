@@ -19,6 +19,7 @@ package com.backstage.app.dict.service.ddl;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.*;
+import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.enums.EnumCreatedException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.index.IndexCreatedException;
@@ -33,12 +34,15 @@ import com.backstage.app.dict.service.ddl.ast.expression.table.CreateTable;
 import com.backstage.app.dict.service.ddl.ast.expression.table.DeleteIndexExpression;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.*;
 import com.backstage.app.dict.service.ddl.ast.value.*;
+import com.backstage.app.dict.service.imp.ImportCsvService;
+import com.backstage.app.dict.service.imp.ImportJsonService;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
@@ -57,6 +61,8 @@ public class Interpreter
 
 	private final DictService dictService;
 	private final DictDataService dictDataService;
+	private final ImportCsvService importCsvService;
+	private final ImportJsonService importJsonService;
 
 	public void execute(List<Expression> expressions)
 	{
@@ -85,6 +91,10 @@ public class Interpreter
 			else if (expr instanceof Drop drop)
 			{
 				execute(drop);
+			}
+			else if (expr instanceof Copy copy)
+			{
+				execute(copy);
 			}
 			else if (expr instanceof CreateIndexExpression createIndex)
 			{
@@ -260,6 +270,20 @@ public class Interpreter
 	private void execute(Drop drop)
 	{
 		dictService.delete(drop.getTable().getName(), true);
+	}
+
+	private void execute(Copy copy)
+	{
+		var dictId = copy.getTable().getName();
+		var path = copy.getPath().getValue();
+
+		switch (FilenameUtils.getExtension(path).toLowerCase())
+		{
+			case "csv" -> importCsvService.importDict(dictId, path);
+			case "json" -> importJsonService.importDict(dictId, path);
+
+			default -> throw new DictException("cannot import file '%s'".formatted(path));
+		}
 	}
 
 	private void execute(Update update)

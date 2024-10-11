@@ -41,6 +41,7 @@ public class SqlParser
 			"create", "table", "index", "unique", "on", "not", "null", "references", "constraint",
 			"alter", "add", "drop", "column", "rename", "to",
 			"delete", "from",
+			"copy",
 			"true", "false",
 			"array", "asc", "desc",
 			"for", "as", "enum", "value",
@@ -232,9 +233,16 @@ public class SqlParser
 
 	final Parser<Expression> DROP_EXPR = phrase("drop", "table").next(ID).map(Drop::new);
 
+	final Parser<Expression> COPY_EXPR = Parsers.sequence(
+			term("copy").next(ID),
+			term("from").next(STRING_VALUE),
+			Copy::new);
+
 	final Parser<List<Expression>> EXPRESSIONS = Parsers.or(
-					CREATE_TABLE_EXPR, ALTER_TABLE_EXPR, INSERT_EXPR, UPDATE_EXPR, DELETE_EXPR, DROP_EXPR, CREATE_INDEX_EXPR,
-					DROP_INDEX_EXPR, CREATE_ENUM_EXPR)
+					CREATE_TABLE_EXPR, ALTER_TABLE_EXPR,
+					INSERT_EXPR, UPDATE_EXPR, DELETE_EXPR, DROP_EXPR, COPY_EXPR,
+					CREATE_INDEX_EXPR, DROP_INDEX_EXPR,
+					CREATE_ENUM_EXPR)
 			.followedBy(term(";")).atLeast(1);
 
 	public List<Expression> parse(String input)

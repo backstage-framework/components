@@ -1,0 +1,324 @@
+{
+	"formatVersion" : 1,
+	"scheme" : {
+		"id" : "testMultivaluedColumnImport",
+		"name" : null,
+		"fields" : [ {
+			"id" : "id",
+			"name" : "Идентификатор",
+			"type" : "STRING",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : false,
+			"required" : false,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "field1",
+			"name" : null,
+			"type" : "INTEGER",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : false,
+			"required" : false,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "field2",
+			"name" : null,
+			"type" : "STRING",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : true,
+			"required" : false,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "field3",
+			"name" : null,
+			"type" : "INTEGER",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : true,
+			"required" : false,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "created",
+			"name" : "Дата создания",
+			"type" : "TIMESTAMP",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : false,
+			"required" : true,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "updated",
+			"name" : "Дата обновления",
+			"type" : "TIMESTAMP",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : false,
+			"required" : true,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "deleted",
+			"name" : "Дата удаления",
+			"type" : "TIMESTAMP",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : false,
+			"required" : false,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "deletionReason",
+			"name" : "Причина удаления",
+			"type" : "STRING",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : false,
+			"required" : false,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "history",
+			"name" : "История изменений",
+			"type" : "JSON",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : true,
+			"required" : true,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		}, {
+			"id" : "version",
+			"name" : "Версия",
+			"type" : "INTEGER",
+			"dictRef" : null,
+			"enumId" : null,
+			"multivalued" : false,
+			"required" : true,
+			"minSize" : null,
+			"maxSize" : null,
+			"defaultValue" : null
+		} ],
+		"enums" : [ ],
+		"viewPermission" : null,
+		"editPermission" : null,
+		"deleted" : null,
+		"engine" : "mongo"
+	},
+	"items" : [ {
+		"id" : "6708bcd903e63f718946e0d2",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.275+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.275+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.275",
+		"updated" : "2024-10-11T08:51:21.275",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0d3",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.275+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.275+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.275",
+		"updated" : "2024-10-11T08:51:21.275",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0d4",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.276+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.276+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.276",
+		"updated" : "2024-10-11T08:51:21.276",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0d5",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.276+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.276+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.276",
+		"updated" : "2024-10-11T08:51:21.276",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0d6",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.277+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.277+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.277",
+		"updated" : "2024-10-11T08:51:21.277",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0d7",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.277+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.277+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.277",
+		"updated" : "2024-10-11T08:51:21.277",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0d8",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.278+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.278+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.278",
+		"updated" : "2024-10-11T08:51:21.278",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0d9",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.279+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.279+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.279",
+		"updated" : "2024-10-11T08:51:21.279",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0da",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.279+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.279+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.279",
+		"updated" : "2024-10-11T08:51:21.279",
+		"deleted" : null,
+		"deletionReason" : null
+	}, {
+		"id" : "6708bcd903e63f718946e0db",
+		"data" : {
+			"field1" : 1,
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ]
+		},
+		"history" : [ {
+			"field1" : 1,
+			"created" : "2024-10-11T05:51:21.280+00:00",
+			"field3" : [ 1, 2, 3, 4 ],
+			"field2" : [ "1", "2", "3", "4" ],
+			"version" : 1,
+			"updated" : "2024-10-11T05:51:21.280+00:00"
+		} ],
+		"version" : 1,
+		"created" : "2024-10-11T08:51:21.28",
+		"updated" : "2024-10-11T08:51:21.28",
+		"deleted" : null,
+		"deletionReason" : null
+	} ]
+}

@@ -17,8 +17,8 @@
 package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.api.model.dto.data.DictItemRemoteDto;
-import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
+import com.backstage.app.dict.domain.DictItem;
 import lombok.SneakyThrows;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;

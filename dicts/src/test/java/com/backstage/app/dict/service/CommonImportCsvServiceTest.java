@@ -17,6 +17,7 @@
 package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.common.CommonTest;
+import com.backstage.app.dict.service.export.DictExportService;
 import com.backstage.app.dict.service.imp.ImportCsvService;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,12 @@ import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 public class CommonImportCsvServiceTest extends CommonTest
 {
 	public static final String TEST_MULTIVALUED_COLUMN_IMPORT = "testMultivaluedColumnImport";
+
 	@Autowired
 	private ImportCsvService importCsvService;
+
+	@Autowired
+	private DictExportService dictExportService;
 
 	protected void importDict()
 	{
