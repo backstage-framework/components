@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.util;
+package com.backstage.app.dict.utils;
 
 import com.backstage.app.dict.api.constant.ExportedDictFormat;
 import lombok.AccessLevel;

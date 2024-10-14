@@ -29,10 +29,10 @@ public class RescheduleJobRequest
 	private String jobName;
 
 	@NotNull
-	@Schema(description = "Тип триггера (CRON/INTERVAL)", required = true)
+	@Schema(description = "Тип триггера (CRON/INTERVAL)", requiredMode = Schema.RequiredMode.REQUIRED)
 	private JobTriggerType triggerType;
 
 	@NotBlank
-	@Schema(description = "Выражение для триггера", required = true)
+	@Schema(description = "Выражение для триггера", requiredMode = Schema.RequiredMode.REQUIRED)
 	private String expression;
 }

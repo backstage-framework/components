@@ -30,6 +30,7 @@ import com.backstage.app.dict.conversion.dto.DictEnumRequestConverter;
 import com.backstage.app.dict.conversion.dto.DictRequestConverter;
 import com.backstage.app.dict.domain.DictEnum;
 import com.backstage.app.dict.service.DictService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -47,6 +48,7 @@ import static java.util.function.Predicate.not;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/remote/dicts")
+@Hidden
 @Tag(name = "remote-dict-endpoint", description = "Методы для работы со схемами справочников (Remote).")
 public class RemoteDictEndpoint implements RemoteDictService
 {

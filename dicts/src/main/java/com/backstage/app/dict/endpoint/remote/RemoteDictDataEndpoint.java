@@ -26,6 +26,7 @@ import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.export.DictExportService;
 import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.service.imp.ImportJsonService;
+import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,6 +34,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Deprecated(forRemoval = true)
 @RestController
 @RequestMapping("/api/remote/dicts")
+@Hidden
 @Tag(name = "remote-dict-data-endpoint", description = "Методы для работы с данными справочников (Remote)")
 public class RemoteDictDataEndpoint extends GenericDictDataEndpoint<DictItemRemoteDto> implements InternalDictDataService
 {

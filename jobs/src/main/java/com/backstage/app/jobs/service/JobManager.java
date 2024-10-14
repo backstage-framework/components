@@ -168,7 +168,7 @@ public class JobManager
 
 		var triggerExpression = trigger.getClass() == CronTrigger.class
 				? trigger.toString()
-				: ((PeriodicTrigger) trigger).getPeriod() + " мс";
+				: ((PeriodicTrigger) trigger).getPeriodDuration().toMillis() + " мс";
 
 		log.info("План расписания для задачи {} установлен как: {}.", jobName, triggerExpression);
 
