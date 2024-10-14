@@ -12,7 +12,6 @@ build-job:
         DOCKER_IPTABLES_LEGACY: 1
         DOCKER_BUILDKIT: 1
         NEXUS_URL: ${NEXUS_URL}
-        NEXUS_LOGIN: ${NEXUS_LOGIN}
         NEXUS_PASSWORD: ${NEXUS_PASSWORD}
     services:
         - docker:dind
@@ -20,7 +19,7 @@ build-job:
         - docker --version
         - until docker info; do sleep 1; done
     script:
-        - docker build --secret id=NEXUS_URL --secret id=NEXUS_LOGIN --secret id=NEXUS_PASSWORD .
+        - docker build --secret id=NEXUS_URL --secret id=NEXUS_PASSWORD .
     tags:
         - docker
     rules:

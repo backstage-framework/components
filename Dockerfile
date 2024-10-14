@@ -6,6 +6,5 @@ COPY . /tmp
 WORKDIR /tmp
 
 RUN --mount=type=secret,id=NEXUS_URL \
-    --mount=type=secret,id=NEXUS_LOGIN \
     --mount=type=secret,id=NEXUS_PASSWORD \
-    ./gradlew -b build.gradle clean publish -PnexusUrl=$(cat /run/secrets/NEXUS_URL) -PnexusLogin=$(cat /run/secrets/NEXUS_LOGIN) -PnexusPassword=$(cat /run/secrets/NEXUS_PASSWORD)
+    ./gradlew -b build.gradle clean publish -PbackstageNexusUrl=$(cat /run/secrets/NEXUS_URL) -PbackstageNexusToken=$(cat /run/secrets/NEXUS_PASSWORD) -PbackstageNexusDeployToken=$(cat /run/secrets/NEXUS_PASSWORD)
