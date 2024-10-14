@@ -20,7 +20,6 @@ import com.backstage.app.dict.common.TestPipeline;
 import com.backstage.app.dict.service.CommonDictExportServiceTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
-import org.junit.jupiter.api.Test;
 
 @Order(TestPipeline.MONGO_EXPORT)
 @MongoStorage
@@ -30,47 +29,5 @@ public class MongoDictExportServiceTest extends CommonDictExportServiceTest
 	public void buildTestableDictHierarchy()
 	{
 		buildTestableDictHierarchy(MONGO_DICT_ID);
-	}
-
-	@Test
-	void export_jsonNotNullItemsIds()
-	{
-		exportJsonNotNullItemsIds();
-	}
-
-	@Test
-	void export_jsonNullItemsIds()
-	{
-		exportJsonNullItemsIds();
-	}
-
-	@Test
-	void export_jsonNullDictIdNullItemsIds()
-	{
-		exportJsonNullDictIdNullItemsIds();
-	}
-
-	@Test
-	void export_sqlNotNullItemsIds()
-	{
-		exportSqlNotNullItemsIds();
-	}
-
-	@Test
-	void export_sqlNullItemsIds()
-	{
-		exportSqlNullItemsIds();
-	}
-
-	@Test
-	void export_cvsNotNullItemsIds()
-	{
-		exportCvsNotNullItemsIds();
-	}
-
-	@Test
-	void export_cvsNullItemsIds()
-	{
-		exportCvsNullItemsIds();
 	}
 }

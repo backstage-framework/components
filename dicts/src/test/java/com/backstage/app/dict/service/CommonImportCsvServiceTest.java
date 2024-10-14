@@ -46,9 +46,9 @@ public class CommonImportCsvServiceTest extends CommonTest
 		{
 			var result = importCsvService.importDict(TEST_MULTIVALUED_COLUMN_IMPORT, fileStream);
 
-			assertEquals(10, result.size());
+			assertEquals(4, result.size());
 			assertEquals(1L, (Long) result.get(0).getData().get("field1"));
-			assertIterableEquals(List.of("1", "2", "3", "4"), (List<String>) result.get(0).getData().get("field2"));
+			assertIterableEquals(List.of("strVal1 with comma ,", "strVal2", "strVal3", "strVal4"), (List<String>) result.get(0).getData().get("field2"));
 			assertIterableEquals(List.of(1L, 2L, 3L, 4L), (List<Long>) result.get(0).getData().get("field3"));
 		}
 		catch (IOException e)

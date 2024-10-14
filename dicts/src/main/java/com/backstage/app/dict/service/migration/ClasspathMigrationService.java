@@ -23,7 +23,7 @@ import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import com.backstage.app.dict.service.ddl.Interpreter;
 import com.backstage.app.dict.service.ddl.SqlParser;
 import com.backstage.app.dict.service.validation.ClasspathMigrationValidationService;
-import com.backstage.app.dict.util.MigrationUtils;
+import com.backstage.app.dict.utils.MigrationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;

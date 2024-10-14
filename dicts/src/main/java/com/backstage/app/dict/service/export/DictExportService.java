@@ -21,7 +21,7 @@ import com.backstage.app.dict.model.export.ExportedResource;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictPermissionService;
 import com.backstage.app.dict.service.DictService;
-import com.backstage.app.dict.util.ExportUtils;
+import com.backstage.app.dict.utils.ExportUtils;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;

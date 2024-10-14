@@ -20,11 +20,13 @@ import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.utils.CSVUtils;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
-import com.opencsv.CSVWriter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVPrinter;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayOutputStream;
@@ -53,21 +55,23 @@ public class ExportCsvService implements ExportService
 		);
 
 		var dict = dictService.getById(dictId);
-		var dataFieldIds = DictService.getDataFieldsByDict(dict)
+		var dataFields = DictService.getDataFieldsByDict(dict)
 				.stream()
-				.map(DictField::getId)
-				.collect(Collectors.toList());
+				.toList();
 
-		var headers = Stream.concat(systemFieldIds.stream(), dataFieldIds.stream()).toArray(String[]::new);
+		var headers = Stream.concat(
+				systemFieldIds.stream(),
+				dataFields.stream().map(DictField::getId)
+		).toList();
 
 		var data = items.stream()
-				.map(item -> mapDictItem(dataFieldIds, item))
+				.map(item -> mapDictItem(dataFields, item))
 				.collect(Collectors.toList());
 
 		return writeToByteArray(headers, data);
 	}
 
-	private String[] mapDictItem(List<String> dataFieldIds, DictItem item)
+	private String[] mapDictItem(List<DictField> dictFields, DictItem item)
 	{
 		var builder = Stream.builder()
 				.add(item.getId())
@@ -76,8 +80,17 @@ public class ExportCsvService implements ExportService
 				.add(item.getDeleted() != null)
 				.add(item.getVersion());
 
-		dataFieldIds.stream()
-				.map(it -> item.getData().getOrDefault(it, ""))
+		dictFields.stream()
+				.map(it -> {
+					var value = item.getData().getOrDefault(it.getId(), "");
+
+					if (it.isMultivalued() && value instanceof Iterable<?> collection)
+					{
+						return CSVUtils.buildMultiValuedCell(collection);
+					}
+
+					return value;
+				})
 				.forEach(builder::add);
 
 		return builder.build()
@@ -85,14 +98,14 @@ public class ExportCsvService implements ExportService
 				.toArray(String[]::new);
 	}
 
-	private byte[] writeToByteArray(String[] headers, List<String[]> data)
+	private byte[] writeToByteArray(List<String> headers, List<String[]> data)
 	{
 		try (var stream = new ByteArrayOutputStream();
 		     var streamWriter = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		     var writer = new CSVWriter(streamWriter))
+		     var writer = new CSVPrinter(streamWriter, CSVFormat.DEFAULT))
 		{
-			writer.writeNext(headers, false);
-			writer.writeAll(data, false);
+			writer.printRecord(headers);
+			writer.printRecords(data);
 
 			streamWriter.flush();
 

@@ -24,6 +24,7 @@ import org.springframework.scheduling.support.CronExpression;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.scheduling.support.PeriodicTrigger;
 
+import java.time.Duration;
 import java.util.function.Function;
 
 @RequiredArgsConstructor
@@ -43,7 +44,7 @@ public enum JobTriggerType
 		{
 			var fixedDelay = Long.parseLong(expression);
 
-			return new PeriodicTrigger(fixedDelay);
+			return new PeriodicTrigger(Duration.ofMillis(fixedDelay));
 		}
 		catch (NumberFormatException e)
 		{

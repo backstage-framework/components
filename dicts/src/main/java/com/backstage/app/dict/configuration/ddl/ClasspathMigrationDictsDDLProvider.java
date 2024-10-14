@@ -23,7 +23,7 @@ import com.backstage.app.dict.exception.migration.MigrationHasSameVersionExcepti
 import com.backstage.app.dict.exception.migration.MigrationProcessException;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import com.backstage.app.dict.service.migration.ClasspathMigrationService;
-import com.backstage.app.dict.util.MigrationUtils;
+import com.backstage.app.dict.utils.MigrationUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;

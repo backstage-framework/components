@@ -24,11 +24,10 @@ import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictPermissionService;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.utils.CSVUtils;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;
-import com.opencsv.CSVParser;
-import com.opencsv.CSVParserBuilder;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -50,11 +49,6 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ImportCsvService implements ImportService
 {
-	private static final CSVParser MULTI_VALUED_CELL_PARSER = new CSVParserBuilder()
-			.withSeparator(',')
-			.withQuoteChar('"')
-			.build();
-
 	private final DictService dictService;
 	private final DictDataService dictDataService;
 	private final DictPermissionService dictPermissionService;
@@ -131,7 +125,7 @@ public class ImportCsvService implements ImportService
 
 	private List<Object> parseMultiValueByScheme(String stringValue, DictFieldType targetType)
 	{
-		return Stream.of(parseMultivaluedLineNoEx(stringValue))
+		return Stream.of(CSVUtils.parseMultiValuedCell(stringValue))
 				.map(it -> parseSingleValueByScheme(it, targetType))
 				.filter(it -> filterEmptyAttachmentIds(it, targetType))
 				.toList();
@@ -149,18 +143,6 @@ public class ImportCsvService implements ImportService
 			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT,
 					"Неизвестный тип поля: %s.".formatted(targetType));
 		};
-	}
-
-	private String[] parseMultivaluedLineNoEx(String stringValue)
-	{
-		try
-		{
-			return MULTI_VALUED_CELL_PARSER.parseLine(stringValue);
-		}
-		catch (IOException e)
-		{
-			throw new AppException(ApiStatusCodeImpl.UNKNOWN_ERROR, e);
-		}
 	}
 
 	private boolean filterEmptyAttachmentIds(Object value, DictFieldType targetType)

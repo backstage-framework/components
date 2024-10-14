@@ -61,7 +61,7 @@ public class SchedulerConfiguration implements SchedulingConfigurer
 	}
 
 	@Bean
-	public HealthContributor scheduledJobsHealthContributor(Map<String, AbstractJob> jobs)
+	public HealthContributor scheduledJobsHealthContributor(Map<String, AbstractJob<?>> jobs)
 	{
 		log.info("Scheduled jobs found: {}.", jobs.keySet());
 
