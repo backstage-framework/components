@@ -105,6 +105,15 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	}
 
 	@Override
+	public List<Object> getDistinctValuesByFilter(Dict dict, DictFieldName requiredField, QueryExpression queryExpression)
+	{
+//		fixme: Требуется дополнительный ресерч для обеспечения корректной работы с join.
+//		 В пределах одного справочника доступно из коробки через функцию db.collection.distinct()
+		throw new UnsupportedOperationException(
+				"Получение уникальных значений поля не поддерживается в MongoDictDataBackend.");
+	}
+
+	@Override
 	public Page<DictItem> getByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression, Pageable pageable)
 	{
 		var dictId = dict.getId();

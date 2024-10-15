@@ -30,7 +30,7 @@ import org.springframework.data.domain.PageRequest;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @Order(TestPipeline.MONGO_DICT_DATA)
 @MongoStorage
@@ -46,6 +46,20 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	void getByIdsCorrect()
 	{
 		getByIds();
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
+	protected void test_getDistinctValuesByFilterWithEmptyFilter()
+	{
+		assertThrows(UnsupportedOperationException.class, this::getDistinctValuesByFilterWithEmptyFilter);
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
+	protected void test_getDistinctValuesByFilterWithFilter()
+	{
+		assertThrows(UnsupportedOperationException.class, this::getDistinctValuesByFilterWithFilter);
 	}
 
 	@Test

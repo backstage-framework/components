@@ -25,6 +25,7 @@ import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
+import com.backstage.app.dict.api.model.dto.request.SearchDistinctRequest;
 import com.backstage.app.dict.api.model.dto.request.SearchRequest;
 import com.backstage.app.dict.api.service.GenericDictDataService;
 import com.backstage.app.dict.conversion.dto.DictConverter;
@@ -112,6 +113,16 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 		var result = dictDataService.getByIds(dictId, ids);
 
 		return ApiResponse.of((List<T>) dictItemConverter.convert(result, getDictItemConverterConfig()));
+	}
+
+	@Operation(summary = "Получение уникальных значений полей справочника по фильтру.")
+	@PostMapping("/{dictId}/distinctValues")
+	public ApiResponse<List<Object>> getDistinctValuesByFilter(@PathVariable String dictId,
+	                                                      @RequestBody @Valid SearchDistinctRequest request)
+	{
+		var result = dictDataService.getDistinctValuesByFilter(dictId, request.getField(), request.getQuery());
+
+		return ApiResponse.of(result);
 	}
 
 	@Operation(summary = "Добавление записи в справочник.")

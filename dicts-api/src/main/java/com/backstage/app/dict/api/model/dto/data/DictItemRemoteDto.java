@@ -16,6 +16,8 @@
 
 package com.backstage.app.dict.api.model.dto.data;
 
+import com.backstage.app.dict.api.configuration.jackson.DictDataDeserializer;
+import com.backstage.app.dict.api.configuration.jackson.DictDataJsonSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;

@@ -220,6 +220,20 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertArrayEquals(ids.toArray(String[]::new), dictDataService.getByIds(TESTABLE_DICT_ID, ids).stream().map(DictItem::getId).toArray(String[]::new));
 	}
 
+	protected void getDistinctValuesByFilterWithEmptyFilter()
+	{
+		var result = dictDataService.getDistinctValuesByFilter(TESTABLE_REF_DICT_ID, TESTABLE_DICT_ID + ".stringField", "");
+
+		assertEquals(result.size(), 6);
+	}
+
+	protected void getDistinctValuesByFilterWithFilter()
+	{
+		var result = dictDataService.getDistinctValuesByFilter(TESTABLE_REF_DICT_ID, TESTABLE_DICT_ID + ".stringField", "integerField != null");
+
+		assertEquals(result.size(), 6);
+	}
+
 	protected void getByFilterWithNullRefField()
 	{
 		var dataMap = new HashMap<>(DATA_MAP);

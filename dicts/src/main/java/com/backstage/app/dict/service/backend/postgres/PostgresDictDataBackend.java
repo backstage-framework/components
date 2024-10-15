@@ -102,6 +102,41 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	}
 
 	@Override
+	public List<Object> getDistinctValuesByFilter(Dict dict, DictFieldName requiredField, QueryExpression queryExpression)
+	{
+		var dictId = dict.getId();
+
+		var dictAliasesRelation = new DualHashBidiMap<String, String>();
+		var joinClauses = new LinkedHashSet<String>();
+		var whereClauses = new LinkedHashSet<String>();
+
+		var query = postgresTranslator.process(dict, queryExpression);
+
+		var postgresDictFieldName = fieldNameMapper.mapFrom(dictId, requiredField);
+
+		// selectClauses и orderByClauses не используются, но передается для возможности
+		// переиспользования существующего кода
+		completeFilterClauses(dictAliasesRelation, new LinkedHashSet<>(), joinClauses, whereClauses, new LinkedHashSet<>(), query,
+				List.of(postgresDictFieldName), PostgresPageable.UNPAGED, dict, dictService);
+
+		var wordDictId = wordMap(dictId)
+				.get(dictId)
+				.getQuotedIfKeyword();
+		String dictFieldJoint = postgresDictFieldName.getWordJoint();
+
+		//TODO: провести рефакторинг билда sql
+		var sqlIds = "select distinct %s as value".formatted(dictFieldJoint)
+				+ " from %s.".formatted(dictsProperties.getDdl().getScheme()) + wordDictId + (joinClauses.isEmpty() ? "" : " " + String.join(" ", joinClauses))
+				+ (whereClauses.isEmpty() ? "" : " where " + String.join(" and ", whereClauses))
+				+ " order by %s asc".formatted(dictFieldJoint);
+
+		return jdbc.queryForList(sqlIds, query.getParameterSource())
+				.stream()
+				.map(it -> it.get("value"))
+				.toList();
+	}
+
+	@Override
 	public Page<DictItem> getByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression, Pageable pageable)
 	{
 		var dictId = dict.getId();

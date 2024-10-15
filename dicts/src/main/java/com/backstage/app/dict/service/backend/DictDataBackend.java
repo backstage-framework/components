@@ -31,6 +31,8 @@ public interface DictDataBackend extends Backend
 
 	List<DictItem> getByIds(Dict dict, List<String> ids, List<DictFieldName> requiredFields);
 
+	List<Object> getDistinctValuesByFilter(Dict dict, DictFieldName requiredField, QueryExpression queryExpression);
+
 	Page<DictItem> getByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression, Pageable pageable);
 
 	boolean existsById(Dict dict, String itemId);

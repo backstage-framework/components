@@ -41,6 +41,20 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
+	protected void test_getDistinctValuesByFilterWithEmptyFilter()
+	{
+		getDistinctValuesByFilterWithEmptyFilter();
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
+	protected void test_getDistinctValuesByFilterWithFilter()
+	{
+		getDistinctValuesByFilterWithFilter();
+	}
+
+	@Test
 	void getByFilterWithNullRefFieldCorrect()
 	{
 		getByFilterWithNullRefField();

@@ -14,23 +14,23 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.model.dto.data;
+package com.backstage.app.dict.api.model.dto.request;
 
-import com.backstage.app.model.json.AbstractCustomJsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.validation.constraints.NotEmpty;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.experimental.SuperBuilder;
 
-import java.util.HashMap;
-import java.util.Map;
-
-public class DictDataDeserializer extends AbstractCustomJsonDeserializer<Map<String, Object>>
+@Getter
+@AllArgsConstructor
+@NoArgsConstructor
+@SuperBuilder
+@Schema(description = "Поисковый запрос для записей справочника")
+public class SearchDistinctRequest extends BasicSearchRequest
 {
-	public Map<String, Object> extractedValue(JsonNode json)
-	{
-		var result = new HashMap<String, Object>();
-
-		json.fields()
-				.forEachRemaining(it -> result.put(it.getKey(), extractValueByFieldName(it.getKey(), json)));
-
-		return result;
-	}
+	@NotEmpty
+	@Schema(description = "Поле для получения")
+	private String field;
 }
