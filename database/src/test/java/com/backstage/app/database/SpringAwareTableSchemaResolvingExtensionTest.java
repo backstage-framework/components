@@ -17,8 +17,10 @@
 package com.backstage.app.database;
 
 import com.backstage.app.database.configuration.jpa.eclipselink.uuid.UuidSupportExtension;
+import com.backstage.app.database.domain.Counter;
 import com.backstage.app.database.domain.Customer;
 import com.backstage.app.database.domain.Product;
+import com.backstage.app.database.repository.CounterRepository;
 import com.backstage.app.database.repository.TicketRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +38,8 @@ public class SpringAwareTableSchemaResolvingExtensionTest extends AbstractTest
 {
 	@Autowired
 	TicketRepository ticketRepository;
+	@Autowired
+	CounterRepository counterRepository;
 
 	@Autowired
 	NamedParameterJdbcTemplate jdbcTemplate;
@@ -48,7 +52,15 @@ public class SpringAwareTableSchemaResolvingExtensionTest extends AbstractTest
 	}
 
 	@Test
-	void selectEntityWithPlaceholderSpecifiedScheme()
+	void createEntityWithSpelSpecifiedSequenceScheme()
+	{
+		assertDoesNotThrow(() -> {
+			counterRepository.save(new Counter());
+		});
+	}
+
+	@Test
+	void saveEntityWithSpelSpecifiedSequenceScheme()
 	{
 		assertDoesNotThrow(() ->
 				jdbcTemplate.queryForList("select * from test_scheme.product", new MapSqlParameterSource(), Product.class));

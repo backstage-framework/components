@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.persistence.internal.helper.DatabaseTable;
 import org.eclipse.persistence.mappings.DirectCollectionMapping;
 import org.eclipse.persistence.mappings.ManyToManyMapping;
+import org.eclipse.persistence.sequencing.Sequence;
 import org.eclipse.persistence.sessions.SessionEvent;
 import org.eclipse.persistence.sessions.SessionEventAdapter;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -40,6 +41,8 @@ public class SpringAwareTableSchemaResolvingExtension extends SessionEventAdapte
 	private final ConfigurableBeanFactory beanFactory;
 
 	private final AppProperties appProperties;
+
+	private StandardEvaluationContext evaluationContext;
 
 	@Override
 	public void preLogin(final SessionEvent event)
@@ -72,38 +75,72 @@ public class SpringAwareTableSchemaResolvingExtension extends SessionEventAdapte
 				});
 	}
 
+	@Override
+	public void postLogin(SessionEvent event)
+	{
+		event.getSession()
+				.getDescriptors()
+				.forEach((clazz, descriptor) -> {
+					var sequence = descriptor.getSequence();
+
+					if (sequence == null)
+					{
+						return;
+					}
+
+					resolveSequenceScheme(sequence);
+				});
+	}
+
+	private void resolveSequenceScheme(Sequence sequence)
+	{
+		var schemaValue = sequence.getQualifier();
+		var schema = getSchema(schemaValue);
+
+		sequence.setQualifier(schema);
+	}
+
 	private void resolveTableScheme(DatabaseTable table)
 	{
 		var schemaValue = table.getTableQualifier();
-		var schema = schemaValue;
-
-		if (schemaValue.matches(PLACEHOLDER_REGEX))
-		{
-			var resolvedSchema = beanFactory.resolveEmbeddedValue(schemaValue);
-
-			schema = schemaValue.equals(resolvedSchema)
-					? StringUtils.EMPTY
-					: resolvedSchema;
-		}
-		else if (schemaValue.matches(SPEL_TEMPLATE_REGEX))
-		{
-			var resolvedSchema = getValueFromExpression(schemaValue);
-
-			schema = resolvedSchema == null
-					? StringUtils.EMPTY
-					: resolvedSchema;
-		}
+		var schema = getSchema(schemaValue);
 
 		table.setTableQualifier(schema);
 	}
 
+	private String getSchema(String schemaValue)
+	{
+		if (schemaValue.matches(PLACEHOLDER_REGEX))
+		{
+			var resolvedSchema = beanFactory.resolveEmbeddedValue(schemaValue);
+
+			return schemaValue.equals(resolvedSchema)
+					? StringUtils.EMPTY
+					: resolvedSchema;
+		}
+
+		if (schemaValue.matches(SPEL_TEMPLATE_REGEX))
+		{
+			var resolvedSchema = getValueFromExpression(schemaValue);
+
+			return resolvedSchema == null
+					? StringUtils.EMPTY
+					: resolvedSchema;
+		}
+
+		return schemaValue;
+	}
+
 	private String getValueFromExpression(String expression)
 	{
-		var parser = new SpelExpressionParser();
-		StandardEvaluationContext context = new StandardEvaluationContext();
-		context.setBeanResolver(new BeanFactoryResolver(SpringContextUtils.exposeConfigurationProperties(appProperties.getBasePackages(), beanFactory)));
+		if (evaluationContext == null)
+		{
+			evaluationContext = new StandardEvaluationContext();
+			evaluationContext.setBeanResolver(new BeanFactoryResolver(
+					SpringContextUtils.exposeConfigurationProperties(appProperties.getBasePackages(), beanFactory)));
+		}
 
-		return parser.parseExpression(expression, new TemplateParserContext())
-				.getValue(context, String.class);
+		return new SpelExpressionParser().parseExpression(expression, new TemplateParserContext())
+				.getValue(evaluationContext, String.class);
 	}
 }

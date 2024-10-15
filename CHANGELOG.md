@@ -24,6 +24,7 @@
 
 ### Database
 - При инициализации EntityManager по умолчанию включаются сущности из appProperties.basePackages.
+- Для @SequenceGenerator добавлена поддержка SpEL и placeholder.
 
 ### Dicts
 - Метод dictDataService.getByIds при передаче пустого списка идентификаторов теперь возвращает пустой список вместо исключения.
