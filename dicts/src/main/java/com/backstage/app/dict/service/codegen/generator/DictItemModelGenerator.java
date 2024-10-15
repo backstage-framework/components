@@ -30,6 +30,7 @@ import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.javapoet.*;
 
 import javax.lang.model.element.Modifier;
@@ -62,12 +63,16 @@ public class DictItemModelGenerator
 				.addAnnotation(ClassName.get("lombok", "Getter"))
 				.addAnnotation(ClassName.get("lombok", "Setter"))
 				.addAnnotation(generatedAnnotation())
-				.addAnnotation(AnnotationSpec.builder(Schema.class)
-						.addMember("description", "$S", dict.getName())
-						.build())
 				.addTypes(dict.getEnums().stream()
 						.map(this::addEnum)
 						.toList());
+
+		if (StringUtils.isNotBlank(dict.getName()))
+		{
+			typeSpec.addAnnotation(AnnotationSpec.builder(Schema.class)
+					.addMember("description", "$S", dict.getName())
+					.build());
+		}
 
 		var fieldSpecMapping = new LinkedHashMap<FieldSpec, DictFieldDto>();
 
@@ -208,10 +213,14 @@ public class DictItemModelGenerator
 	private FieldSpec addField(DictFieldDto dictField)
 	{
 		var fieldSpec = FieldSpec.builder(DictModelNameUtils.fieldTypeName(dictField), DictModelNameUtils.fieldName(dictField.getId()))
-				.addModifiers(Modifier.PRIVATE)
-				.addAnnotation(AnnotationSpec.builder(Schema.class)
-						.addMember("description", "$S", dictField.getName())
-						.build());
+				.addModifiers(Modifier.PRIVATE);
+
+		if (StringUtils.isNotBlank(dictField.getName()))
+		{
+			fieldSpec.addAnnotation(AnnotationSpec.builder(Schema.class)
+					.addMember("description", "$S", dictField.getName())
+					.build());
+		}
 
 		if (dictField.isRequired())
 		{
