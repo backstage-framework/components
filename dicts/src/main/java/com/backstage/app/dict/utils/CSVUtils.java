@@ -41,7 +41,16 @@ public class CSVUtils
 	{
 		try
 		{
-			return MULTI_VALUED_CELL_FORMAT.parse(new StringReader(stringValue)).getRecords().get(0).values();
+			var records = MULTI_VALUED_CELL_FORMAT.parse(new StringReader(stringValue)).getRecords();
+
+			if (!records.isEmpty())
+			{
+				return records.get(0).values();
+			}
+			else
+			{
+				return new String[0];
+			}
 		}
 		catch (IOException e)
 		{
