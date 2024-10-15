@@ -49,4 +49,5 @@ public class TestPipeline
 	public static final int DICT_DATA_GET_BY_FILTER_TEST = -200;
 	public static final int DICT_DATA_GET_BY_FILTER_WITH_LOGICAL_EXPRESSION_TEST = -150;
 	public static final int DICT_DATA_EXISTS_BY_FILTER_TEST = -100;
+	public static final int DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST = -50;
 }

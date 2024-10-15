@@ -114,6 +114,29 @@ public class DictDataService
 				.toList();
 	}
 
+	public List<Object> getDistinctValuesByFilter(String dictId, String field, String filtersQuery)
+	{
+		var dict = dictService.getById(dictId);
+
+		var currentUserId = SecurityUtils.getCurrentUserId();
+
+		dictPermissionService.checkViewPermission(dict, currentUserId);
+
+		dict.getFields()
+				.stream()
+				.filter(it -> it.getType() == DictFieldType.DICT)
+				.forEach(it -> dictPermissionService.checkViewPermission(
+						dictService.getById(it.getDictRef().getDictId()),
+						currentUserId
+				));
+
+		var requiredField = dictFieldNameMappingService.mapDictFieldName(field);
+
+		dictDataValidationService.validateSelectFields(dict, List.of(requiredField));
+
+		return backend(dict).getDistinctValuesByFilter(dict, requiredField, queryParser.parse(filtersQuery));
+	}
+
 	public Page<DictItem> getByFilter(String dictId, List<String> selectFields, String filtersQuery, Pageable pageable)
 	{
 		return getByFilter(dictId, selectFields, filtersQuery, pageable, SecurityUtils.getCurrentUserId());

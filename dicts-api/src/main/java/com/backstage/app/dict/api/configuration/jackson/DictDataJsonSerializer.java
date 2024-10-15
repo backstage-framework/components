@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.model.dto.data;
+package com.backstage.app.dict.api.configuration.jackson;
 
 import com.backstage.app.model.json.AbstractCustomJsonSerializer;
 import com.fasterxml.jackson.core.JsonGenerator;
