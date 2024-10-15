@@ -25,6 +25,7 @@ import com.backstage.app.dict.domain.DictItem;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.Collection;
@@ -33,6 +34,7 @@ import java.util.Map;
 import java.util.Objects;
 
 @Component
+@Order
 @RequiredArgsConstructor
 @ConditionalOnProperty(name = AttachmentProperties.ACTIVATION_PROPERTY, havingValue = "true")
 public class BindingDictDataServiceAdvice implements DictDataServiceAdvice

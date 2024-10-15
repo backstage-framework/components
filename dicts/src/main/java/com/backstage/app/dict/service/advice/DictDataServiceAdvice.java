@@ -18,12 +18,12 @@ package com.backstage.app.dict.service.advice;
 
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictItem;
+import org.springframework.core.annotation.Order;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
-// TODO: advice надо регистрировать на конкретный dict, чтобы исключить лишние бесполезные вызовы,
-// TODO: соответственно из интерфейса этот параметр уйдёт.
+@Order(0)
 public interface DictDataServiceAdvice
 {
 	default void handleGetByIds(Dict dict, List<String> ids)
