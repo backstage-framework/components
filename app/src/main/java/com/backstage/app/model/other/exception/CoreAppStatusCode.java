@@ -21,7 +21,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
 @Getter
-public enum AppStatusCodeImpl implements AppStatusCode
+public enum CoreAppStatusCode implements AppStatusCode
 {
 	OK(0, "Операция выполнена успешно.", HttpStatus.OK),
 	UNKNOWN_ERROR(1, "Неизвестная ошибка."),
@@ -35,8 +35,6 @@ public enum AppStatusCodeImpl implements AppStatusCode
 	DESERIALIZE_ERROR(31, "Ошибка десериализации обьекта."),
 
 	// TODO: потеряли логику присвоения кодов ниже.
-	REPORT_GENERATE_ERROR(400, "При генерации отчета произошла ошибка."),
-
 	DATE_PARSE_ERROR(500, "Неправильный формат даты."),
 
 	REMOTE_SERVICE_ERROR(600, "При обращении к сервису произошла ошибка.");
@@ -49,12 +47,12 @@ public enum AppStatusCodeImpl implements AppStatusCode
 
 	private final HttpStatusCode httpStatusCode;
 
-	AppStatusCodeImpl(Integer code, String message)
+	CoreAppStatusCode(Integer code, String message)
 	{
 		this(code, message, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	AppStatusCodeImpl(Integer code, String message, HttpStatusCode httpStatusCode)
+	CoreAppStatusCode(Integer code, String message, HttpStatusCode httpStatusCode)
 	{
 		this.code = code;
 		this.message = message.isEmpty() ? this.toString() : message;

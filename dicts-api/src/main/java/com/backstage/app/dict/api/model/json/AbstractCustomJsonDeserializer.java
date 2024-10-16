@@ -17,7 +17,7 @@
 package com.backstage.app.dict.api.model.json;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -105,7 +105,7 @@ public abstract class AbstractCustomJsonDeserializer<T> extends JsonDeserializer
 		}
 		catch (IOException e)
 		{
-			throw new AppException(AppStatusCodeImpl.DESERIALIZE_ERROR, e);
+			throw new AppException(CoreAppStatusCode.DESERIALIZE_ERROR, e);
 		}
 	}
 
@@ -117,7 +117,7 @@ public abstract class AbstractCustomJsonDeserializer<T> extends JsonDeserializer
 		}
 		catch (ClassNotFoundException e)
 		{
-			throw new AppException(AppStatusCodeImpl.DESERIALIZE_ERROR, e);
+			throw new AppException(CoreAppStatusCode.DESERIALIZE_ERROR, e);
 		}
 	}
 }

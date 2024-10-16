@@ -17,7 +17,7 @@
 package com.backstage.app.utils;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -48,7 +48,7 @@ public class JsonUtils implements ApplicationContextAware
 		}
 		catch (JsonProcessingException e)
 		{
-			throw new AppException(AppStatusCodeImpl.SERIALIZE_ERROR,
+			throw new AppException(CoreAppStatusCode.SERIALIZE_ERROR,
 					"При сериализации объекта '%s', произошла ошибка: %s".formatted(value, e));
 		}
 	}
@@ -61,7 +61,7 @@ public class JsonUtils implements ApplicationContextAware
 		}
 		catch (JsonProcessingException e)
 		{
-			throw new AppException(AppStatusCodeImpl.DESERIALIZE_ERROR,
+			throw new AppException(CoreAppStatusCode.DESERIALIZE_ERROR,
 					"При десериализации объекта '%s', произошла ошибка: %s".formatted(value, e));
 		}
 	}
@@ -79,7 +79,7 @@ public class JsonUtils implements ApplicationContextAware
 		}
 		catch (JsonProcessingException e)
 		{
-			throw new AppException(AppStatusCodeImpl.DESERIALIZE_ERROR,
+			throw new AppException(CoreAppStatusCode.DESERIALIZE_ERROR,
 					"При десериализации объекта '%s', произошла ошибка: %s".formatted(value, e));
 		}
 	}
@@ -92,7 +92,7 @@ public class JsonUtils implements ApplicationContextAware
 		}
 		catch (JsonProcessingException e)
 		{
-			throw new AppException(AppStatusCodeImpl.DESERIALIZE_ERROR,
+			throw new AppException(CoreAppStatusCode.DESERIALIZE_ERROR,
 					"При десериализации объекта '%s', произошла ошибка: %s".formatted(value, e));
 		}
 	}

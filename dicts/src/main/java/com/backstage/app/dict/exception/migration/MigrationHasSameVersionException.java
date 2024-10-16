@@ -16,7 +16,7 @@
 
 package com.backstage.app.dict.exception.migration;
 
-import com.backstage.app.dict.model.DictsStatusCode;
+import com.backstage.app.dict.model.DictsAppStatusCode;
 
 import java.util.List;
 
@@ -24,6 +24,6 @@ public class MigrationHasSameVersionException extends MigrationException
 {
 	public MigrationHasSameVersionException(List<String> migrations)
 	{
-		super(DictsStatusCode.MIGRATIONS_HAS_SAME_VERSION, "Миграции %s".formatted(String.join(", ", migrations)));
+		super(DictsAppStatusCode.MIGRATIONS_HAS_SAME_VERSION, "Миграции %s".formatted(String.join(", ", migrations)));
 	}
 }

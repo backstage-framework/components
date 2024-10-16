@@ -17,7 +17,7 @@
 package com.backstage.app.api.model;
 
 import com.backstage.app.model.other.exception.AppStatusCode;
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
@@ -117,14 +117,14 @@ public class ApiResponse<T>
 
 	private ApiResponse(T data)
 	{
-		this(AppStatusCodeImpl.OK);
+		this(CoreAppStatusCode.OK);
 
 		this.data = data;
 	}
 
 	private ApiResponse(T data, Page<?> page)
 	{
-		this(AppStatusCodeImpl.OK);
+		this(CoreAppStatusCode.OK);
 
 		this.data = data;
 		this.paging = new DataPage(page);
@@ -132,7 +132,7 @@ public class ApiResponse<T>
 
 	private ApiResponse(T data, Slice<?> slice)
 	{
-		this(AppStatusCodeImpl.OK);
+		this(CoreAppStatusCode.OK);
 
 		this.data = data;
 		this.paging = new DataPage(slice);

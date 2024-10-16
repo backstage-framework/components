@@ -17,7 +17,7 @@
 package com.backstage.app.dict.utils;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -54,7 +54,7 @@ public class CSVUtils
 		}
 		catch (IOException e)
 		{
-			throw new AppException(AppStatusCodeImpl.UNKNOWN_ERROR, e);
+			throw new AppException(CoreAppStatusCode.UNKNOWN_ERROR, e);
 		}
 	}
 
@@ -69,7 +69,7 @@ public class CSVUtils
 		}
 		catch (IOException e)
 		{
-			throw new AppException(AppStatusCodeImpl.UNKNOWN_ERROR, e);
+			throw new AppException(CoreAppStatusCode.UNKNOWN_ERROR, e);
 		}
 	}
 }

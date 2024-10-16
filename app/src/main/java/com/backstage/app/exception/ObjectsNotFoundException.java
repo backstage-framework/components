@@ -16,7 +16,7 @@
 
 package com.backstage.app.exception;
 
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import lombok.Getter;
 
 import java.util.Collection;
@@ -29,7 +29,7 @@ public class ObjectsNotFoundException extends AppException
 
 	public <T> ObjectsNotFoundException(Class<?> clazz, Collection<T> ids)
 	{
-		super(AppStatusCodeImpl.OBJECT_NOT_FOUND);
+		super(CoreAppStatusCode.OBJECT_NOT_FOUND);
 
 		this.clazz = clazz;
 

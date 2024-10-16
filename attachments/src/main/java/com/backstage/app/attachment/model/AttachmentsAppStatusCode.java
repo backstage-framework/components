@@ -22,7 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
 @Getter
-public enum AttachmentsStatusCode implements AppStatusCode
+public enum AttachmentsAppStatusCode implements AppStatusCode
 {
 	ATTACHMENT_ADD_ERROR(1, "Невозможно сохранить вложение."),
 	ATTACHMENT_DELETE_ERROR(2, "Невозможно удалить вложение."),
@@ -42,12 +42,12 @@ public enum AttachmentsStatusCode implements AppStatusCode
 
 	private final HttpStatusCode httpStatusCode;
 
-	AttachmentsStatusCode(Integer code, String message)
+	AttachmentsAppStatusCode(Integer code, String message)
 	{
 		this(code, message, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	AttachmentsStatusCode(Integer code, String message, HttpStatusCode httpStatusCode)
+	AttachmentsAppStatusCode(Integer code, String message, HttpStatusCode httpStatusCode)
 	{
 		this.code = code;
 		this.message = message.isEmpty() ? this.toString() : message;

@@ -22,7 +22,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
 
 @Getter
-public enum DictsStatusCode implements AppStatusCode
+public enum DictsAppStatusCode implements AppStatusCode
 {
 	MIGRATION_APPLIED_ERROR(1, "Ошибка применения миграции."),
 	MIGRATION_FILE_READ_ERROR(2, "Ошибка чтения миграции из файла."),
@@ -46,12 +46,12 @@ public enum DictsStatusCode implements AppStatusCode
 
 	private final HttpStatusCode httpStatusCode;
 
-	DictsStatusCode(Integer code, String message)
+	DictsAppStatusCode(Integer code, String message)
 	{
 		this(code, message, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	DictsStatusCode(Integer code, String message, HttpStatusCode httpStatusCode)
+	DictsAppStatusCode(Integer code, String message, HttpStatusCode httpStatusCode)
 	{
 		this.code = code;
 		this.message = message.isEmpty() ? this.toString() : message;

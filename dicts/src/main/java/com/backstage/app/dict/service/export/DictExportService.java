@@ -23,7 +23,7 @@ import com.backstage.app.dict.service.DictPermissionService;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.utils.ExportUtils;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
@@ -76,7 +76,7 @@ public class DictExportService
 					case CSV -> exportCsvService;
 					case JSON -> exportJsonService;
 
-					default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_DATA_FORMAT);
+					default -> throw new AppException(CoreAppStatusCode.ILLEGAL_DATA_FORMAT);
 				};
 	}
 }

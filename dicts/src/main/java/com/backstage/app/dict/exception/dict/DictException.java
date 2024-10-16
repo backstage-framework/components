@@ -16,18 +16,18 @@
 
 package com.backstage.app.dict.exception.dict;
 
-import com.backstage.app.dict.model.DictsStatusCode;
+import com.backstage.app.dict.model.DictsAppStatusCode;
 import com.backstage.app.exception.AppException;
 
 public class DictException extends AppException
 {
 	public DictException(String message)
 	{
-		super(DictsStatusCode.DICTS_ERROR, message);
+		super(DictsAppStatusCode.DICTS_ERROR, message);
 	}
 
 	public DictException(String message, Throwable throwable)
 	{
-		super(DictsStatusCode.DICTS_ERROR, message, throwable);
+		super(DictsAppStatusCode.DICTS_ERROR, message, throwable);
 	}
 }

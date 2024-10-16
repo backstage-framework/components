@@ -18,7 +18,7 @@ package com.backstage.app.api.utils;
 
 import com.backstage.app.api.model.ApiResponse;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -40,7 +40,7 @@ public class RemoteServiceUtils
 		}
 		catch (Exception e)
 		{
-			throw new AppException(AppStatusCodeImpl.REMOTE_SERVICE_ERROR, e);
+			throw new AppException(CoreAppStatusCode.REMOTE_SERVICE_ERROR, e);
 		}
 	}
 
@@ -50,7 +50,7 @@ public class RemoteServiceUtils
 
 		if (response.getStatus() > 0)
 		{
-			throw new AppException(AppStatusCodeImpl.REMOTE_SERVICE_ERROR, response.getMessage());
+			throw new AppException(CoreAppStatusCode.REMOTE_SERVICE_ERROR, response.getMessage());
 		}
 		else
 		{
@@ -71,13 +71,13 @@ public class RemoteServiceUtils
 		{
 			if (defaultList != null)
 			{
-				log.warn("{} {}", AppStatusCodeImpl.REMOTE_SERVICE_ERROR.getMessage(), response.getMessage());
+				log.warn("{} {}", CoreAppStatusCode.REMOTE_SERVICE_ERROR.getMessage(), response.getMessage());
 
 				return defaultList;
 			}
 			else
 			{
-				throw new AppException(AppStatusCodeImpl.REMOTE_SERVICE_ERROR, response.getMessage());
+				throw new AppException(CoreAppStatusCode.REMOTE_SERVICE_ERROR, response.getMessage());
 			}
 		}
 
@@ -85,13 +85,13 @@ public class RemoteServiceUtils
 		{
 			if (defaultList != null)
 			{
-				log.warn("{} {}", AppStatusCodeImpl.REMOTE_SERVICE_ERROR.getMessage(), "Ответ сервиса не содержит список.");
+				log.warn("{} {}", CoreAppStatusCode.REMOTE_SERVICE_ERROR.getMessage(), "Ответ сервиса не содержит список.");
 
 				return defaultList;
 			}
 			else
 			{
-				throw new AppException(AppStatusCodeImpl.REMOTE_SERVICE_ERROR, "Ответ сервиса не содержит список.");
+				throw new AppException(CoreAppStatusCode.REMOTE_SERVICE_ERROR, "Ответ сервиса не содержит список.");
 			}
 		}
 
@@ -111,13 +111,13 @@ public class RemoteServiceUtils
 		{
 			if (defaultPage != null)
 			{
-				log.warn("{} {}", AppStatusCodeImpl.REMOTE_SERVICE_ERROR.getMessage(), response.getMessage());
+				log.warn("{} {}", CoreAppStatusCode.REMOTE_SERVICE_ERROR.getMessage(), response.getMessage());
 
 				return defaultPage;
 			}
 			else
 			{
-				throw new AppException(AppStatusCodeImpl.REMOTE_SERVICE_ERROR, response.getMessage());
+				throw new AppException(CoreAppStatusCode.REMOTE_SERVICE_ERROR, response.getMessage());
 			}
 		}
 
@@ -125,13 +125,13 @@ public class RemoteServiceUtils
 		{
 			if (defaultPage != null)
 			{
-				log.warn("{} {}", AppStatusCodeImpl.REMOTE_SERVICE_ERROR.getMessage(), "Ответ сервиса не содержит страницу.");
+				log.warn("{} {}", CoreAppStatusCode.REMOTE_SERVICE_ERROR.getMessage(), "Ответ сервиса не содержит страницу.");
 
 				return defaultPage;
 			}
 			else
 			{
-				throw new AppException(AppStatusCodeImpl.REMOTE_SERVICE_ERROR, "Ответ сервиса не содержит страницу.");
+				throw new AppException(CoreAppStatusCode.REMOTE_SERVICE_ERROR, "Ответ сервиса не содержит страницу.");
 			}
 		}
 

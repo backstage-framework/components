@@ -17,7 +17,7 @@
 package com.backstage.app.attachment.service.store;
 
 import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
-import com.backstage.app.attachment.model.AttachmentsStatusCode;
+import com.backstage.app.attachment.model.AttachmentsAppStatusCode;
 import com.backstage.app.attachment.model.domain.Attachment;
 import com.backstage.app.exception.AppException;
 import org.springframework.core.io.Resource;
@@ -49,7 +49,7 @@ public interface AttachmentStore
 		}
 		catch (IOException e)
 		{
-			throw new AppException(AttachmentsStatusCode.ATTACHMENT_ADD_ERROR, e);
+			throw new AppException(AttachmentsAppStatusCode.ATTACHMENT_ADD_ERROR, e);
 		}
 	}
 

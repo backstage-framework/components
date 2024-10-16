@@ -18,13 +18,13 @@ package com.backstage.app.report.exception;
 
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.AppStatusCode;
-import com.backstage.app.model.other.exception.AppStatusCodeImpl;
+import com.backstage.app.report.model.ReportAppStatusCode;
 
 public class ReportGenerateException extends AppException
 {
 	public ReportGenerateException(Throwable cause)
 	{
-		this(AppStatusCodeImpl.REPORT_GENERATE_ERROR, cause);
+		this(ReportAppStatusCode.REPORT_GENERATE_ERROR, cause);
 	}
 
 	public ReportGenerateException(AppStatusCode status, Throwable cause)
@@ -34,6 +34,6 @@ public class ReportGenerateException extends AppException
 
 	public ReportGenerateException(String message, Throwable throwable)
 	{
-		super(AppStatusCodeImpl.REPORT_GENERATE_ERROR, message, throwable);
+		super(ReportAppStatusCode.REPORT_GENERATE_ERROR, message, throwable);
 	}
 }

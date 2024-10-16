@@ -17,12 +17,12 @@
 package com.backstage.app.dict.exception.migration.transaction;
 
 import com.backstage.app.dict.exception.migration.MigrationException;
-import com.backstage.app.dict.model.DictsStatusCode;
+import com.backstage.app.dict.model.DictsAppStatusCode;
 
 public class DictRollbackException extends MigrationException
 {
 	public DictRollbackException(String dictId, Throwable cause)
 	{
-		super(DictsStatusCode.MIGRATION_APPLIED_ERROR, "При откате миграции для справочника '%s' произошла ошибка.".formatted(dictId), cause);
+		super(DictsAppStatusCode.MIGRATION_APPLIED_ERROR, "При откате миграции для справочника '%s' произошла ошибка.".formatted(dictId), cause);
 	}
 }

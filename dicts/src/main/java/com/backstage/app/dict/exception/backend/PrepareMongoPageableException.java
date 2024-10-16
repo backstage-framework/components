@@ -16,13 +16,13 @@
 
 package com.backstage.app.dict.exception.backend;
 
-import com.backstage.app.dict.model.DictsStatusCode;
+import com.backstage.app.dict.model.DictsAppStatusCode;
 import com.backstage.app.exception.AppException;
 
 public class PrepareMongoPageableException extends AppException
 {
 	public PrepareMongoPageableException(String pageable)
 	{
-		super(DictsStatusCode.PREPARE_PAGEABLE_MONGO_ERROR, "Пагинация: (%s).".formatted(pageable));
+		super(DictsAppStatusCode.PREPARE_PAGEABLE_MONGO_ERROR, "Пагинация: (%s).".formatted(pageable));
 	}
 }
