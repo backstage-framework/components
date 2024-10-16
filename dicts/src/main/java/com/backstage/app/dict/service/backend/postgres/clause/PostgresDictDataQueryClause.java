@@ -26,6 +26,7 @@ import com.backstage.app.dict.model.postgres.backend.PostgresPageable;
 import com.backstage.app.dict.model.postgres.backend.PostgresWord;
 import com.backstage.app.dict.model.postgres.query.PostgresQuery;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.backend.postgres.PostgresDictFieldNameMapper;
 import com.backstage.app.utils.ValidationUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.BidiMap;
@@ -43,7 +44,9 @@ public class PostgresDictDataQueryClause
 	private static final String DICT_ALIAS_KEY = "t";
 	private static final String SELECT_CLAUSE = "%s.%s as \"%s__%s\"";
 	private static final String JOIN_CLAUSE = "left join %s.%s on %s.%s.%s = %s.%s";
-	private static final String ASCENDING_ID_ORDER_CLAUSE = "%s.%s asc";
+	private static final String ASCENDING_ID_ORDER_CLAUSE = "%s asc";
+
+	private final PostgresDictFieldNameMapper dictFieldNameMapper;
 
 	private final DictsProperties dictsProperties;
 
@@ -173,7 +176,7 @@ public class PostgresDictDataQueryClause
 
 			if (!ordersIncludeId)
 			{
-				orderByClauses.add(ASCENDING_ID_ORDER_CLAUSE.formatted(dict.getId(), ServiceFieldConstants.ID));
+				orderByClauses.add(ASCENDING_ID_ORDER_CLAUSE.formatted(dictFieldNameMapper.mapFrom(dict.getId(), ServiceFieldConstants.ID).getWordJoint()));
 			}
 		}
 	}
