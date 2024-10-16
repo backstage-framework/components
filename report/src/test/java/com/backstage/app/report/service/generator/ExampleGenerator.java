@@ -22,7 +22,6 @@ import org.springframework.stereotype.Service;
 @Service
 public class ExampleGenerator extends AbstractReportGenerator<SimpleReportFilter>
 {
-
 	@Override
 	public byte[] generate(SimpleReportFilter filter)
 	{

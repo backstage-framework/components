@@ -80,8 +80,8 @@ class DictItemConverterSerializationTest extends CommonTest
 				.build();
 		var result1 = List.of("\"id\":\"1\"", "\"booleanField\":true",
 				"\"timestampField\":\"2021-08-15T06:00:00.000Z\"", "\"integerField\":1", "\"doubleField\":2.776",
-				"\"stringField\":\"string\"", "\"history\":[]", "\"version\":1", "\"created\":\"2024-01-01T12:00:00\"",
-				"\"updated\":\"2024-01-01T12:00:00\"", "\"deleted\":null", "\"deletionReason\":null");
+				"\"stringField\":\"string\"", "\"version\":1", "\"created\":\"2024-01-01T12:00:00\"",
+				"\"updated\":\"2024-01-01T12:00:00\"");
 
 		var config2 = DictItemConverter.Configuration
 				.builder()
@@ -90,9 +90,8 @@ class DictItemConverterSerializationTest extends CommonTest
 		var result2 = List.of("\"id\":\"1\"", "\"booleanField\":[\"java.lang.Boolean\",true]",
 				"\"timestampField\":[\"java.lang.String\",\"2021-08-15T06:00:00.000Z\"]",
 				"\"integerField\":[\"java.lang.Long\",1]", "\"doubleField\":[\"java.math.BigDecimal\",2.776]",
-				"\"stringField\":[\"java.lang.String\",\"string\"]", "\"history\":[]", "\"version\":1",
-				"\"created\":\"2024-01-01T12:00:00\"", "\"updated\":\"2024-01-01T12:00:00\"", "\"deleted\":null",
-				"\"deletionReason\":null");
+				"\"stringField\":[\"java.lang.String\",\"string\"]", "\"version\":1",
+				"\"created\":\"2024-01-01T12:00:00\"", "\"updated\":\"2024-01-01T12:00:00\"");
 
 		return Stream.of(
 				Arguments.of(config1, result1),
