@@ -26,7 +26,7 @@ import com.backstage.app.dict.model.postgres.query.PostgresTranslationContext;
 import com.backstage.app.dict.service.backend.postgres.PostgresReservedKeyword;
 import com.backstage.app.dict.service.query.ast.*;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.backstage.app.utils.JsonUtils;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
@@ -133,7 +133,7 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 			case OR -> "(%s or %s)".formatted(leftExpression, rightExpression);
 			case NOT -> "not (%s)".formatted(leftExpression);
 
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
 		};
 
 		return PostgresQuery.builder()
@@ -161,7 +161,7 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 			case LEQ -> sqlExpression += " <= :%s".formatted(paramName);
 			case GEQ -> sqlExpression += " >= :%s".formatted(paramName);
 
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(predicate.type));
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(predicate.type));
 		}
 
 		return PostgresQuery.builder()
@@ -211,7 +211,7 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 			case ALL -> sqlExpression += " %s ARRAY[:%s]%s".formatted("@>", paramName, getArrayCastingType(constants.get(0)));
 			case ANY -> sqlExpression += " %s ARRAY[:%s]%s".formatted("&&", paramName, getArrayCastingType(constants.get(0)));
 
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
 		}
 
 		return PostgresQuery.builder()

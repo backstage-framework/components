@@ -16,17 +16,17 @@
 
 package com.backstage.app.dict.exception.migration;
 
-import com.backstage.app.dict.model.DictsStatusCodeImpl;
+import com.backstage.app.dict.model.DictsStatusCode;
 
 public class MigrationAppliedException extends MigrationException
 {
 	public MigrationAppliedException(String migration, String message)
 	{
-		super(DictsStatusCodeImpl.MIGRATION_APPLIED_ERROR, "Ошибка '%s' при применении миграции '%s'.".formatted(message, migration));
+		super(DictsStatusCode.MIGRATION_APPLIED_ERROR, "Ошибка '%s' при применении миграции '%s'.".formatted(message, migration));
 	}
 
 	public MigrationAppliedException(String migration, Throwable cause)
 	{
-		super(DictsStatusCodeImpl.MIGRATION_APPLIED_ERROR, "Ошибка при применении миграции '%s'.".formatted(migration), cause);
+		super(DictsStatusCode.MIGRATION_APPLIED_ERROR, "Ошибка при применении миграции '%s'.".formatted(migration), cause);
 	}
 }

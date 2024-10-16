@@ -17,23 +17,23 @@
 package com.backstage.app.report.exception;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCode;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCode;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 
 public class ReportGenerateException extends AppException
 {
 	public ReportGenerateException(Throwable cause)
 	{
-		this(ApiStatusCodeImpl.REPORT_GENERATE_ERROR, cause);
+		this(AppStatusCodeImpl.REPORT_GENERATE_ERROR, cause);
 	}
 
-	public ReportGenerateException(ApiStatusCode status, Throwable cause)
+	public ReportGenerateException(AppStatusCode status, Throwable cause)
 	{
 		super(status, cause);
 	}
 
 	public ReportGenerateException(String message, Throwable throwable)
 	{
-		super(ApiStatusCodeImpl.REPORT_GENERATE_ERROR, message, throwable);
+		super(AppStatusCodeImpl.REPORT_GENERATE_ERROR, message, throwable);
 	}
 }

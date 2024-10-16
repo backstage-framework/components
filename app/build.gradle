@@ -37,7 +37,7 @@ dependencies {
 	api "commons-io:commons-io:$commonsIOVersion"
 	api "commons-codec:commons-codec:$commonsCodecVersion"
 	api "org.codehaus.janino:janino:$janinoVersion"
-	api "org.jetbrains:annotations:24.1.0"
+	api "org.jetbrains:annotations:26.0.1"
 
 	// TODO: перенос в api
 	compileOnly "org.freemarker:freemarker"

@@ -16,7 +16,7 @@
 
 package com.backstage.app.api.model;
 
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 @Schema(description = "Ответ, не содержащий данных")
@@ -26,6 +26,6 @@ public class OkResponse extends ApiResponse<Void>
 
 	private OkResponse()
 	{
-		super(ApiStatusCodeImpl.OK);
+		super(AppStatusCodeImpl.OK);
 	}
 }

@@ -17,21 +17,21 @@
 package com.backstage.app.dict.exception.migration;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCode;
+import com.backstage.app.model.other.exception.AppStatusCode;
 
 public class MigrationException extends AppException
 {
-	public MigrationException(ApiStatusCode status, String message)
+	public MigrationException(AppStatusCode status, String message)
 	{
 		super(status, message);
 	}
 
-	public MigrationException(ApiStatusCode status, Throwable cause)
+	public MigrationException(AppStatusCode status, Throwable cause)
 	{
 		super(status, cause);
 	}
 
-	public MigrationException(ApiStatusCode status, String message, Throwable cause)
+	public MigrationException(AppStatusCode status, String message, Throwable cause)
 	{
 		super(status, message, cause);
 	}

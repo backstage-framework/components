@@ -17,12 +17,12 @@
 package com.backstage.app.report.exception;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 
 public class ReportGeneratorNotFoundException extends AppException
 {
 	public ReportGeneratorNotFoundException(String message)
 	{
-		super(ApiStatusCodeImpl.REPORT_GENERATE_ERROR, message);
+		super(AppStatusCodeImpl.REPORT_GENERATE_ERROR, message);
 	}
 }

@@ -17,8 +17,8 @@
 package com.backstage.app.attachment.service;
 
 import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
+import com.backstage.app.attachment.model.AttachmentsStatusCode;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -68,7 +68,7 @@ public class AttachmentContentValidator implements AttachmentServiceAdvice
 			}
 			catch (Exception e)
 			{
-				throw new AppException(ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT);
+				throw new AppException(AttachmentsStatusCode.ATTACHMENT_INVALID_CONTENT);
 			}
 		}
 		else
@@ -104,7 +104,7 @@ public class AttachmentContentValidator implements AttachmentServiceAdvice
 
 				if (!hasMatch)
 				{
-					throw new AppException(ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT);
+					throw new AppException(AttachmentsStatusCode.ATTACHMENT_INVALID_CONTENT);
 				}
 			}
 		}

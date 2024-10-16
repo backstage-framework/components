@@ -21,7 +21,7 @@ import com.backstage.app.exception.AppException;
 import com.backstage.app.jobs.AbstractTests;
 import com.backstage.app.jobs.data.TestJobs;
 import com.backstage.app.jobs.model.dto.JobTriggerType;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -137,7 +137,7 @@ class JobManagerTest extends AbstractTests
 
 		AppException thrown = assertThrows(AppException.class, () -> jobManager.rescheduleJob(jobName, JobTriggerType.CRON.createTrigger(TestJobs.TEST_UPDATED_CRON)));
 
-		Assertions.assertEquals(ApiStatusCodeImpl.OBJECT_NOT_FOUND, thrown.getStatus());
+		Assertions.assertEquals(AppStatusCodeImpl.OBJECT_NOT_FOUND, thrown.getStatus());
 	}
 
 	@Test
@@ -147,7 +147,7 @@ class JobManagerTest extends AbstractTests
 
 		AppException thrown = assertThrows(AppException.class, () -> jobManager.rescheduleJob(jobName, JobTriggerType.INTERVAL.createTrigger("*")));
 
-		Assertions.assertEquals(ApiStatusCodeImpl.ILLEGAL_INPUT, thrown.getStatus());
+		Assertions.assertEquals(AppStatusCodeImpl.ILLEGAL_INPUT, thrown.getStatus());
 	}
 
 	@Test
@@ -157,7 +157,7 @@ class JobManagerTest extends AbstractTests
 
 		AppException thrown = assertThrows(AppException.class, () -> jobManager.rescheduleJob(jobName, JobTriggerType.CRON.createTrigger("*")));
 
-		Assertions.assertEquals(ApiStatusCodeImpl.ILLEGAL_INPUT, thrown.getStatus());
+		Assertions.assertEquals(AppStatusCodeImpl.ILLEGAL_INPUT, thrown.getStatus());
 	}
 
 	@Test
@@ -199,7 +199,7 @@ class JobManagerTest extends AbstractTests
 
 		AppException thrown = assertThrows(AppException.class, () -> jobManager.getParams(jobName));
 
-		Assertions.assertEquals(ApiStatusCodeImpl.OBJECT_NOT_FOUND, thrown.getStatus());
+		Assertions.assertEquals(AppStatusCodeImpl.OBJECT_NOT_FOUND, thrown.getStatus());
 	}
 
 	private Date getNextExecutionDate(String cronExpression)

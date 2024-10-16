@@ -16,10 +16,30 @@
 
 package com.backstage.app.model.other.exception;
 
-public enum ApiStatusCategory
+import org.springframework.http.HttpStatusCode;
+
+public interface AppStatusCode
 {
-	SUCCESS,
-	ACCESS_RIGHTS,
-	NOT_FOUND,
-	OTHER
+	Integer MODULE_RANGE_APP = 0;
+	Integer MODULE_RANGE_ATTACHMENTS = 1000;
+	Integer MODULE_RANGE_DICTS = 2000;
+	Integer MODULE_RANGE_REPORT = 3000;
+
+	Integer MODULE_RANGE_USER_APP = 10000;
+
+	default Integer getRange()
+	{
+		return MODULE_RANGE_USER_APP;
+	}
+
+	Integer getCode();
+
+	default Integer getStatusCode()
+	{
+		return getRange() + getCode();
+	}
+
+	String getMessage();
+
+	HttpStatusCode getHttpStatusCode();
 }

@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.model.json;
+package com.backstage.app.dict.api.model.json;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.WritableTypeId;
@@ -81,7 +81,7 @@ public abstract class AbstractCustomJsonSerializer<T> extends JsonSerializer<T>
 		}
 		catch (IOException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.SERIALIZE_ERROR, e);
+			throw new AppException(AppStatusCodeImpl.SERIALIZE_ERROR, e);
 		}
 	}
 
@@ -95,7 +95,7 @@ public abstract class AbstractCustomJsonSerializer<T> extends JsonSerializer<T>
 		}
 		catch (IOException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.SERIALIZE_ERROR, e);
+			throw new AppException(AppStatusCodeImpl.SERIALIZE_ERROR, e);
 		}
 	}
 
@@ -116,7 +116,7 @@ public abstract class AbstractCustomJsonSerializer<T> extends JsonSerializer<T>
 		}
 		catch (IOException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.SERIALIZE_ERROR, e);
+			throw new AppException(AppStatusCodeImpl.SERIALIZE_ERROR, e);
 		}
 	}
 

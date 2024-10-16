@@ -16,40 +16,45 @@
 
 package com.backstage.app.dict.model;
 
-import com.backstage.app.model.other.exception.ApiStatusCategory;
-import com.backstage.app.model.other.exception.ApiStatusCode;
+import com.backstage.app.model.other.exception.AppStatusCode;
 import lombok.Getter;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.HttpStatusCode;
 
 @Getter
-public enum DictsStatusCodeImpl implements ApiStatusCode
+public enum DictsStatusCode implements AppStatusCode
 {
 	MIGRATION_APPLIED_ERROR(1, "Ошибка применения миграции."),
 	MIGRATION_FILE_READ_ERROR(2, "Ошибка чтения миграции из файла."),
 	MIGRATIONS_HAS_SAME_VERSION(3, "Миграция имеет одинаковую версию."),
 	MIGRATION_PROCESS_UNKNOWN_ERROR(4, "Неизвестная ошибка при обработки миграций."),
 
-	SQL_PARSE_SYNTAX_ERROR(100, "Синтаксическая ошибка парсинга SQL выражения."),
+	SQL_PARSE_SYNTAX_ERROR(5, "Синтаксическая ошибка парсинга SQL выражения.", HttpStatus.BAD_REQUEST),
 
-	PREPARE_PAGEABLE_MONGO_ERROR(200, "Ошибка при адаптации pageable к MongoDB адаптеру."),
+	PREPARE_PAGEABLE_MONGO_ERROR(6, "Ошибка при адаптации pageable к MongoDB адаптеру."),
 
-	ENGINE_ERROR(300, "Ошибка при обработке engine."),
-	STORAGE_ERROR(310, "Ошибка при обработке storage.");
+	ENGINE_ERROR(7, "Ошибка при обработке engine."),
+	STORAGE_ERROR(8, "Ошибка при обработке storage."),
+
+	DICTS_ERROR(9, "При обращении к справочникам произошла ошибка.");
+
+	private final Integer range = AppStatusCode.MODULE_RANGE_DICTS;
 
 	private final Integer code;
 
 	private final String message;
 
-	private final ApiStatusCategory category;
+	private final HttpStatusCode httpStatusCode;
 
-	DictsStatusCodeImpl(Integer code, String message)
+	DictsStatusCode(Integer code, String message)
 	{
-		this(code, message, ApiStatusCategory.OTHER);
+		this(code, message, HttpStatus.INTERNAL_SERVER_ERROR);
 	}
 
-	DictsStatusCodeImpl(Integer code, String message, ApiStatusCategory category)
+	DictsStatusCode(Integer code, String message, HttpStatusCode httpStatusCode)
 	{
 		this.code = code;
 		this.message = message.isEmpty() ? this.toString() : message;
-		this.category = category;
+		this.httpStatusCode = httpStatusCode;
 	}
 }

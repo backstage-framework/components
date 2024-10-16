@@ -18,7 +18,7 @@ package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.backstage.app.model.other.user.UserInfo;
 import com.backstage.app.service.user.PermissionService;
 import com.backstage.app.utils.SecurityUtils;
@@ -52,7 +52,7 @@ public class DictPermissionService
 
 		if (!permissionService.getPermissions(userId).contains(permission))
 		{
-			throw new AppException(ApiStatusCodeImpl.ACCESS_RIGHTS_ERROR, "Недоступен просмотр справочника: %s.".formatted(dict.getId()));
+			throw new AppException(AppStatusCodeImpl.ACCESS_RIGHTS_ERROR, "Недоступен просмотр справочника: %s.".formatted(dict.getId()));
 		}
 	}
 
@@ -76,7 +76,7 @@ public class DictPermissionService
 		}
 		if (!permissionService.getPermissions(userId).contains(permission))
 		{
-			throw new AppException(ApiStatusCodeImpl.ACCESS_RIGHTS_ERROR, "Недоступно изменение справочника: %s.".formatted(dict.getId()));
+			throw new AppException(AppStatusCodeImpl.ACCESS_RIGHTS_ERROR, "Недоступно изменение справочника: %s.".formatted(dict.getId()));
 		}
 	}
 }

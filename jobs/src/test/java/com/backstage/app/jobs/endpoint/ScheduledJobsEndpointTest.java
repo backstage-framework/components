@@ -22,7 +22,7 @@ import com.backstage.app.jobs.configuration.SchedulerConfiguration;
 import com.backstage.app.jobs.data.TestJobs;
 import com.backstage.app.jobs.service.JobHealthIndicator;
 import com.backstage.app.jobs.service.JobManager;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.backstage.app.utils.TaskUtils;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -106,7 +106,7 @@ class ScheduledJobsEndpointTest
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsString(params)))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("message").value(Matchers.is(ApiStatusCodeImpl.ILLEGAL_INPUT.getMessage())))
+				.andExpect(jsonPath("message").value(Matchers.is(AppStatusCodeImpl.ILLEGAL_INPUT.getMessage())))
 				.andDo(print());
 	}
 
@@ -124,7 +124,7 @@ class ScheduledJobsEndpointTest
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(content))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("message").value(Matchers.is(ApiStatusCodeImpl.OK.getMessage())))
+				.andExpect(jsonPath("message").value(Matchers.is(AppStatusCodeImpl.OK.getMessage())))
 				.andDo(print());
 
 		assertTrue(TaskUtils.testWithTryCount(5, 300, () -> lastCompletionTime != jobHealthIndicator.getLastCompletionTime()));

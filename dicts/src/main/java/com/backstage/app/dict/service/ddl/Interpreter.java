@@ -37,7 +37,7 @@ import com.backstage.app.dict.service.ddl.ast.value.*;
 import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.service.imp.ImportJsonService;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -442,7 +442,7 @@ public class Interpreter
 			case MIN_SIZE -> field.setMinSize(getFieldSizeValue(value));
 			case MAX_SIZE -> field.setMaxSize(getFieldSizeValue(value));
 			case DEFAULT_VALUE -> field.setDefaultValue(value.getValue());
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT,
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT,
 					"Неизвестная операция при ALTER COLUMN: '%s'."
 							.formatted(alterTableColumnOperation.getParameter().getAlias()));
 		}

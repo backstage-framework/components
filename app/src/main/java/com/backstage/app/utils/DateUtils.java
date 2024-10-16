@@ -18,7 +18,7 @@ package com.backstage.app.utils;
 
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.date.DateConstants;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import lombok.NonNull;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.StringUtils;
@@ -93,7 +93,7 @@ public class DateUtils
 		}
 		catch (DateTimeParseException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.DATE_PARSE_ERROR, e);
+			throw new AppException(AppStatusCodeImpl.DATE_PARSE_ERROR, e);
 		}
 	}
 
@@ -154,7 +154,7 @@ public class DateUtils
 		}
 		catch (DateTimeParseException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.DATE_PARSE_ERROR, e);
+			throw new AppException(AppStatusCodeImpl.DATE_PARSE_ERROR, e);
 		}
 	}
 
@@ -277,7 +277,7 @@ public class DateUtils
 	{
 		if (monthNumber < 1 || monthNumber > 12)
 		{
-			throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT);
+			throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT);
 		}
 
 		var month = Month.values()[monthNumber - 1];

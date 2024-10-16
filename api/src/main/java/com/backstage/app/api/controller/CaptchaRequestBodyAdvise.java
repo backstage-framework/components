@@ -21,7 +21,7 @@ import com.backstage.app.api.model.dto.CaptchaTokenRequest;
 import com.backstage.app.api.service.CaptchaService;
 import com.backstage.app.api.service.CaptchaServiceAdvise;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.MethodParameter;
@@ -66,7 +66,7 @@ public class CaptchaRequestBodyAdvise implements RequestBodyAdvice
 
 			if (!captchaService.check(captchaTokenRequest.getToken()))
 			{
-				throw new AppException(ApiStatusCodeImpl.CAPTCHA_CHECK_ERROR);
+				throw new AppException(AppStatusCodeImpl.CAPTCHA_CHECK_ERROR);
 			}
 		}
 

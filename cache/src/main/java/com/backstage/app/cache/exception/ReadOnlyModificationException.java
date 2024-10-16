@@ -17,12 +17,12 @@
 package com.backstage.app.cache.exception;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 
 public class ReadOnlyModificationException extends AppException
 {
 	public ReadOnlyModificationException()
 	{
-		super(ApiStatusCodeImpl.UNKNOWN_ERROR, "Произошла попытка изменить объект доступный только для чтения.");
+		super(AppStatusCodeImpl.UNKNOWN_ERROR, "Произошла попытка изменить объект доступный только для чтения.");
 	}
 }

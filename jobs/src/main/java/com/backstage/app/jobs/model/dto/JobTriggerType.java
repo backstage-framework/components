@@ -17,7 +17,7 @@
 package com.backstage.app.jobs.model.dto;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.support.CronExpression;
@@ -33,7 +33,7 @@ public enum JobTriggerType
 	CRON(expression -> {
 		if (!CronExpression.isValidExpression(expression))
 		{
-			throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT);
+			throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT);
 		}
 
 		return new CronTrigger(expression);
@@ -48,7 +48,7 @@ public enum JobTriggerType
 		}
 		catch (NumberFormatException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, e);
+			throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT, e);
 		}
 	});
 

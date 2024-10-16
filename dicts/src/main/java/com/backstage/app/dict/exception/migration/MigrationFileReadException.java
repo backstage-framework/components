@@ -16,12 +16,12 @@
 
 package com.backstage.app.dict.exception.migration;
 
-import com.backstage.app.dict.model.DictsStatusCodeImpl;
+import com.backstage.app.dict.model.DictsStatusCode;
 
 public class MigrationFileReadException extends MigrationException
 {
 	public MigrationFileReadException(String migration, Throwable cause)
 	{
-		super(DictsStatusCodeImpl.MIGRATION_FILE_READ_ERROR, "Ошибка чтения файла миграции '%s'.".formatted(migration), cause);
+		super(DictsStatusCode.MIGRATION_FILE_READ_ERROR, "Ошибка чтения файла миграции '%s'.".formatted(migration), cause);
 	}
 }

@@ -20,9 +20,9 @@ import com.backstage.app.dict.api.model.dto.ExportedDictDto;
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.model.DictsStatusCode;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,7 +57,7 @@ public class ExportJsonService implements ExportService
 		}
 		catch (Exception e)
 		{
-			throw new AppException(ApiStatusCodeImpl.DICTS_ERROR, "При экспорте справочника произошла ошибка.", e);
+			throw new AppException(DictsStatusCode.DICTS_ERROR, "При экспорте справочника произошла ошибка.", e);
 		}
 	}
 }

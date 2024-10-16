@@ -17,8 +17,8 @@
 package com.backstage.app.attachment.service;
 
 import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
+import com.backstage.app.attachment.model.AttachmentsStatusCode;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
@@ -35,7 +35,7 @@ public class AttachmentMimeTypeValidator implements AttachmentServiceAdvice
 	{
 		if (!attachmentProperties.getMimeTypes().contains(mimeType.toLowerCase()))
 		{
-			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_TYPE_NOT_SUPPORTED);
+			throw new AppException(AttachmentsStatusCode.ATTACHMENT_TYPE_NOT_SUPPORTED);
 		}
 	}
 }

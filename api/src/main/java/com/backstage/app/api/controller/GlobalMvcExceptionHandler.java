@@ -20,7 +20,7 @@ import com.backstage.app.api.configuration.properties.ApiProperties;
 import com.backstage.app.api.model.ApiResponse;
 import com.backstage.app.api.utils.ExceptionHandlerUtils;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolationException;
@@ -67,7 +67,7 @@ public class GlobalMvcExceptionHandler
 		}
 		else
 		{
-			apiResponse = ApiResponse.of(ApiStatusCodeImpl.UNKNOWN_ERROR);
+			apiResponse = ApiResponse.of(AppStatusCodeImpl.UNKNOWN_ERROR);
 
 			if (apiProperties.isStackTraceOnError())
 			{
@@ -79,7 +79,7 @@ public class GlobalMvcExceptionHandler
 
 		log.error("Handling global mvc exception. Exception code: {}.", apiResponse.getExceptionCode(), ex);
 
-		return ResponseEntity.ok(apiResponse);
+		return buildResponseEntity(apiResponse);
 	}
 
 	@ExceptionHandler(ConstraintViolationException.class)
@@ -87,10 +87,10 @@ public class GlobalMvcExceptionHandler
 	{
 		log.error("Handling request validation exception.", ex);
 
-		var apiResponse = ApiResponse.of(ApiStatusCodeImpl.ILLEGAL_INPUT);
+		var apiResponse = ApiResponse.of(AppStatusCodeImpl.ILLEGAL_INPUT);
 		apiResponse.setValidationErrors(ExceptionHandlerUtils.buildValidationErrors(ex));
 
-		return ResponseEntity.ok(apiResponse);
+		return buildResponseEntity(apiResponse);
 	}
 
 	@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -98,10 +98,10 @@ public class GlobalMvcExceptionHandler
 	{
 		log.error("Handling request validation exception.", ex);
 
-		var apiResponse = ApiResponse.of(ApiStatusCodeImpl.ILLEGAL_INPUT);
+		var apiResponse = ApiResponse.of(AppStatusCodeImpl.ILLEGAL_INPUT);
 		apiResponse.setValidationErrors(ExceptionHandlerUtils.buildValidationErrors(ex));
 
-		return ResponseEntity.ok(apiResponse);
+		return buildResponseEntity(apiResponse);
 	}
 
 	@ExceptionHandler(MissingServletRequestParameterException.class)
@@ -109,7 +109,7 @@ public class GlobalMvcExceptionHandler
 	{
 		log.error("Handling missing request argument exception.", ex);
 
-		return ResponseEntity.ok(ApiResponse.of(ApiStatusCodeImpl.ILLEGAL_INPUT, String.format("Отсутствует обязательный атрибут: %s.", ex.getParameterName())));
+		return buildResponseEntity(ApiResponse.of(AppStatusCodeImpl.ILLEGAL_INPUT, String.format("Отсутствует обязательный атрибут: %s.", ex.getParameterName())));
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
@@ -121,7 +121,7 @@ public class GlobalMvcExceptionHandler
 
 		if (type == null)
 		{
-			return ApiResponse.of(ApiStatusCodeImpl.ILLEGAL_DATA_FORMAT);
+			return ApiResponse.of(AppStatusCodeImpl.ILLEGAL_DATA_FORMAT);
 		}
 
 		var method = ex.getParameter().getMethod();
@@ -136,7 +136,7 @@ public class GlobalMvcExceptionHandler
 			message += "должен быть типа " + type.getSimpleName() + ".";
 		}
 
-		return ResponseEntity.ok(ApiResponse.of(ApiStatusCodeImpl.ILLEGAL_DATA_FORMAT, message));
+		return buildResponseEntity(ApiResponse.of(AppStatusCodeImpl.ILLEGAL_DATA_FORMAT, message));
 	}
 
 	@ExceptionHandler(HttpMessageNotReadableException.class)
@@ -166,14 +166,14 @@ public class GlobalMvcExceptionHandler
 				message += "должен быть типа " + type.getSimpleName() + ".";
 			}
 
-			apiResponse = ApiResponse.of(ApiStatusCodeImpl.ILLEGAL_DATA_FORMAT, message);
+			apiResponse = ApiResponse.of(AppStatusCodeImpl.ILLEGAL_DATA_FORMAT, message);
 		}
 		else
 		{
-			apiResponse = ApiResponse.of(ApiStatusCodeImpl.ILLEGAL_DATA_FORMAT);
+			apiResponse = ApiResponse.of(AppStatusCodeImpl.ILLEGAL_DATA_FORMAT);
 		}
 
-		return ResponseEntity.ok(apiResponse);
+		return buildResponseEntity(apiResponse);
 	}
 
 	@ExceptionHandler(AccessDeniedException.class)
@@ -181,6 +181,11 @@ public class GlobalMvcExceptionHandler
 	{
 		log.error("Handling access denied exception.");
 
-		return ResponseEntity.ok(ApiResponse.of(ApiStatusCodeImpl.ACCESS_RIGHTS_ERROR));
+		return buildResponseEntity(ApiResponse.of(AppStatusCodeImpl.ACCESS_RIGHTS_ERROR));
+	}
+
+	private Object buildResponseEntity(ApiResponse<?> apiResponse)
+	{
+		return ResponseEntity.status(apiResponse.getHttpStatusCode()).body(apiResponse);
 	}
 }

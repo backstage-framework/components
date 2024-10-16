@@ -1,6 +1,7 @@
 ## 5.1.0 - 2024-10-02
 ### Dependency Upgrades
-- Spring Cloud 3.3.4
+- Spring Boot 3.3.4
+- Spring Cloud 4.1.3
 - EclipseLink 4.0.4
 - Flyway 10.18.1
 - Postgresql JDBC 42.7.4

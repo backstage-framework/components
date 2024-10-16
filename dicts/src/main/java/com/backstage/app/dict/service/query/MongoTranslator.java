@@ -24,7 +24,7 @@ import com.backstage.app.dict.model.mongo.query.MongoQueryField;
 import com.backstage.app.dict.model.query.TranslationContext;
 import com.backstage.app.dict.service.query.ast.*;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.google.common.collect.Sets;
 import lombok.RequiredArgsConstructor;
 import org.bson.types.Decimal128;
@@ -121,7 +121,7 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 			//fixme: исправить
 			case NOT -> throw new UnsupportedOperationException("Оператор '%s' не поддерживается в MongoDictDataBackend.".formatted(expression.type));
 
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
 		};
 
 		return MongoQuery.builder()
@@ -148,7 +148,7 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 			case LEQ -> criteria.lte(rightValue);
 			case GEQ -> criteria.gte(rightValue);
 
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(predicate.type));
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(predicate.type));
 		}
 
 		return MongoQuery.builder()
@@ -191,7 +191,7 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 			case ALL -> criteria.all(constants);
 			case ANY -> criteria.in(constants);
 
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
 		}
 
 		return MongoQuery.builder()

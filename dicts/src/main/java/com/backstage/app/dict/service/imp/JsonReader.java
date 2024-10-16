@@ -17,7 +17,7 @@
 package com.backstage.app.dict.service.imp;
 
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -44,7 +44,7 @@ public class JsonReader
 		{
 			log.error("Ошибка чтения из потока.", e);
 
-			throw new AppException(ApiStatusCodeImpl.UNKNOWN_ERROR, e);
+			throw new AppException(AppStatusCodeImpl.UNKNOWN_ERROR, e);
 		}
 	}
 }

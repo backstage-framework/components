@@ -19,7 +19,7 @@ package com.backstage.app.api.controller;
 import com.backstage.app.api.controller.request.CoffeeRequest;
 import com.backstage.app.api.controller.request.NumberTypeRequest;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -54,6 +54,6 @@ public class SimpleTestController
 	@GetMapping("/appException")
 	public ResponseEntity<?> appException() throws Exception
 	{
-		throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT);
+		throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT);
 	}
 }

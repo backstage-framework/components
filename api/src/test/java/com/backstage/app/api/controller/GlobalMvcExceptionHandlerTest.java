@@ -51,7 +51,7 @@ class GlobalMvcExceptionHandlerTest
 	void testExceptionThrow() throws Exception
 	{
 		mvc.perform(get("/test/exception"))
-				.andDo(print()).andExpect(status().isOk())
+				.andDo(print()).andExpect(status().isInternalServerError())
 				.andExpect(content().string(containsString("java.lang.Exception")))
 				.andExpect(content().string(containsString("exceptionCode")));
 	}
@@ -63,7 +63,7 @@ class GlobalMvcExceptionHandlerTest
 
 		mvc.perform(get("/test/exception"))
 				.andDo(print())
-				.andExpect(status().isOk())
+				.andExpect(status().isInternalServerError())
 				.andExpect(content().string(containsString("exceptionCode")))
 				.andExpect(jsonPath("$.stackTrace").doesNotExist());
 	}
@@ -72,7 +72,8 @@ class GlobalMvcExceptionHandlerTest
 	void testAppExceptionThrow() throws Exception
 	{
 		mvc.perform(get("/test/appException"))
-				.andDo(print()).andExpect(status().isOk())
+				.andDo(print())
+				.andExpect(status().isBadRequest())
 				.andExpect(content().string(containsString("exceptionCode")));
 	}
 }

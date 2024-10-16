@@ -31,7 +31,7 @@ dependencies {
 
 	api "io.minio:minio:$minioVersion"
 
-	compileOnly 'org.apache.httpcomponents.client5:httpclient5:5.3.1'
+	compileOnly "org.apache.httpcomponents.client5:httpclient5"
 
 	testImplementation "org.springframework.boot:spring-boot-starter-test"
 

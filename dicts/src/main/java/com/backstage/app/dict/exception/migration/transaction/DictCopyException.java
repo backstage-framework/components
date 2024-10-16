@@ -16,13 +16,13 @@
 
 package com.backstage.app.dict.exception.migration.transaction;
 
-import com.backstage.app.dict.model.DictsStatusCodeImpl;
+import com.backstage.app.dict.model.DictsStatusCode;
 import com.backstage.app.exception.AppException;
 
 public class DictCopyException extends AppException
 {
 	public DictCopyException(String dictId, Throwable cause)
 	{
-		super(DictsStatusCodeImpl.MIGRATION_APPLIED_ERROR, "При копировании справочника '%s' для активной транзакции, произошла ошибка.".formatted(dictId), cause);
+		super(DictsStatusCode.MIGRATION_APPLIED_ERROR, "При копировании справочника '%s' для активной транзакции, произошла ошибка.".formatted(dictId), cause);
 	}
 }

@@ -26,7 +26,7 @@ import com.backstage.app.dict.service.DictPermissionService;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.utils.CSVUtils;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -140,7 +140,7 @@ public class ImportCsvService implements ImportService
 			case DECIMAL -> new BigDecimal(stringValue);
 			case ATTACHMENT -> StringUtils.isBlank(stringValue) ? null : stringValue;
 			case STRING, DICT, DATE, TIMESTAMP, JSON, ENUM, GEO_JSON -> stringValue;
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT,
+			default -> throw new AppException(AppStatusCodeImpl.ILLEGAL_INPUT,
 					"Неизвестный тип поля: %s.".formatted(targetType));
 		};
 	}

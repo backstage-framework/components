@@ -16,9 +16,8 @@
 
 package com.backstage.app.api.model;
 
-import com.backstage.app.model.other.exception.ApiStatusCategory;
-import com.backstage.app.model.other.exception.ApiStatusCode;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.AppStatusCode;
+import com.backstage.app.model.other.exception.AppStatusCodeImpl;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.AccessLevel;
@@ -27,6 +26,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Slice;
+import org.springframework.http.HttpStatusCode;
 
 import java.util.List;
 import java.util.stream.Stream;
@@ -41,7 +41,7 @@ public class ApiResponse<T>
 	private Integer status;
 
 	@JsonIgnore
-	private ApiStatusCategory category;
+	private HttpStatusCode httpStatusCode;
 
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String[] stackTrace;
@@ -63,12 +63,12 @@ public class ApiResponse<T>
 		return OkResponse.INSTANCE;
 	}
 
-	public static ApiResponse<Object> of(ApiStatusCode statusCode)
+	public static ApiResponse<Object> of(AppStatusCode statusCode)
 	{
 		return new ApiResponse<>(statusCode);
 	}
 
-	public static ApiResponse<Object> of(ApiStatusCode statusCode, String message)
+	public static ApiResponse<Object> of(AppStatusCode statusCode, String message)
 	{
 		return new ApiResponse<>(statusCode, message);
 	}
@@ -103,28 +103,28 @@ public class ApiResponse<T>
 		return new ApiResponse<>(slice.getContent(), slice);
 	}
 
-	ApiResponse(ApiStatusCode statusCode)
+	ApiResponse(AppStatusCode statusCode)
 	{
 		this(statusCode, statusCode.getMessage());
 	}
 
-	private ApiResponse(ApiStatusCode statusCode, String message)
+	private ApiResponse(AppStatusCode statusCode, String message)
 	{
-		this.status = statusCode.getCode();
-		this.category = statusCode.getCategory();
+		this.status = statusCode.getStatusCode();
+		this.httpStatusCode = statusCode.getHttpStatusCode();
 		this.message = message;
 	}
 
 	private ApiResponse(T data)
 	{
-		this(ApiStatusCodeImpl.OK);
+		this(AppStatusCodeImpl.OK);
 
 		this.data = data;
 	}
 
 	private ApiResponse(T data, Page<?> page)
 	{
-		this(ApiStatusCodeImpl.OK);
+		this(AppStatusCodeImpl.OK);
 
 		this.data = data;
 		this.paging = new DataPage(page);
@@ -132,7 +132,7 @@ public class ApiResponse<T>
 
 	private ApiResponse(T data, Slice<?> slice)
 	{
-		this(ApiStatusCodeImpl.OK);
+		this(AppStatusCodeImpl.OK);
 
 		this.data = data;
 		this.paging = new DataPage(slice);

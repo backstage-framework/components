@@ -19,10 +19,10 @@ package com.backstage.app.dict.service.export;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.model.DictsStatusCode;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.utils.CSVUtils;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -113,7 +113,7 @@ public class ExportCsvService implements ExportService
 		}
 		catch (IOException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.DICTS_ERROR, "При экспорте справочника произошла ошибка.", e);
+			throw new AppException(DictsStatusCode.DICTS_ERROR, "При экспорте справочника произошла ошибка.", e);
 		}
 	}
 }

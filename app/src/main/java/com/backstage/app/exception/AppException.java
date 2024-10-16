@@ -16,7 +16,7 @@
 
 package com.backstage.app.exception;
 
-import com.backstage.app.model.other.exception.ApiStatusCode;
+import com.backstage.app.model.other.exception.AppStatusCode;
 import lombok.Getter;
 import org.springframework.validation.Errors;
 
@@ -26,41 +26,41 @@ import java.util.Map;
 @Getter
 public class AppException extends RuntimeException
 {
-	private final ApiStatusCode status;
+	private final AppStatusCode status;
 
 	private Map<String, Object> data;
 
 	private Errors validationErrors;
 
-	public AppException(ApiStatusCode status)
+	public AppException(AppStatusCode status)
 	{
 		super(status.getMessage());
 
 		this.status = status;
 	}
 
-	public AppException(ApiStatusCode status, String message)
+	public AppException(AppStatusCode status, String message)
 	{
 		super(message);
 
 		this.status = status;
 	}
 
-	public AppException(ApiStatusCode status, Throwable cause)
+	public AppException(AppStatusCode status, Throwable cause)
 	{
 		super(status.getMessage(), cause);
 
 		this.status = status;
 	}
 
-	public AppException(ApiStatusCode status, String message, Throwable cause)
+	public AppException(AppStatusCode status, String message, Throwable cause)
 	{
 		super(message, cause);
 
 		this.status = status;
 	}
 
-	public AppException(ApiStatusCode statusCode, Errors validationErrors)
+	public AppException(AppStatusCode statusCode, Errors validationErrors)
 	{
 		this(statusCode);
 

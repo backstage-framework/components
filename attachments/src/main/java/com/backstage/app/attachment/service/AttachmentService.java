@@ -17,13 +17,13 @@
 package com.backstage.app.attachment.service;
 
 import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
+import com.backstage.app.attachment.model.AttachmentsStatusCode;
 import com.backstage.app.attachment.model.domain.Attachment;
 import com.backstage.app.attachment.model.domain.AttachmentBinding;
 import com.backstage.app.attachment.repository.AttachmentBindingRepository;
 import com.backstage.app.attachment.repository.AttachmentRepository;
 import com.backstage.app.attachment.service.store.AttachmentStore;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.transactional.TransactionalUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.validation.constraints.NotNull;
@@ -264,7 +264,7 @@ public class AttachmentService
 	{
 		if (source == target)
 		{
-			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_STORE_SYNC_ERROR, "Исходное и целевое хранилища совпадают.");
+			throw new AppException(AttachmentsStatusCode.ATTACHMENT_STORE_SYNC_ERROR, "Исходное и целевое хранилища совпадают.");
 		}
 
 		log.info("Синхронизируем содержимое хранилищ вложений {} -> {}.", source, target);
@@ -306,7 +306,7 @@ public class AttachmentService
 	public AttachmentStore getAttachmentStore(AttachmentProperties.StoreType storeType)
 	{
 		return attachmentStores.stream().filter(it -> storeType.equals(it.getType())).findFirst().orElseThrow(
-				() -> new AppException(ApiStatusCodeImpl.ATTACHMENT_STORE_INIT_FAILED, "Не доступно хранилище вложений с типом '%s'.".formatted(storeType))
+				() -> new AppException(AttachmentsStatusCode.ATTACHMENT_STORE_INIT_FAILED, "Не доступно хранилище вложений с типом '%s'.".formatted(storeType))
 		);
 	}
 

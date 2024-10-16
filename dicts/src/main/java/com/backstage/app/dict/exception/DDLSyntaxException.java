@@ -16,13 +16,13 @@
 
 package com.backstage.app.dict.exception;
 
-import com.backstage.app.dict.model.DictsStatusCodeImpl;
+import com.backstage.app.dict.model.DictsStatusCode;
 import com.backstage.app.exception.AppException;
 
 public class DDLSyntaxException extends AppException
 {
 	public DDLSyntaxException(String expression, Throwable cause)
 	{
-		super(DictsStatusCodeImpl.SQL_PARSE_SYNTAX_ERROR, "Выражение: %s".formatted(expression), cause);
+		super(DictsStatusCode.SQL_PARSE_SYNTAX_ERROR, "Выражение: %s".formatted(expression), cause);
 	}
 }

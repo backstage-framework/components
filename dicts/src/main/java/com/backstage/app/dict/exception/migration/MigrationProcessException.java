@@ -16,12 +16,12 @@
 
 package com.backstage.app.dict.exception.migration;
 
-import com.backstage.app.dict.model.DictsStatusCodeImpl;
+import com.backstage.app.dict.model.DictsStatusCode;
 
 public class MigrationProcessException extends MigrationException
 {
 	public MigrationProcessException(Throwable cause)
 	{
-		super(DictsStatusCodeImpl.MIGRATION_PROCESS_UNKNOWN_ERROR, cause);
+		super(DictsStatusCode.MIGRATION_PROCESS_UNKNOWN_ERROR, cause);
 	}
 }
