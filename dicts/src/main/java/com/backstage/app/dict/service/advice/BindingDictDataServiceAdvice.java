@@ -22,6 +22,8 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.utils.SpringContextUtils;
+import com.google.common.base.Supplier;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -43,11 +45,13 @@ public class BindingDictDataServiceAdvice implements DictDataServiceAdvice
 
 	private static final String DEFAULT_USER_ID = "-1";
 
-	private final AttachmentService attachmentService;
+	private final Supplier<AttachmentService> attachmentServiceSupplier = SpringContextUtils.createBeanSupplier(AttachmentService.class);
 
 	@Override
 	public void handleAfterCreate(Dict dict, DictItem item)
 	{
+		var attachmentService = attachmentServiceSupplier.get();
+
 		handleAllAttachments(dict, item.getData(), item.getId(), attachmentService::bindAttachments);
 	}
 
@@ -61,6 +65,8 @@ public class BindingDictDataServiceAdvice implements DictDataServiceAdvice
 				.stream()
 				.filter(field -> !Objects.equals(oldItem.getData().get(field.getId()), dataItemMap.get(field.getId())))
 				.toList();
+
+		var attachmentService = attachmentServiceSupplier.get();
 
 		updatedAttachmentFields.forEach(field -> {
 			var oldFieldAttachmentIds = getAttachmentIdsFromField(oldItem.getData().get(field.getId()), field);
@@ -79,6 +85,7 @@ public class BindingDictDataServiceAdvice implements DictDataServiceAdvice
 	public void handleDelete(Dict dict, DictItem item, boolean deleted)
 	{
 		var attachmentIds = getAttachmentIds(dict, item);
+		var attachmentService = attachmentServiceSupplier.get();
 
 		if (deleted)
 		{

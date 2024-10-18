@@ -14,21 +14,19 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.configuration.ddl;
+package com.backstage.app.database.configuration.annotation;
 
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-@Configuration
-@RequiredArgsConstructor
-public class DictsDDLConfiguration
+import java.lang.annotation.*;
+
+/**
+ * Маркер, позволяющий получить источник данных для применения миграций приложения.
+ */
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.TYPE, ElementType.ANNOTATION_TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Qualifier
+public @interface DDLDataSource
 {
-	private final DictsDDLProvider dictsDDLProvider;
-
-	@PostConstruct
-	public void initialize()
-	{
-		dictsDDLProvider.update();
-	}
 }

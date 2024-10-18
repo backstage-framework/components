@@ -16,9 +16,6 @@
 
 package com.backstage.app.report;
 
-import com.backstage.app.database.configuration.jpa.DataSourceConfiguration;
-import com.backstage.app.database.configuration.jpa.JpaConfiguration;
-import com.backstage.app.report.configuration.ReportConfiguration;
 import org.junit.ClassRule;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
@@ -34,7 +31,7 @@ import java.time.LocalDate;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTests.Initializer.class})
-@Import({ReportConfiguration.class, DataSourceConfiguration.class, JpaConfiguration.class, JacksonAutoConfiguration.class, JmsAutoConfiguration.class})
+@Import({JacksonAutoConfiguration.class, JmsAutoConfiguration.class})
 public class AbstractTests
 {
 	protected static final LocalDate FROM = LocalDate.of(2000, 1, 1);

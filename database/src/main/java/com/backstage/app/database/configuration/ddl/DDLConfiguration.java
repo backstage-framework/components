@@ -16,20 +16,21 @@
 
 package com.backstage.app.database.configuration.ddl;
 
+import com.backstage.app.configuration.AppConfiguration;
 import com.backstage.app.database.configuration.properties.DDLProperties;
-import com.backstage.app.utils.MapUtils;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
 import java.util.Map;
 
 @Slf4j
 @Configuration
 @RequiredArgsConstructor
+@AutoConfigureAfter(AppConfiguration.class)
 @EnableConfigurationProperties(DDLProperties.class)
 public class DDLConfiguration
 {
@@ -45,13 +46,9 @@ public class DDLConfiguration
 
 	private final Map<String, DDLProvider> ddlProviders;
 
-	@PostConstruct
-	public void initialize()
+	@Bean
+	public DDLProviderInitializer ddlProviderInitializer()
 	{
-		ddlProviders.values()
-				.stream()
-				.sorted(AnnotationAwareOrderComparator.INSTANCE)
-				.peek(provider -> log.info("Applying DDL with '{}'...", MapUtils.getKeyByValue(ddlProviders, provider)))
-				.forEach(DDLProvider::update);
+		return new DDLProviderInitializer(ddlProviders);
 	}
 }

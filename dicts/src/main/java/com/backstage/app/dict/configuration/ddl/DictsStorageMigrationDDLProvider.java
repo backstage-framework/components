@@ -16,27 +16,25 @@
 
 package com.backstage.app.dict.configuration.ddl;
 
-import com.backstage.app.database.configuration.ddl.DDLConfiguration;
+import com.backstage.app.database.configuration.ddl.DDLProvider;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.Engine;
 import com.backstage.app.dict.service.migration.StorageMigrationService;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 /**
- * Приоритет провайдера, должен быть ниже чем {@link StorageDictsDDLProvider}
+ * Приоритет провайдера, должен быть ниже чем {@link DictsStorageDDLProvider}
  */
 @Component
 @RequiredArgsConstructor
-@Order(DDLConfiguration.DDL_PRECEDENCE_SYSTEM + 100) //TODO: вынести все арифметические операции в отдельный енам/класс констант, сгруппировав и проименовав с учетом зоны ответственности
-public class StorageMigrationDictsDDLProvider implements DictsStorageDDLProvider, BeanNameAware
+@Order(DictsStorageDDLProvider.DDL_PRECEDENCE + 1) //TODO: вынести все арифметические операции в отдельный енам/класс констант, сгруппировав и проименовав с учетом зоны ответственности
+public class DictsStorageMigrationDDLProvider implements DDLProvider
 {
 	private final DictsProperties dictsProperties;
 
@@ -45,15 +43,6 @@ public class StorageMigrationDictsDDLProvider implements DictsStorageDDLProvider
 	private final DictBackend dictBackend;
 
 	private final List<Engine> engines;
-
-	@Setter
-	private String beanName;
-
-	@Override
-	public String getName()
-	{
-		return beanName;
-	}
 
 	@Override
 	public void update()
