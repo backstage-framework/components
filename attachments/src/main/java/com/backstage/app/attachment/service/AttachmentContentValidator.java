@@ -22,6 +22,8 @@ import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
 
@@ -30,6 +32,7 @@ import java.io.ByteArrayInputStream;
 import java.util.*;
 
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnProperty(name = "app.attachments.verify-content")
 public class AttachmentContentValidator implements AttachmentServiceAdvice
 {

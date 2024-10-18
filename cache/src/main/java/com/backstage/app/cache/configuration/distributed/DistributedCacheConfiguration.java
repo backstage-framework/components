@@ -16,13 +16,13 @@
 
 package com.backstage.app.cache.configuration.distributed;
 
+import com.backstage.app.cache.configuration.conditional.ConditionalOnCache;
 import com.backstage.app.cache.configuration.distributed.conditional.ConditionalOnDistributedCache;
 import com.backstage.app.cache.configuration.properties.CacheProperties;
 import com.backstage.app.configuration.properties.AppProperties;
 import com.backstage.app.jms.configuration.JmsBrokerChannelProvider;
 import com.backstage.app.jms.configuration.conditional.ConditionalOnJms;
 import jakarta.jms.ConnectionFactory;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.jms.config.DefaultJmsListenerContainerFactory;
@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 @Configuration
-@ConditionalOnProperty(value = CacheProperties.ACTIVATION_PROPERTY, matchIfMissing = true)
+@ConditionalOnCache
 @ConditionalOnJms
 @ConditionalOnDistributedCache
 public class DistributedCacheConfiguration

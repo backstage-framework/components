@@ -16,11 +16,14 @@
 
 package com.backstage.app.attachment.service;
 
+import org.springframework.core.annotation.Order;
+
 import java.util.List;
 
 /**
  * Класс, который может быть использован для уточнения основных операций {@link AttachmentService}.
  */
+@Order(0)
 public interface AttachmentServiceAdvice
 {
 	/**
