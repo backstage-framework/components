@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.service.backend.mongo;
 
+import com.backstage.app.dict.configuration.annotation.DictsMongoTemplate;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictIndex;
@@ -31,6 +32,7 @@ public abstract class AbstractMongoBackend
 	protected MongoEngine mongoEngine;
 
 	@Autowired
+	@DictsMongoTemplate
 	protected MongoTemplate mongoTemplate;
 
 	@Autowired

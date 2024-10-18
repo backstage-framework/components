@@ -1,4 +1,4 @@
-## 5.1.0 - 2024-10-02
+## 5.1.0 - 2024-10-17
 ### Dependency Upgrades
 - Spring Cloud 3.3.4
 - EclipseLink 4.0.4
@@ -38,6 +38,7 @@
 - BindingDictDataServiceAdvice теперь срабатывает с наименьшим приоритетом, чтобы учесть изменения от других advice'ов.
 - Для DictItemDto исключаются null поля из JSON в ответах API.
 - Исправили построение запросов с сортировками в PostgreSQL в случае когда имя справочника совпадает со служебными словами.
+- Добавили возможность через @Configuration переопределять dataSource (Postgres) и mongoTemplate (Mongo).
 
 ### Jobs
 - Добавили подсветку синтаксиса cron выражений в AbstractCronJob.
