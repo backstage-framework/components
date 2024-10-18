@@ -26,6 +26,7 @@ import com.backstage.app.dict.configuration.annotation.DictsPostgresJdbcTemplate
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.exception.dict.DictException;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -79,6 +80,7 @@ public class DictsConfiguration
 	@DictsMongoTemplate
 	@ConditionalOnMissingQualifiedBean
 	@ConditionalOnEngine("mongo")
+	@ConditionalOnClass(name = "org.springframework.data.mongodb.core.MongoTemplate")
 	public MongoTemplate dictsMongoTemplate(Optional<MongoTemplate> mongoTemplate)
 	{
 		if (mongoTemplate.isEmpty())
