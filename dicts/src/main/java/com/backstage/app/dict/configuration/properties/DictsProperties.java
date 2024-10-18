@@ -34,6 +34,7 @@ public class DictsProperties
 {
 	public static final String ENGINE_PROPERTY = "app.dicts.engines";
 	public static final String STORAGE_PROPERTY = "app.dicts.storage";
+	public static final String DDL_ACTIVATION_PROPERTY = "app.dicts.ddl.enabled";
 	public static final String DEFAULT_ENGINE_PROPERTY = "app.dicts.default-engine";
 	public static String DEFAULT_ENGINE;
 
