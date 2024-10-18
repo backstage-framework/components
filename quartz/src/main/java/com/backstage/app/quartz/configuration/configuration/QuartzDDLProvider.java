@@ -16,11 +16,11 @@
 
 package com.backstage.app.quartz.configuration.configuration;
 
+import com.backstage.app.database.configuration.annotation.DDLDataSource;
 import com.backstage.app.database.configuration.ddl.AbstractDDLProvider;
 import com.backstage.app.database.configuration.ddl.DDLConfiguration;
 import com.backstage.app.quartz.configuration.configuration.properties.QuartzProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -36,7 +36,7 @@ public class QuartzDDLProvider extends AbstractDDLProvider
 	static final int PRECEDENCE = DDLConfiguration.DDL_PRECEDENCE_SYSTEM + 50;
 
 	@Autowired
-	public QuartzDDLProvider(@Qualifier("ddlDataSource") DataSource dataSource, QuartzProperties quartzProperties)
+	public QuartzDDLProvider(@DDLDataSource DataSource dataSource, QuartzProperties quartzProperties)
 	{
 		super("quartz", quartzProperties.getDdl(), dataSource);
 	}

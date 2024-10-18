@@ -16,8 +16,6 @@
 
 package com.backstage.app.database;
 
-import com.backstage.app.database.configuration.jpa.DataSourceConfiguration;
-import com.backstage.app.database.configuration.jpa.JpaConfiguration;
 import org.junit.ClassRule;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -33,7 +31,7 @@ import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTest.Initializer.class})
-@Import({DataSourceConfiguration.class, JpaConfiguration.class, JacksonAutoConfiguration.class})
+@Import({JacksonAutoConfiguration.class})
 public class AbstractTest
 {
 	public static final String POSTGRES_IMAGE_NAME = "postgres:14";

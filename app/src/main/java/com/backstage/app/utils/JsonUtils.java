@@ -21,30 +21,22 @@ import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
+import com.google.common.base.Supplier;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 
 @Component
-public class JsonUtils implements ApplicationContextAware
+public class JsonUtils
 {
-	private static ObjectMapper mapper;
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException
-	{
-		mapper = applicationContext.getBean(ObjectMapper.class);
-	}
+	private static final Supplier<ObjectMapper> mapperSupplier = SpringContextUtils.createBeanSupplier(ObjectMapper.class);
 
 	public static String toJson(Object value)
 	{
 		try
 		{
-			return mapper.writeValueAsString(value);
+			return mapperSupplier.get().writeValueAsString(value);
 		}
 		catch (JsonProcessingException e)
 		{
@@ -57,7 +49,7 @@ public class JsonUtils implements ApplicationContextAware
 	{
 		try
 		{
-			return mapper.readValue(value.toString(), new TypeReference<>() { });
+			return mapperSupplier.get().readValue(value.toString(), new TypeReference<>() { });
 		}
 		catch (JsonProcessingException e)
 		{
@@ -75,6 +67,8 @@ public class JsonUtils implements ApplicationContextAware
 	{
 		try
 		{
+			var mapper = mapperSupplier.get();
+
 			return mapper.readValue(value.toString(), mapper.constructType(clazz));
 		}
 		catch (JsonProcessingException e)
@@ -88,7 +82,7 @@ public class JsonUtils implements ApplicationContextAware
 	{
 		try
 		{
-			return mapper.readValue(value.toString(), typeReference);
+			return mapperSupplier.get().readValue(value.toString(), typeReference);
 		}
 		catch (JsonProcessingException e)
 		{

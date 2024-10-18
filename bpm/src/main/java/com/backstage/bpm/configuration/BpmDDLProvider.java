@@ -16,11 +16,11 @@
 
 package com.backstage.bpm.configuration;
 
+import com.backstage.app.database.configuration.annotation.DDLDataSource;
 import com.backstage.app.database.configuration.ddl.AbstractDDLProvider;
 import com.backstage.app.database.configuration.ddl.DDLConfiguration;
 import com.backstage.bpm.configuration.properties.BpmProperties;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
@@ -33,7 +33,7 @@ public class BpmDDLProvider extends AbstractDDLProvider
 	public static final int PRECEDENCE = DDLConfiguration.DDL_PRECEDENCE_SYSTEM + 60;
 
 	@Autowired
-	public BpmDDLProvider(@Qualifier("noTimeoutDataSource") DataSource dataSource, BpmProperties bpmProperties)
+	public BpmDDLProvider(@DDLDataSource DataSource dataSource, BpmProperties bpmProperties)
 	{
 		super("bpm", bpmProperties.getDdl(), dataSource);
 	}

@@ -26,7 +26,6 @@ import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -39,7 +38,6 @@ public class StorageMigrationService
 	private final DictBackend targetDictBackend;
 	private final VersionSchemeBackend targetSchemeBackend;
 
-	@Transactional
 	public void migrate(Engine sourceEngine, Engine targetEngine)
 	{
 		var sourceEngineName = sourceEngine.getDictEngine().getName();

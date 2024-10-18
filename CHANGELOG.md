@@ -11,6 +11,7 @@
 
 ### App
 - Реализована возможность запуска в составе приложений, корневой пакет которых отличается от com.backstage.
+- Добавлена аннотация @ConditionalOnMissingQualifiedBean.
 
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.

@@ -17,8 +17,10 @@
 package com.backstage.app.database.configuration.jpa;
 
 import com.backstage.app.configuration.properties.AppProperties;
+import com.backstage.app.database.configuration.annotation.AppDataSource;
 import com.backstage.app.database.configuration.conditional.ConditionalOnJpa;
 import com.backstage.app.database.configuration.ddl.DDLConfiguration;
+import com.backstage.app.database.configuration.ddl.DDLProviderInitializer;
 import com.backstage.app.database.configuration.jpa.customizer.EntityManagerFactoryCustomizer;
 import com.backstage.app.database.configuration.jpa.eclipselink.Customizer;
 import com.backstage.app.database.configuration.jpa.eclipselink.MetaModelVerifier;
@@ -26,6 +28,7 @@ import com.backstage.app.database.configuration.properties.JPAProperties;
 import com.backstage.app.database.repository.CustomJpaRepositoryFactoryBean;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -48,14 +51,12 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 @EnableTransactionManagement
 @ConditionalOnJpa
+@AutoConfigureAfter(DDLConfiguration.class)
 @EnableConfigurationProperties({JpaProperties.class, JPAProperties.class})
 @PropertySource("classpath:jpa.properties")
 @EnableJpaRepositories(basePackages = AppProperties.DEFAULT_PACKAGE, repositoryFactoryBeanClass = CustomJpaRepositoryFactoryBean.class)
 public class JpaConfiguration
 {
-	// Убеждаемся, что при активированном DDL, он инициализируется до JPA.
-	private final Optional<DDLConfiguration> ddlConfiguration;
-
 	private final List<EntityManagerFactoryCustomizer> entityManagerFactoryCustomizers;
 
 	@Bean
@@ -76,7 +77,7 @@ public class JpaConfiguration
 	}
 
 	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(AppProperties appProperties, JpaProperties jpaProperties, DataSource dataSource, Customizer customizer)
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(AppProperties appProperties, JpaProperties jpaProperties, @AppDataSource DataSource dataSource, Customizer customizer, DDLProviderInitializer ddlProviderInitializer)
 	{
 		var packagesToScan = Stream.concat(appProperties.getBasePackages().stream(), entityManagerFactoryCustomizers.stream().flatMap(it -> it.getPackagesToScan().stream()))
 				.distinct()

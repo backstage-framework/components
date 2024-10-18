@@ -16,7 +16,7 @@
 
 package com.backstage.app.dict.service.migration;
 
-import com.backstage.app.dict.configuration.ddl.ClasspathMigrationDictsDDLProvider;
+import com.backstage.app.dict.configuration.ddl.DictsDDLProvider;
 import com.backstage.app.dict.domain.VersionScheme;
 import com.backstage.app.dict.exception.migration.MigrationAppliedException;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
@@ -50,7 +50,7 @@ public class ClasspathMigrationService
 	@Transactional
 	public void migrate(Map.Entry<String, String> migration)
 	{
-		var appliedMigration = ClasspathMigrationDictsDDLProvider.MIGRATIONS_PATH + ClasspathMigrationDictsDDLProvider.SEPARATOR + migration.getKey();
+		var appliedMigration = DictsDDLProvider.MIGRATIONS_PATH + DictsDDLProvider.SEPARATOR + migration.getKey();
 
 		try
 		{
