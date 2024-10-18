@@ -26,7 +26,6 @@ import com.backstage.app.dict.configuration.annotation.DictsPostgresJdbcTemplate
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.exception.dict.DictException;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,40 +53,46 @@ public class DictsConfiguration
 				.build()));
 	}
 
-	@Bean
-	@DictsPostgresDataSource
-	@ConditionalOnMissingQualifiedBean
+	@Configuration
 	@ConditionalOnEngine("postgres")
-	public DataSource dictsPostgresDataSource(Optional<DataSource> dataSource)
+	public static class DictsPostgresBackendConfiguration
 	{
-		if (dataSource.isEmpty())
+		@Bean
+		@DictsPostgresDataSource
+		@ConditionalOnMissingQualifiedBean
+		public DataSource dictsPostgresDataSource(Optional<DataSource> dataSource)
 		{
-			throw new DictException("no data source available");
+			if (dataSource.isEmpty())
+			{
+				throw new DictException("no data source available");
+			}
+
+			return dataSource.get();
 		}
 
-		return dataSource.get();
+		@Bean
+		@DictsPostgresJdbcTemplate
+		public NamedParameterJdbcTemplate dictsPostgresJdbcTemplate(@DictsPostgresDataSource DataSource dataSource)
+		{
+			return new NamedParameterJdbcTemplate(dataSource);
+		}
 	}
 
-	@Bean
-	@DictsPostgresJdbcTemplate
-	@ConditionalOnEngine("postgres")
-	public NamedParameterJdbcTemplate dictsPostgresJdbcTemplate(@DictsPostgresDataSource DataSource dataSource)
-	{
-		return new NamedParameterJdbcTemplate(dataSource);
-	}
-
-	@Bean
-	@DictsMongoTemplate
-	@ConditionalOnMissingQualifiedBean
+	@Configuration
 	@ConditionalOnEngine("mongo")
-	@ConditionalOnClass(name = "org.springframework.data.mongodb.core.MongoTemplate")
-	public MongoTemplate dictsMongoTemplate(Optional<MongoTemplate> mongoTemplate)
+	public static class DictsMongoBackendConfiguration
 	{
-		if (mongoTemplate.isEmpty())
+		@Bean
+		@DictsMongoTemplate
+		@ConditionalOnMissingQualifiedBean
+		public MongoTemplate dictsMongoTemplate(Optional<MongoTemplate> mongoTemplate)
 		{
-			throw new DictException("no mongo template available");
-		}
+			if (mongoTemplate.isEmpty())
+			{
+				throw new DictException("no mongo template available");
+			}
 
-		return mongoTemplate.get();
+			return mongoTemplate.get();
+		}
 	}
 }
