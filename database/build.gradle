@@ -26,7 +26,8 @@ dependencies {
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
 	api project(":app")
-	api project(":jobs")
+
+	compileOnly project(":jobs")
 
 	compileOnly "org.springframework.boot:spring-boot-starter-data-mongodb"
 	api ("org.springframework.data:spring-data-jpa") {
