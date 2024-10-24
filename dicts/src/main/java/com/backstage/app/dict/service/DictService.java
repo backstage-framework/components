@@ -101,6 +101,7 @@ public class DictService
 
 		dictValidationService.validateDictScheme(dict, this);
 
+		// TODO: убрать в валидацию
 		mapDefaultFieldValues(dict);
 
 		var created = buildScheme(dict, new Dict());
@@ -131,6 +132,7 @@ public class DictService
 
 		dictValidationService.validateDictScheme(dict, this);
 
+		// TODO: убрать в валидацию
 		mapDefaultFieldValues(dict);
 
 		var actualDictEngine = actualDict.getEngine();

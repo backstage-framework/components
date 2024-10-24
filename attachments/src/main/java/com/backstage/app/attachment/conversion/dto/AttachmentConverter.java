@@ -37,7 +37,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class AttachmentConverter extends AbstractConverter<Attachment, AttachmentDto>
 {
-	private static final String DEFAULT_ATTACHMENT_URL = "/api/attachment/get/%s";
+	private static final String DEFAULT_ATTACHMENT_URL = "/api/attachment/get?id=%s";
 
 	private final AttachmentBindingRepository attachmentBindingRepository;
 	private final AttachmentBindingConverter attachmentBindingConverter;
