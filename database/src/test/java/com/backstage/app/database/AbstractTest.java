@@ -24,12 +24,14 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
+@EnableWebMvc
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTest.Initializer.class})
 @Import({JacksonAutoConfiguration.class})
 public class AbstractTest
