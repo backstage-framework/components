@@ -1,13 +1,17 @@
-## 5.1.0 - 2024-10-17
+## 5.1.0 - 2024-10-30
 ### Dependency Upgrades
-- Spring Cloud 3.3.4
+- Spring Boot 3.3.5
 - EclipseLink 4.0.4
-- Flyway 10.18.1
+- Flyway 10.20.1
 - Postgresql JDBC 42.7.4
 - ClickHouse JDBC 0.6.5
 - Groovy 4.0.23
-- MinIO 8.5.12
+- MinIO 8.5.13
 - Guava 33.3.1-jre
+- Commons-io 2.17.0
+- Commons-codec 1.17.1
+- Jersey 3.1.9
+- PostGIS 2024.1.0
 
 ### App
 - Реализована возможность запуска в составе приложений, корневой пакет которых отличается от com.backstage.

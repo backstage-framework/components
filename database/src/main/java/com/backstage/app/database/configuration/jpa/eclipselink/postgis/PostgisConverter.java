@@ -16,6 +16,7 @@
 
 package com.backstage.app.database.configuration.jpa.eclipselink.postgis;
 
+import net.postgis.jdbc.PGgeometry;
 import org.eclipse.persistence.internal.helper.DatabaseField;
 import org.eclipse.persistence.mappings.DatabaseMapping;
 import org.eclipse.persistence.mappings.DirectCollectionMapping;
@@ -25,7 +26,6 @@ import org.geolatte.geom.*;
 import org.geolatte.geom.codec.Wkb;
 import org.geolatte.geom.codec.Wkt;
 import org.geolatte.geom.codec.Wkt.Dialect;
-import org.postgis.PGgeometry;
 
 import java.lang.reflect.Field;
 import java.sql.SQLException;
@@ -33,7 +33,6 @@ import java.sql.SQLException;
 class PostgisConverter implements Converter
 {
 	@Override
-	@SuppressWarnings("unchecked")
 	public Object convertObjectValueToDataValue(final Object objectValue, final Session session)
 	{
 		if (null == objectValue)
@@ -41,7 +40,7 @@ class PostgisConverter implements Converter
 			return null;
 		}
 
-		final Geometry geometry = (Geometry) objectValue;
+		final Geometry<?> geometry = (Geometry<?>) objectValue;
 		final String wkt = Wkt.newEncoder(Dialect.POSTGIS_EWKT_1).encode(geometry);
 
 		try
@@ -55,7 +54,7 @@ class PostgisConverter implements Converter
 	}
 
 	@Override
-	public Geometry convertDataValueToObjectValue(final Object dataValue, final Session session)
+	public Geometry<?> convertDataValueToObjectValue(final Object dataValue, final Session session)
 	{
 		if (null == dataValue)
 		{
@@ -63,7 +62,7 @@ class PostgisConverter implements Converter
 		}
 		if (dataValue instanceof PGgeometry)
 		{
-			final org.postgis.Geometry geometry = ((PGgeometry) dataValue).getGeometry();
+			final net.postgis.jdbc.geometry.Geometry geometry = ((PGgeometry) dataValue).getGeometry();
 			return Wkt.newDecoder(Wkt.Dialect.POSTGIS_EWKT_1).decode(geometry.toString());
 		}
 		else if (dataValue instanceof String)
@@ -120,8 +119,8 @@ class PostgisConverter implements Converter
 			final Field javaField = getJavaField(mapping, field);
 			final Class<?> javaFieldType = javaField.getType();
 
-			//TODO: Dervive the SRS from an annotation
-			//TODO: Dervive the M from an annotation
+			//TODO: Derive the SRS from an annotation
+			//TODO: Derive the M from an annotation
 			if (Point.class == javaFieldType)
 			{
 				field.setColumnDefinition("geometry(POINT,-1)");
@@ -162,7 +161,7 @@ class PostgisConverter implements Converter
 		try
 		{
 			final String fieldName = field.getName();
-			final Class type = mapping.getDescriptor().getJavaClass();
+			final Class<?> type = mapping.getDescriptor().getJavaClass();
 
 			return type.getField(fieldName);
 		}
