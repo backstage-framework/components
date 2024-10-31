@@ -77,7 +77,11 @@ public class JpaConfiguration
 	}
 
 	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(AppProperties appProperties, JpaProperties jpaProperties, @AppDataSource DataSource dataSource, Customizer customizer, DDLProviderInitializer ddlProviderInitializer)
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(AppProperties appProperties,
+	                                                                   JpaProperties jpaProperties,
+	                                                                   @AppDataSource DataSource dataSource,
+	                                                                   Customizer customizer,
+	                                                                   DDLProviderInitializer ddlProviderInitializer)
 	{
 		var packagesToScan = Stream.concat(appProperties.getBasePackages().stream(), entityManagerFactoryCustomizers.stream().flatMap(it -> it.getPackagesToScan().stream()))
 				.distinct()

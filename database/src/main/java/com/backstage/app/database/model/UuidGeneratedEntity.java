@@ -16,6 +16,7 @@
 
 package com.backstage.app.database.model;
 
+import com.backstage.app.database.configuration.jpa.eclipselink.uuid.UuidSequence;
 import jakarta.persistence.Column;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
@@ -38,6 +39,6 @@ public class UuidGeneratedEntity implements Identity<String>, Serializable, NonC
 {
 	@Id
 	@Column(length = 40)
-	@GeneratedValue(generator = "system-uuid")
+	@GeneratedValue(generator = UuidSequence.NAME)
 	protected String id;
 }
