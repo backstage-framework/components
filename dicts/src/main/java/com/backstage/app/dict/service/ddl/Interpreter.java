@@ -23,6 +23,7 @@ import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.enums.EnumCreatedException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.index.IndexCreatedException;
+import com.backstage.app.dict.model.dictitem.AnotherFieldValue;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictService;
@@ -311,32 +312,25 @@ public class Interpreter
 
 		var filtersQuery = buildFilterQuery(update.getRow());
 
-		// FIXME: заменить на updateByFilter.
-		dictDataService.getByFilter(dictId, List.of("*"), filtersQuery, Pageable.unpaged()).stream()
-				.peek(dictItem -> {
-					var updatedMap = new HashMap<>(dictItem.getData());
+		var dictDataMap = update.getColumns()
+				.stream()
+				.map(column -> {
+					if (column.getValue() instanceof ColumnValue columnValue)
+					{
+						var columnName = column.getId().getName();
+						var valueColumnName = columnValue.getValue().getName();
 
-					update.getColumns()
-							.forEach(column -> {
-								if (column.getValue() instanceof ColumnValue columnValue)
-								{
-									var columnName = column.getId().getName();
-									var value = updatedMap.get(columnValue.getValue().getName());
+						return Map.<String, Object>of(columnName, AnotherFieldValue.of(valueColumnName));
+					}
 
-									updatedMap.put(columnName, value);
-								}
-								else
-								{
-									var dataItemMap = buildDataItemMap(column.getValue(), column.getId().getName());
-
-									updatedMap.putAll(dataItemMap);
-								}
-							});
-
-					dictItem.setData(updatedMap);
+					return buildDataItemMap(column.getValue(), column.getId().getName());
 				})
-				.forEach(dictItem -> dictDataService.update(dictItem.getId(), buildDictDataItem(dictId, dictItem.getData()), dictItem.getVersion()));
-	}
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		dictDataService.updateByFilter(buildDictDataItem(dictId, dictDataMap), filtersQuery);
+}
 
 	private void execute(CreateIndexExpression createIndex)
 	{

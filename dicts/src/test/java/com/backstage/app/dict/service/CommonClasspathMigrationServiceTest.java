@@ -172,6 +172,29 @@ public class CommonClasspathMigrationServiceTest extends CommonTest
 		assertTrue(dictDataService.existsByFilter(dictId, "number = 2"));
 	}
 
+	protected void migrateWithImplicitUpdate()
+	{
+		var dictId = withRandom("migrate_implicit_update%s".formatted(TESTABLE_ENGINE_NAME));
+
+		var migration = Map.of("implicitUpdate", """
+				create table %s['Миграция_json']
+				(
+					field1 text,
+					field2 text
+				);
+
+				insert into %s values ('1', '2');
+				insert into %s values ('3', '2');
+
+				update %s set field1 = field2;
+				""".formatted(dictId, dictId, dictId, dictId));
+
+		migration.entrySet().forEach(classpathMigrationService::migrate);
+
+		assertEquals(dictDataService.countByFilter(dictId, "field1 = '2'"), 2);
+		assertEquals(dictDataService.countByFilter(dictId, "field1 != '2'"), 0);
+	}
+
 	protected void migrateGeoJson()
 	{
 		var dictId = withRandom("migrate_geo_json%s".formatted(TESTABLE_ENGINE_NAME));

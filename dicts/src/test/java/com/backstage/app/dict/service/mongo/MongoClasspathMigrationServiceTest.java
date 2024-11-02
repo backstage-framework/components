@@ -64,6 +64,12 @@ class MongoClasspathMigrationServiceTest extends CommonClasspathMigrationService
 	}
 
 	@Test
+	void migrate_WithImplicitUpdate()
+	{
+		migrateWithImplicitUpdate();
+	}
+
+	@Test
 	void migrate_GeoJson()
 	{
 		migrateGeoJson();

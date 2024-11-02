@@ -28,6 +28,7 @@ import com.backstage.app.dict.model.dictitem.DictItemColumnName;
 import com.backstage.app.dict.model.postgres.backend.PostgresDictFieldName;
 import com.backstage.app.dict.model.postgres.backend.PostgresDictItem;
 import com.backstage.app.dict.model.postgres.backend.PostgresPageable;
+import com.backstage.app.dict.model.postgres.backend.PostgresWord;
 import com.backstage.app.dict.model.postgres.query.PostgresQuery;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.backend.DictDataBackend;
@@ -38,7 +39,9 @@ import com.backstage.app.dict.service.backend.postgres.clause.PostgresDictDataUp
 import com.backstage.app.dict.service.query.PostgresTranslator;
 import com.backstage.app.dict.service.query.QueryParser;
 import com.backstage.app.dict.service.query.ast.QueryExpression;
+import com.backstage.app.exception.AppException;
 import com.backstage.app.exception.ObjectNotFoundException;
+import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.DataUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.BidiMap;
@@ -238,6 +241,49 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	}
 
 	@Override
+	public int updateByFilter(Dict dict, DictItem dictItem, QueryExpression queryExpression)
+	{
+		var query = postgresTranslator.process(dict, queryExpression);
+		var participantDictIds = query.getParticipantDictIds()
+				.stream()
+				.map(PostgresWord::getOriginalWord)
+				.collect(Collectors.toSet());
+
+		if (!participantDictIds.isEmpty())
+		{
+			if (!participantDictIds.contains(dict.getId()) || participantDictIds.size() > 1)
+			{
+				throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Использование связанных справочников недоступно.");
+			}
+		}
+
+		var updateClauses = new LinkedHashSet<String>();
+
+		var dictId = dict.getId();
+		var sqlParameterSource = new MapSqlParameterSource(query.getParameterSource().getValues());
+
+		var whereClauses = new LinkedHashSet<String>();
+
+		filterClause.addWhereClauses(whereClauses, query);
+		completeUpdateClauseForced(updateClauses, dict, dictItem.getData(), sqlParameterSource);
+
+		var sql = """
+				update %s.%s
+				set updated = now(),
+					version = version + 1,
+					history = history || :history,
+					%s
+				%s
+				""".formatted(
+				dictsProperties.getDdl().getScheme(),
+				wordMap(dictId).get(dictId).getQuotedIfKeyword(),
+				String.join(", ", updateClauses),
+				whereClauses.isEmpty() ? "" : " where " + String.join(" and ", whereClauses));
+
+		return jdbc.update(sql, sqlParameterSource);
+	}
+
+	@Override
 	public void delete(Dict dict, DictItem dictItem)
 	{
 		addTransactionData(dict, false);
@@ -351,7 +397,18 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		insertClause.addInsertClause(DictItemColumnName.UPDATED.getName(), postgresDictItem.getUpdated(), columns, sqlParameterSource);
 	}
 
-	private void completeUpdateClause(LinkedHashSet<String> updateClauses, Dict dict, String itemId, PostgresDictItem postgresDictItem, MapSqlParameterSource sqlParameterSource)
+	private void completeUpdateClauseForced(LinkedHashSet<String> updateClauses, Dict dict,
+	                                        Map<String, Object> dictItemData,
+	                                        MapSqlParameterSource sqlParameterSource)
+	{
+		updateClause.addDictDataUpdateClauseForced(dict, dictItemData, updateClauses, sqlParameterSource);
+
+		var newHistoryJson = updateClause.jsonValue(List.of(dictItemData));
+		sqlParameterSource.addValue(DictItemColumnName.HISTORY.getName(), newHistoryJson);
+	}
+
+	private void completeUpdateClause(LinkedHashSet<String> updateClauses, Dict dict, String itemId,
+	                                  PostgresDictItem postgresDictItem, MapSqlParameterSource sqlParameterSource)
 	{
 		var oldItem = getById(dict, itemId, List.of(new DictFieldName(null, "*")));
 

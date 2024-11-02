@@ -69,6 +69,12 @@ public class PostgresClasspathMigrationTest extends CommonClasspathMigrationServ
 	}
 
 	@Test
+	void migrate_WithImplicitUpdate()
+	{
+		migrateWithImplicitUpdate();
+	}
+
+	@Test
 	void migrate_GeoJson()
 	{
 		migrateGeoJson();

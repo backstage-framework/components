@@ -21,6 +21,7 @@ import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.model.dictitem.AnotherFieldValue;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.model.other.date.DateConstants;
 import com.backstage.app.utils.StreamCollectors;
@@ -129,6 +130,11 @@ public class DictItemMappingService
 
 	private Object mapMultivaluedField(DictField field, Object o)
 	{
+		if (o instanceof AnotherFieldValue)
+		{
+			return o;
+		}
+
 		if (o instanceof List<?> list)
 		{
 			return list.stream()
@@ -141,6 +147,11 @@ public class DictItemMappingService
 
 	private Object mapSingleField(DictField field, Object o)
 	{
+		if (o instanceof AnotherFieldValue)
+		{
+			return o;
+		}
+
 		if (field.getType() == DictFieldType.INTEGER && o instanceof Double d)
 		{
 			return d.longValue();

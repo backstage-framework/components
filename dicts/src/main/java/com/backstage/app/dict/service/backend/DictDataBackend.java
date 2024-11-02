@@ -50,4 +50,6 @@ public interface DictDataBackend extends Backend
 	void deleteAll(Dict dict, List<DictItem> dictItems);
 
 	long countByFilter(Dict dict, QueryExpression queryExpression);
+
+	int updateByFilter(Dict dict, DictItem dictItem, QueryExpression queryExpression);
 }

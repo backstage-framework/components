@@ -31,7 +31,9 @@ import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
 import com.backstage.app.dict.service.mapping.DictItemMappingService;
 import com.backstage.app.dict.service.query.QueryParser;
 import com.backstage.app.dict.service.validation.DictDataValidationService;
+import com.backstage.app.exception.AppException;
 import com.backstage.app.exception.ObjectNotFoundException;
+import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -342,6 +344,29 @@ public class DictDataService
 		serviceAdviceList.forEach(it -> it.handleAfterUpdate(dict, result));
 
 		return result;
+	}
+
+	/**
+	 * Частичное обновление, dictDataItem может содержать не все поля справочника.
+	 *
+	 * @return Число обновленных строк.
+	 * */
+	public int updateByFilter(DictDataItem dictDataItem, String filtersQuery)
+	{
+		if (dictDataItem.getDataItemMap().isEmpty())
+		{
+			throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Обновляемые поля должны быть заполнены.");
+		}
+
+		var dict = dictService.getById(dictDataItem.getDictId());
+
+		dictPermissionService.checkEditPermission(dict, SecurityUtils.getCurrentUserId());
+
+		dictDataValidationService.validateAvailableFields(dict, dictDataItem);
+
+		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, DictService.getDataFieldsByDict(dict));
+
+		return backend(dict).updateByFilter(dict, mappedItem, queryParser.parse(filtersQuery));
 	}
 
 	@Transactional

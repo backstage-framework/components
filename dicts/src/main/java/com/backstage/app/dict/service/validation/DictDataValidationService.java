@@ -28,6 +28,7 @@ import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.exception.dict.field.ForbiddenFieldNameException;
+import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
@@ -128,6 +129,15 @@ public class DictDataValidationService
 		dataItemMap.forEach((field, value) -> checkForbiddenField(availableFieldIds, field));
 
 		validateRequiredFields(dictId, dataItemMap, availableFields, userId);
+	}
+
+	public void validateAvailableFields(Dict dict, DictDataItem dictDataItem)
+	{
+		var availableFieldIds = getAvailableFieldIds(dict.getFields());
+
+		dictDataItem.getDataItemMap()
+				.keySet()
+				.forEach(fieldId -> checkForbiddenField(availableFieldIds, fieldId));
 	}
 
 	public void validateOptimisticLock(String dictId, String itemId, long version, String userId)

@@ -192,6 +192,12 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	}
 
 	@Override
+	public int updateByFilter(Dict dict, DictItem dictItem, QueryExpression queryExpression)
+	{
+		return 0;
+	}
+
+	@Override
 	public void delete(Dict dict, DictItem dictItem)
 	{
 		addTransactionData(dict, false);

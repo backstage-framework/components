@@ -20,6 +20,7 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
+import com.backstage.app.dict.model.dictitem.AnotherFieldValue;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.backend.postgres.PostgresReservedKeyword;
 import com.backstage.app.utils.JsonUtils;
@@ -52,6 +53,20 @@ public class PostgresDictDataUpdateClause
 			return;
 		}
 
+		addUpdateClauseForced(column, newValue, updateClauses, sqlParameterSource);
+	}
+
+	public void addUpdateClauseForced(String column, Object newValue,
+	                            LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
+	{
+		if (newValue instanceof AnotherFieldValue anotherFieldValue)
+		{
+			var updateClause = "%s = %s".formatted(column, anotherFieldValue.getName());
+			updateClauses.add(updateClause);
+
+			return;
+		}
+
 		var paramName = sqlParamName(column);
 		updateClauses.add("%s = :%s".formatted(column, paramName));
 		sqlParameterSource.addValue(paramName, newValue);
@@ -61,6 +76,12 @@ public class PostgresDictDataUpdateClause
 	                                LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
 	{
 		addUpdateClause(column, jsonValue(oldValue), jsonValue(newValue), updateClauses, sqlParameterSource);
+	}
+
+	public void addUpdateJsonClauseForced(String column, Object newValue, LinkedHashSet<String> updateClauses,
+	                                      MapSqlParameterSource sqlParameterSource)
+	{
+		addUpdateClauseForced(column, jsonValue(newValue), updateClauses, sqlParameterSource);
 	}
 
 	public void addDictDataUpdateClause(Dict dict, Map<String, Object> oldData, Map<String, Object> newData,
@@ -94,6 +115,49 @@ public class PostgresDictDataUpdateClause
 
 					completeSingleValue(field, it.getKey(), oldValue, it.getValue(), updateClauses, sqlParameterSource);
 				});
+	}
+
+	public void addDictDataUpdateClauseForced(Dict dict, Map<String, Object> dictItemData,
+	                                          LinkedHashSet<String> updateClauses,
+	                                          MapSqlParameterSource sqlParameterSource)
+	{
+		var dictDataFields = DictService.getDataFieldsByDict(dict);
+
+		var dataWordMap = dictDataFields.stream()
+				.map(DictField::getId)
+				.map(reservedKeyword::postgresWordMap)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+
+		var fieldMap = dictDataFields.stream()
+				.collect(Collectors.toMap(it -> dataWordMap.get(it.getId()).getQuotedIfKeyword(), Function.identity()));
+
+		dictItemData.entrySet()
+				.stream()
+				.filter(it -> !StringUtils.equals(it.getKey(), ServiceFieldConstants.ID))
+				.forEach(it -> {
+					var field = fieldMap.get(it.getKey());
+
+					if (field.isMultivalued())
+					{
+						completeMultiValueForced(field, it.getKey(), it.getValue(), updateClauses, sqlParameterSource);
+
+						return;
+					}
+
+					completeSingleValueForced(field, it.getKey(), it.getValue(), updateClauses, sqlParameterSource);
+				});
+	}
+
+	@SneakyThrows
+	public PGobject jsonValue(Object value)
+	{
+		PGobject jsonObject = new PGobject();
+		jsonObject.setType("jsonb");
+		jsonObject.setValue(JsonUtils.toJson(value));
+
+		return jsonObject;
 	}
 
 	@SuppressWarnings("unchecked")
@@ -154,20 +218,57 @@ public class PostgresDictDataUpdateClause
 		addUpdateClause(column, oldValue, newValue, updateClauses, sqlParameterSource);
 	}
 
+	@SuppressWarnings("unchecked")
+	private void completeMultiValueForced(DictField field, String column, Object newValue,
+	                                LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
+	{
+		if (DictFieldType.JSON.equals(field.getType()) || newValue instanceof AnotherFieldValue)
+		{
+			completeSingleValueForced(field, column, newValue, updateClauses, sqlParameterSource);
+
+			return;
+		}
+
+		// FIXME: без каста работает некорректно - не отрабатывает автокаст в пг. Разобраться, исправить и убрать костыль
+		if (field.getType() == DictFieldType.TIMESTAMP)
+		{
+			newValue = ((List<LocalDateTime>) newValue).stream()
+					.map(Timestamp::valueOf)
+					.toList();
+		}
+
+		if (newValue instanceof List<?> listValue)
+		{
+			newValue = listValue.isEmpty()
+					? null
+					: listValue.toArray(size -> (Object[]) Array.newInstance(listValue.get(0).getClass(), size));
+		}
+
+		completeSingleValueForced(field, column, newValue, updateClauses, sqlParameterSource);
+	}
+
+	private void completeSingleValueForced(DictField field, String column, Object newValue,
+	                                 LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
+	{
+		if (DictFieldType.JSON.equals(field.getType()) && !(newValue instanceof AnotherFieldValue))
+		{
+			addUpdateJsonClauseForced(column, newValue, updateClauses, sqlParameterSource);
+
+			return;
+		}
+
+		if (DictFieldType.DECIMAL.equals(field.getType()) && !(newValue instanceof AnotherFieldValue))
+		{
+			sqlParameterSource.registerSqlType(sqlParamName(column), Types.DECIMAL);
+		}
+
+		addUpdateClauseForced(column, newValue, updateClauses, sqlParameterSource);
+	}
+
 	protected String sqlParamName(String column)
 	{
 		column = column.replaceAll("\"", "");
 
 		return column + "Val";
-	}
-
-	@SneakyThrows
-	private PGobject jsonValue(Object value)
-	{
-		PGobject jsonObject = new PGobject();
-		jsonObject.setType("jsonb");
-		jsonObject.setValue(JsonUtils.toJson(value));
-
-		return jsonObject;
 	}
 }
