@@ -34,6 +34,6 @@ public class AnotherFieldValue
 	/**
 	 * Имя поля, значение которого будет использовано
 	 */
-	@JsonProperty()
+	@JsonProperty("used_for_update_field_name")
 	private String name;
 }
