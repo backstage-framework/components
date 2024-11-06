@@ -251,7 +251,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	protected void getByFilter()
 	{
 		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
-				"stringField like 'str' and (integerField = 1 or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1) and stringField != 'stringFieldLogicalExpressionTest'",
+				"stringField like 'string' and (integerField = 1 or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1)",
 				PageRequest.of(0, 10));
 
 		var allMatchStringField = result.getContent()
@@ -263,7 +263,106 @@ public class CommonDictDataServiceTest extends CommonTest
 				.map(Map.Entry::getValue)
 				.allMatch(DATA_MAP.get("stringField")::equals);
 
+		assertFalse(result.getContent().isEmpty());
 		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithPrefixLikeExpression()
+	{
+		var queryValue = "str";
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like '%s%%' and stringField ilike '%s%%'".formatted(queryValue, queryValue.toUpperCase()),
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(it -> ((String) it).startsWith(queryValue));
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithInnerLikeExpression()
+	{
+		var queryValue = "rin";
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like '%%%s%%' and stringField ilike '%%%s%%'".formatted(queryValue, queryValue.toUpperCase()),
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(it -> ((String) it).contains(queryValue));
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithPostfixLikeExpression()
+	{
+		var queryValue = "ring";
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like '%%%s' and stringField ilike '%%%s'".formatted(queryValue, queryValue.toUpperCase()),
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(it -> ((String) it).endsWith(queryValue));
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithUnderscoreLikeExpression()
+	{
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like 'strin_' and stringField ilike 'STRIN_'",
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(DATA_MAP.get("stringField")::equals);
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithEscapeLikeSpecialSymbols()
+	{
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put("stringField", "st%i_g");
+
+		var dictItemId = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap))
+				.getId();
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like 'st\\%i\\_g' and stringField ilike 'ST\\%I\\_G'",
+				PageRequest.of(0, 10));
+
+		assertEquals(result.getContent().size(), 1);
+		assertEquals(result.getContent().get(0).getId(), dictItemId);
 	}
 
 	protected void getByFilterWithLogicalExpression()
@@ -284,7 +383,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void getIdsByFilter()
 	{
-		var result = dictDataService.getIdsByFilter(TESTABLE_DICT_ID, "integerField = 1 or stringField like 'str' or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1");
+		var result = dictDataService.getIdsByFilter(TESTABLE_DICT_ID, "integerField = 1 or stringField like 'string' or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1");
 
 		assertNotNull(result.getContent().get(0));
 	}

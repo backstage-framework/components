@@ -37,6 +37,19 @@ import java.util.Set;
 @RequiredArgsConstructor
 public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQuery, TranslationContext>
 {
+	/**
+	 * Преобразование sql-like выражения в regexp mongo.
+	 */
+	private static final String MONGO_IMPL_LIKE_PERCENT_REGEXP = "(?<!\\\\)%";
+	private static final String MONGO_IMPL_LIKE_UNDERSCORE_REGEXP = "(?<!\\\\)_";
+
+	/**
+	 * Экранирование специальных символов перед использованием в regex mongo Criteria.
+	 * Список символов: '(', '[', '{', '}', ']', ')' '!', '#', '$', '&', '*' ',', '.', '/', '?'
+	 */
+	private static final String MONGO_CRITERIA_SPECIAL_CHARACTERS_ESCAPE_REGEXP = "(?i)([(\\[{}\\])!#$&*,./?])";
+	private static final String MONGO_CRITERIA_SPECIAL_CHARACTERS_ESCAPE_REPLACEMENT = "\\\\$1";
+
 	@Override
 	public MongoQuery process(Dict dict, QueryExpression queryExpression)
 	{
@@ -80,10 +93,11 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 	public MongoQuery visit(LikeQueryExpression expression, TranslationContext context)
 	{
 		var field = expression.field.process(this, context).getField();
-		var template = expression.template.process(this, context).getValue();
+		var template = (String) expression.template.process(this, context).getValue();
+		var escapedTemplate = escapeRegexSpecialCharacters(template);
 
 		var criteria = Criteria.where(field.getFieldId())
-				.regex(template.toString());
+				.regex(convertSqlLikeToMongoRegexp(escapedTemplate));
 
 		return MongoQuery.builder()
 				.criteria(criteria)
@@ -95,10 +109,11 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 	public MongoQuery visit(IlikeQueryExpression expression, TranslationContext context)
 	{
 		var field = expression.field.process(this, context).getField();
-		var template = expression.template.process(this, context).getValue();
+		var template = (String) expression.template.process(this, context).getValue();
+		var escapedTemplate = escapeRegexSpecialCharacters(template);
 
 		var criteria = Criteria.where(field.getFieldId())
-				.regex(template.toString(), "i");
+				.regex(convertSqlLikeToMongoRegexp(escapedTemplate), "i");
 
 		return MongoQuery.builder()
 				.criteria(criteria)
@@ -209,5 +224,16 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 	private Set<String> participantDictIds(MongoQueryField field)
 	{
 		return field.getDictId() != null ? Set.of(field.getDictId()) : Collections.emptySet();
+	}
+
+	private String escapeRegexSpecialCharacters(String source)
+	{
+		return source.replaceAll(MONGO_CRITERIA_SPECIAL_CHARACTERS_ESCAPE_REGEXP, MONGO_CRITERIA_SPECIAL_CHARACTERS_ESCAPE_REPLACEMENT);
+	}
+
+	private String convertSqlLikeToMongoRegexp(String source)
+	{
+		return source.replaceAll(MONGO_IMPL_LIKE_PERCENT_REGEXP, ".*")
+				.replaceAll(MONGO_IMPL_LIKE_UNDERSCORE_REGEXP, ".");
 	}
 }
