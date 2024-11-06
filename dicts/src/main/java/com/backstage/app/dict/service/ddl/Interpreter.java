@@ -49,6 +49,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static com.backstage.app.dict.constant.ServiceFieldConstants.ID;
@@ -163,8 +164,11 @@ public class Interpreter
 		}
 		else if (alterTable.getOperation() instanceof DropTableColumnOperation dropTableColumnOperation)
 		{
+			var droppingFieldId = dropTableColumnOperation.getField().getName();
+			validateAlterAttachmentColumn(fields, droppingFieldId);
+
 			fields = fields.stream()
-					.filter(it -> !it.getId().equalsIgnoreCase(dropTableColumnOperation.getField().getName()))
+					.filter(it -> !it.getId().equalsIgnoreCase(droppingFieldId))
 					.collect(Collectors.toList());
 		}
 		else if (alterTable.getOperation() instanceof SetTableParameterOperation setTableParameterOperation)
@@ -174,9 +178,12 @@ public class Interpreter
 		else if (alterTable.getOperation() instanceof RenameColumnOperation renameColumnOperation)
 		{
 			var newColumnId = renameColumnOperation.getNewValue().getId().getName();
+			var oldColumnId = renameColumnOperation.getOldColumnId().getName();
 			var newColumnName = renameColumnOperation.getNewValue().getName().getValue();
 
-			dictService.renameField(dictId, renameColumnOperation.getOldColumnId().getName(), newColumnId, newColumnName);
+			validateAlterAttachmentColumn(fields, oldColumnId);
+
+			dictService.renameField(dictId, oldColumnId, newColumnId, newColumnName);
 
 			return;
 		}
@@ -291,24 +298,10 @@ public class Interpreter
 	{
 		var dictId = update.getTable().getName();
 
-		var fieldIds = dictService.getById(dictId)
-				.getFields()
-				.stream()
-				.map(DictField::getId)
-				.toList();
+		var fields = dictService.getById(dictId)
+				.getFields();
 
-		update.getColumns()
-				.stream()
-				.map(ColumnWithValue::getValue)
-				.filter(it -> it instanceof ColumnValue)
-				.map(it -> (ColumnValue) it)
-				.map(ColumnValue::getValue)
-				.map(Id::getName)
-				.filter(not(fieldIds::contains))
-				.findFirst()
-				.ifPresent((it) -> {
-					throw new RuntimeException("Колонка %s отсутствует.".formatted(it));
-				});
+		validateUpdate(update, fields);
 
 		var filtersQuery = buildFilterQuery(update.getRow());
 
@@ -330,7 +323,7 @@ public class Interpreter
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
 		dictDataService.updateByFilter(buildDictDataItem(dictId, dictDataMap), filtersQuery);
-}
+	}
 
 	private void execute(CreateIndexExpression createIndex)
 	{
@@ -534,5 +527,54 @@ public class Interpreter
 	private DictDataItem buildDictDataItem(String dictId, Map<String, Object> dataItemMap)
 	{
 		return DictDataItem.of(dictId, dataItemMap);
+	}
+
+	private void validateUpdate(Update update, List<DictField> fields)
+	{
+		var fieldIds = fields.stream()
+				.map(DictField::getId)
+				.toList();
+
+		update.getColumns()
+				.stream()
+				.map(ColumnWithValue::getValue)
+				.filter(it -> it instanceof ColumnValue)
+				.map(it -> (ColumnValue) it)
+				.map(ColumnValue::getValue)
+				.map(Id::getName)
+				.filter(not(fieldIds::contains))
+				.findFirst()
+				.ifPresent(it -> {
+					throw new RuntimeException("Колонка %s отсутствует.".formatted(it));
+				});
+
+//		fixme: https://git.backstage-platform.ru/backstage/components/-/issues/39
+		var fieldsMap = fields.stream()
+				.collect(Collectors.toMap(DictField::getId, Function.identity()));
+
+		update.getColumns()
+				.stream()
+				.map(ColumnWithValue::getId)
+				.map(Id::getName)
+				.map(fieldsMap::get)
+				.map(DictField::getType)
+				.filter(DictFieldType.ATTACHMENT::equals)
+				.findFirst()
+				.ifPresent(it -> {
+					throw new RuntimeException("Недопустимо изменение полей типа ATTACHMENT.");
+				});
+	}
+
+//		fixme: https://git.backstage-platform.ru/backstage/components/-/issues/39
+	private void validateAlterAttachmentColumn(List<DictField> fields, String fieldId)
+	{
+		fields.stream()
+				.filter(it -> it.getId().equals(fieldId))
+				.map(DictField::getType)
+				.filter(DictFieldType.ATTACHMENT::equals)
+				.findFirst()
+				.ifPresent(it -> {
+					throw new RuntimeException("Недопустимо изменение полей типа ATTACHMENT.");
+				});
 	}
 }
