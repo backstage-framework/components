@@ -60,9 +60,6 @@ public class DictItemModelGenerator
 				.addAnnotation(ClassName.get("lombok", "Getter"))
 				.addAnnotation(ClassName.get("lombok", "Setter"))
 				.addAnnotation(DictCodegenUtils.generatedAnnotation(this))
-				.addAnnotation(AnnotationSpec.builder(Schema.class)
-						.addMember("description", "$S", dict.getName())
-						.build())
 				.addTypes(dict.getEnums().stream()
 						.map(this::addEnum)
 						.toList());
