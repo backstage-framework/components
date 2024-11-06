@@ -24,6 +24,7 @@ import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.exception.backend.PrepareMongoPageableException;
 import com.backstage.app.dict.exception.dict.DictException;
+import com.backstage.app.dict.model.dictitem.AnotherFieldValue;
 import com.backstage.app.dict.model.mongo.MongoClause;
 import com.backstage.app.dict.model.mongo.query.MongoQuery;
 import com.backstage.app.dict.service.backend.DictBackend;
@@ -194,7 +195,32 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	@Override
 	public int updateByFilter(Dict dict, DictItem dictItem, QueryExpression queryExpression)
 	{
-		return 0;
+		var dictFieldNames = List.of(new DictFieldName(null, "*"));
+
+		return getByFilter(dict, dictFieldNames, queryExpression, Pageable.unpaged())
+				.stream()
+				.peek(item -> {
+					var updatedMap = new HashMap<>(item.getData());
+
+					dictItem.getData()
+							.forEach((fieldId, fieldValue) -> {
+								if (fieldValue instanceof AnotherFieldValue anotherFieldValue)
+								{
+									var value = updatedMap.get(anotherFieldValue.getName());
+
+									updatedMap.put(fieldId, value);
+								}
+								else
+								{
+									updatedMap.put(fieldId, fieldValue);
+								}
+							});
+
+					item.setData(updatedMap);
+				})
+				.map(item -> update(dict, item.getId(), item, item.getVersion()))
+				.toList()
+				.size();
 	}
 
 	@Override

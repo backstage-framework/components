@@ -26,6 +26,8 @@ import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.exception.dict.field.ForbiddenFieldNameException;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.exception.AppException;
+import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -85,7 +87,16 @@ public class DictValidationService
 		{
 			try
 			{
-				dictService.getById(field.getDictRef().getDictId());
+				var refDict = dictService.getById(field.getDictRef().getDictId());
+
+				var refDictEngineName = refDict.getEngine()
+						.getName();
+
+				if (!refDictEngineName.equals(dict.getEngine().getName()))
+				{
+					throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT,
+							"Связь со справочником в другом хранилище недопустима.");
+				}
 			}
 			catch (Exception e)
 			{
