@@ -103,11 +103,13 @@ public class DirectoryBasedAttachmentStore implements AttachmentStore
 		}
 	}
 
-	public void saveAttachment(Attachment attachment, InputStream stream)
+	public Resource saveAttachment(Attachment attachment, InputStream stream)
 	{
 		try
 		{
 			FileUtils.copyInputStreamToFile(stream, new File(storePath, assignPath(attachment)));
+
+			return getAttachment(attachment);
 		}
 		catch (IOException e)
 		{

@@ -34,6 +34,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.InputStream;
 import java.util.List;
 
 @Tag(name = "attachment-endpoint", description = "Методы для работы с вложениями.")
@@ -75,10 +76,11 @@ public class AttachmentEndpoint
 	}
 
 	@PostMapping(value = "/upload", consumes = MediaType.ALL_VALUE)
-	public ApiResponse<String> upload(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType, @RequestParam String fileName,
-	                                  @RequestBody byte[] data)
+	public ApiResponse<String> upload(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
+	                                  @RequestParam String fileName,
+	                                  InputStream stream)
 	{
-		var attachment = attachmentService.addAttachment(fileName, contentType, SecurityUtils.getCurrentUserId(), data);
+		var attachment = attachmentService.addAttachment(fileName, contentType, SecurityUtils.getCurrentUserId(), stream);
 
 		return ApiResponse.of(attachment.getId());
 	}
