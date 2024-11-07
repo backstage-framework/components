@@ -24,6 +24,9 @@
 - Добавили поддержку HTTP заголовка Range в AttachmentEndpoint.
 - Добавили параметр app.attachments.deleteUnboundDuration для управления окном удаления не привязанных к объектам вложений.
 - Добавили CheckAttachmentsJob для получения показателей утилизации хранилища.
+- Загрузка больших файлов теперь требует значительно меньше оперативной памяти.
+- Добавлен параметр app.attachments.minio.uploadPartSize для ограничения потребления оперативной памяти во время загрузки файлов в MinIO.
+- Изменилась сигнатура метода AttachmentServiceAdvice::handleAddAttachment.
 
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.

@@ -16,100 +16,20 @@
 
 package com.backstage.app.attachment.service;
 
-import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
-import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
-import org.apache.commons.lang3.tuple.ImmutablePair;
-import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.http.MediaType;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
-
-import javax.imageio.ImageIO;
-import java.io.ByteArrayInputStream;
-import java.util.*;
 
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnProperty(name = "app.attachments.verify-content")
 public class AttachmentContentValidator implements AttachmentServiceAdvice
 {
-	private static final Set<String> IMAGES = Set.of(
-			AttachmentProperties.IMAGE_BPM_VALUE,
-			AttachmentProperties.IMAGE_MS_BPM_VALUE,
-			MediaType.IMAGE_JPEG_VALUE,
-			MediaType.IMAGE_PNG_VALUE);
-
-	private static final Map<String, List<Pair<Integer, byte[]>>> MAGIC_NUMBERS = new HashMap<>();
-
-	static
-	{
-		List<Pair<Integer, byte[]>> zipSignatures = List.of(
-				ImmutablePair.of(0, new byte[] {0x50, 0x4b, 0x03, 0x04}),
-				ImmutablePair.of(0, new byte[] {0x50, 0x4b, 0x05, 0x06}),
-				ImmutablePair.of(0, new byte[] {0x50, 0x4b, 0x07, 0x08}));
-
-		MAGIC_NUMBERS.put(AttachmentProperties.APPLICATION_ZIP, zipSignatures);
-		MAGIC_NUMBERS.put(AttachmentProperties.APPLICATION_DOCX, zipSignatures);
-		MAGIC_NUMBERS.put(AttachmentProperties.APPLICATION_DOC, List.of(ImmutablePair.of(0, new byte[] { (byte) 0xd0, (byte) 0xcf, 0x11, (byte) 0xe0, (byte) 0xa1, (byte) 0xb1, 0x1a, (byte) 0xe1})));
-		MAGIC_NUMBERS.put(MediaType.APPLICATION_PDF_VALUE, List.of(ImmutablePair.of(0, new byte[] {0x25, 0x50, 0x44, 0x46, 0x2d})));
-	}
-
 	@Override
-	public void handleAddAttachment(String id, String fileName, String mimeType, String userId, byte[] data)
+	public void handleAddAttachment(String id, String fileName, String mimeType, String userId, Resource resource)
 	{
-		if (IMAGES.contains(mimeType))
-		{
-			try
-			{
-				if (ImageIO.read(new ByteArrayInputStream(data)) == null)
-				{
-					throw new RuntimeException("failed to read image content");
-				}
-			}
-			catch (Exception e)
-			{
-				throw new AppException(ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT);
-			}
-		}
-		else
-		{
-			var signatures = MAGIC_NUMBERS.getOrDefault(mimeType, Collections.emptyList());
-
-			if (!signatures.isEmpty())
-			{
-				boolean hasMatch = false;
-
-				for (var signature : signatures)
-				{
-					if (hasMatch)
-					{
-						break;
-					}
-
-					int offset = signature.getKey();
-					var bytes = signature.getValue();
-
-					for (var i = offset; i < offset + bytes.length; i++)
-					{
-						if (data[i] != bytes[i - offset])
-						{
-							hasMatch = false;
-
-							break;
-						}
-
-						hasMatch = true;
-					}
-				}
-
-				if (!hasMatch)
-				{
-					throw new AppException(ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT);
-				}
-			}
-		}
+		// TODO: implement
 	}
 }
