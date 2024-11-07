@@ -133,8 +133,8 @@ public class DictsDDLProvider
 
 				var appliedMigrations = migrationByName.entrySet().stream().sorted(MigrationUtils.versionComparator()).filter(entry -> applyMigration(entry, existingMigrations)).toList();
 
-				log.info("Обработано новых миграций: {}.", appliedMigrations.size());
-				log.info("Успешно валидировано миграций: {}.", migrationByName.size());
+				log.info("Применено миграций: {}.", appliedMigrations.size());
+				log.info("Проверено миграций: {}.", migrationByName.size());
 			}
 		}
 		catch (Exception e)
