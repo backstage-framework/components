@@ -77,9 +77,9 @@ public class ClasspathMigrationService
 		}
 		catch (Exception e)
 		{
-			transactionProvider.rollback();
+			log.error("Ошибка применения миграции '{}'.", appliedMigration, e);
 
-			log.error("Ошибка применения миграции: {}", appliedMigration);
+			transactionProvider.rollback();
 
 			throw new MigrationAppliedException(appliedMigration, e);
 		}

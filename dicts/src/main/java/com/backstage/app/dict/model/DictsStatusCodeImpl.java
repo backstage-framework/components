@@ -26,7 +26,7 @@ public enum DictsStatusCodeImpl implements ApiStatusCode
 	MIGRATION_APPLIED_ERROR(1, "Ошибка применения миграции."),
 	MIGRATION_FILE_READ_ERROR(2, "Ошибка чтения миграции из файла."),
 	MIGRATIONS_HAS_SAME_VERSION(3, "Миграция имеет одинаковую версию."),
-	MIGRATION_PROCESS_UNKNOWN_ERROR(4, "Неизвестная ошибка при обработки миграций."),
+	MIGRATION_PROCESS_UNKNOWN_ERROR(4, "Неизвестная ошибка при обработке миграций."),
 
 	SQL_PARSE_SYNTAX_ERROR(100, "Синтаксическая ошибка парсинга SQL выражения."),
 
