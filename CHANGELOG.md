@@ -22,6 +22,8 @@
 
 ### Attachments
 - Добавили поддержку HTTP заголовка Range в AttachmentEndpoint.
+- Добавили параметр app.attachments.deleteUnboundDuration для управления окном удаления не привязанных к объектам вложений.
+- Добавили CheckAttachmentsJob для получения показателей утилизации хранилища.
 
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
@@ -945,7 +947,7 @@
 
 ### App
 - Исправили отображение наименования компонента с периодичными задачами в актуаторе.
-- Исправили работу DeleteUnboundedAttachmentsJob.
+- Исправили работу DeleteUnboundAttachmentsJob.
 - Параметр конфигурации app.attachments.store-path заменен на app.attachments.directory.path.
 
 ### BPM
