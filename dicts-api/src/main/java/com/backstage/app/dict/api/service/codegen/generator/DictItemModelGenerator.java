@@ -109,7 +109,7 @@ public class DictItemModelGenerator
 			}
 			else
 			{
-				methodSpec.addStatement("this.$N = ($T) dictItem.getData().get($N)", fieldSpec, fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
+				methodSpec.addStatement("this.$N = new $T<>(($T) dictItem.getData().get($N))", fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
 			}
 		});
 
