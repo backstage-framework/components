@@ -83,6 +83,8 @@ public interface AttachmentBindingRepository extends CustomJpaRepository<Attachm
 		return result;
 	}
 
+	boolean existsByAttachmentIdAndType(String attachmentId, String type);
+
 	@Modifying
 	int deleteByAttachmentId(String attachmentId);
 

@@ -20,7 +20,7 @@ import com.backstage.app.attachment.AbstractTests;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-class JPATests extends AbstractTests
+class AttachmentRepositoryTests extends AbstractTests
 {
 	@Autowired private AttachmentRepository attachmentRepository;
 	@Autowired private AttachmentBindingRepository attachmentBindingRepository;
