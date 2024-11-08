@@ -1,4 +1,4 @@
-## 5.1.0 - 2024-10-30
+## 5.1.0 - 2024-11-07
 ### Dependency Upgrades
 - Spring Boot 3.3.5
 - EclipseLink 4.0.4
@@ -27,6 +27,8 @@
 - Загрузка больших файлов теперь требует значительно меньше оперативной памяти.
 - Добавлен параметр app.attachments.minio.uploadPartSize для ограничения потребления оперативной памяти во время загрузки файлов в MinIO.
 - Изменилась сигнатура метода AttachmentServiceAdvice::handleAddAttachment.
+- При вызове attachmentService.bindAttachment добавлен вызов entityManager.refresh для корректной работы внутри транзакции при проверке на существующие связи.
+- При вызове attachmentService.releaseAttachment добавлен вызов entityManager.flush для корректной работы внутри транзакции.
 
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
@@ -46,11 +48,17 @@
 - Добавили в миграции поддержку инструкции COPY FROM для импорта справочника из файла.
 - Добавили поддержку multivalued полей при экспорте/импорте CSV.
 - Добавили получение уникальных значений полей справочника по фильтру.
-- BindingDictDataServiceAdvice теперь срабатывает с наименьшим приоритетом, чтобы учесть изменения от других advice'ов.
+- AttachmentDictDataServiceAdvice теперь срабатывает с наименьшим приоритетом, чтобы учесть изменения от других advice'ов.
 - Для DictItemDto исключаются null поля из JSON в ответах API.
 - Исправили построение запросов с сортировками в PostgreSQL в случае когда имя справочника совпадает со служебными словами.
 - Добавили возможность через @Configuration переопределять dataSource (Postgres) и mongoTemplate (Mongo).
 - Шаблоны для операторов like и ilike теперь SQL совместимы вне зависимости от используемого бэкэнда.
+- В методе DictDataServiceAdvice::handleUpdate не заполнялся id у поля item.
+- Изменены типы связей вложений со строками справочников. В прикладных сервисах необходимо выполнить миграцию.
+	```sql
+	update attachment_binding set type = 'DICT_ITEM', object_id = concat(split_part(type, '_', 2), '_', split_part(type, '_', 3)) where type like 'DICTS\_%\_%\_%';
+	update attachment_binding set user_id = '00000000-0000-0000-0000-000000000000' where user_id = '-1';
+	```
 
 ### Jobs
 - Добавили подсветку синтаксиса cron выражений в AbstractCronJob.

@@ -28,6 +28,7 @@ import com.backstage.app.dict.exception.dict.DictConcurrentUpdateException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
+import com.backstage.app.dict.service.advice.AttachmentDictDataServiceAdvice;
 import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.model.other.date.DateConstants;
 import com.backstage.app.model.other.user.UserInfo;
@@ -68,7 +69,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.backstage.app.dict.constant.ServiceFieldConstants.ID;
-import static com.backstage.app.dict.service.advice.BindingDictDataServiceAdvice.DICTS_ATTACHMENT_TYPE_TEMPLATE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -665,10 +665,8 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataMap));
 
-		var singleFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentField"), dictItem.getId());
-		var multivaluedFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentsField"), dictItem.getId());
+		var singleFieldAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, dictItem));
+		var multivaluedFieldAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, dictItem));
 
 		assertNotNull(dictItem);
 		assertEquals(firstAttachment.getId(), singleFieldAttachments.get(0).getId());
@@ -695,19 +693,15 @@ public class CommonDictDataServiceTest extends CommonTest
 				"booleanField", false);
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataMap));
-
 		var updatedDictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataUpdateMap), dictItem.getVersion());
 
-		var singleFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, updatedDictItem.getId(), "attachmentField"), updatedDictItem.getId());
-		var multivaluedFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, updatedDictItem.getId(), "attachmentsField"), updatedDictItem.getId());
+		var fieldAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, updatedDictItem));
+		var fieldAttachmentsIds = fieldAttachments.stream().map(Attachment::getId).toList();
 
 		assertNotNull(dictItem);
-		assertEquals(secondAttachment.getId(), singleFieldAttachments.get(0).getId());
-		assertEquals(multivaluedFieldAttachments.size(), 2);
-		assertEquals(secondAttachment.getId(), multivaluedFieldAttachments.get(0).getId());
-		assertEquals(thirdAttachment.getId(), multivaluedFieldAttachments.get(1).getId());
+		assertTrue(fieldAttachmentsIds.contains(secondAttachmentId));
+		assertTrue(fieldAttachmentsIds.contains(thirdAttachmentId));
+		assertEquals(fieldAttachmentsIds.size(), 2);
 	}
 
 	protected void checkAttachmentReleaseWithDeleteDictItem()
@@ -725,8 +719,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
 
-		var attachmentsAfterDelete = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentField"), dictItem.getId());
+		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, dictItem.getId());
 
 		assertTrue(attachmentsAfterDelete.isEmpty());
 	}
@@ -746,8 +739,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
 
-		var attachmentsAfterDelete = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentField"), dictItem.getId());
+		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + dictItem.getId());
 
 		assertTrue(attachmentsAfterDelete.isEmpty());
 
@@ -755,8 +747,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), false, deletedDictItem.getVersion());
 
-		var attachmentsAfterRestore = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, deletedDictItem.getId(), "attachmentField"), deletedDictItem.getId());
+		var attachmentsAfterRestore = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + deletedDictItem.getId());
 
 		assertEquals(attachmentsAfterRestore.size(), 1);
 	}

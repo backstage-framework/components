@@ -149,6 +149,8 @@ public class AttachmentService
 
 		Attachment attachment = attachmentRepository.findByIdEx(attachmentId);
 
+		attachmentRepository.getEntityManager().refresh(attachment);
+
 		for (AttachmentBinding binding : attachment.getBindings())
 		{
 			if (binding.getUserId().equals(userId) && binding.getType().equals(type) && binding.getObjectId().equals(objectId))
@@ -176,21 +178,25 @@ public class AttachmentService
 	}
 
 	@Transactional
-	public void bindAttachments(@NonNull Collection<String> attachmentIds, @NonNull String userId, @NonNull String type, @NonNull String objectIds)
+	public void bindAttachments(@NonNull Collection<String> attachmentIds, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
-		attachmentIds.forEach(attachmentId -> bindAttachment(attachmentId, userId, type, objectIds));
+		attachmentIds.forEach(attachmentId -> bindAttachment(attachmentId, userId, type, objectId));
 	}
 
 	@Transactional
 	public void releaseAttachment(@NonNull String attachmentId)
 	{
 		attachmentBindingRepository.deleteByAttachmentId(attachmentId);
+
+		attachmentBindingRepository.flush();
 	}
 
 	@Transactional
 	public void releaseAttachments(@NonNull Collection<String> attachmentIds, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
 		attachmentIds.forEach(id -> attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectId(id, userId, type, objectId));
+
+		attachmentBindingRepository.flush();
 	}
 
 	@Transactional
@@ -203,6 +209,8 @@ public class AttachmentService
 	public void releaseAttachment(@NonNull String attachmentId, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
 		attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectId(attachmentId, userId, type, objectId);
+
+		attachmentBindingRepository.flush();
 	}
 
 	@Transactional
@@ -215,6 +223,18 @@ public class AttachmentService
 	public void releaseAttachments(@NotNull String type, @NotNull String objectId)
 	{
 		attachmentBindingRepository.deleteByTypeAndObjectId(type, objectId);
+
+		attachmentBindingRepository.flush();
+	}
+
+	public boolean isAttachmentBound(@NonNull String attachmentId, @NonNull Enum<?> type)
+	{
+		return isAttachmentBound(attachmentId, type.name());
+	}
+
+	public boolean isAttachmentBound(@NonNull String attachmentId, @NonNull String type)
+	{
+		return attachmentBindingRepository.existsByAttachmentIdAndType(attachmentId, type);
 	}
 
 	@Transactional
