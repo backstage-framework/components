@@ -16,6 +16,7 @@
 
 package com.backstage.app.api.configuration.properties;
 
+import com.backstage.app.api.controller.GlobalMvcExceptionHandler;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -29,6 +30,7 @@ public class ApiProperties
 {
 	public static final String OPENAPI_ACTIVATION_PROPERTY = "app.api.openapi.enabled";
 	public static final String SWAGGER_ACTIVATION_PROPERTY = "app.api.swagger.enabled";
+	public static final String EXCEPTION_HANDLER_ACTIVATION_PROPERTY = "app.api.exceptionHandler";
 
 	@Getter
 	@Setter
@@ -64,4 +66,11 @@ public class ApiProperties
 	 * Активирует вывод stack trace в ответах api для необработанных исключений.
 	 */
 	private boolean stackTraceOnError = true;
+
+	/**
+	 * Активирует GlobalMvcExceptionHandler.
+	 *
+	 * @see GlobalMvcExceptionHandler
+	 */
+	private boolean exceptionHandler = true;
 }

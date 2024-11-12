@@ -19,6 +19,7 @@
 
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
+- Добавлен параметр для активации GlobalMvcExceptionHandler.
 
 ### Attachments
 - Добавили поддержку HTTP заголовка Range в AttachmentEndpoint.
