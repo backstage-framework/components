@@ -96,6 +96,7 @@ public class DictItemModelGenerator
 	{
 		var methodSpec = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
+				.addAnnotation(DictCodegenUtils.suppressWarningsAnnotation())
 				.addParameter(DictItemDto.class, "dictItem");
 
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
@@ -111,7 +112,9 @@ public class DictItemModelGenerator
 			{
 				if (dictField.isMultivalued())
 				{
-					methodSpec.addStatement("this.$N = new $T<>(($T) dictItem.getData().get($N))", fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
+					methodSpec.addStatement("this.$N = new $T<>(($T) $T.requireNonNullElse(dictItem.getData().get($N), $T.of())",
+							fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, ClassName.get(Objects.class),
+							DictModelNameUtils.constantName(fieldSpec.name), ClassName.get(List.class));
 				}
 				else
 				{

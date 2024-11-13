@@ -33,4 +33,11 @@ public class DictCodegenUtils
 				.addMember("date", "$S", DateUtils.toZonedDateTime(LocalDateTime.now()))
 				.build();
 	}
+
+	public AnnotationSpec suppressWarningsAnnotation()
+	{
+		return AnnotationSpec.builder(SuppressWarnings.class)
+				.addMember("value", "checked")
+				.build();
+	}
 }

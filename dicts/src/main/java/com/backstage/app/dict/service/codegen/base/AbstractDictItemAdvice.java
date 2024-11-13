@@ -93,13 +93,19 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	@Override
 	public final void handleBeforeCreateMany(Dict dict, List<DictItem> items)
 	{
-		items.forEach(item -> handleBeforeCreate(dict, item));
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			items.forEach(item -> handleBeforeCreate(dict, item));
+		}
 	}
 
 	@Override
 	public final void handleAfterCreateMany(Dict dict, List<DictItem> items)
 	{
-		items.forEach(item -> handleAfterCreate(dict, item));
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			items.forEach(item -> handleAfterCreate(dict, item));
+		}
 	}
 
 	@Override

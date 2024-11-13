@@ -20,11 +20,10 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.DictEnumDto;
 import com.backstage.app.dict.api.model.dto.DictFieldDto;
+import com.backstage.app.dict.api.service.codegen.generator.DictCodegenUtils;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.service.codegen.base.AbstractDictItem;
-import com.backstage.app.utils.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.annotation.Generated;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
@@ -34,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.javapoet.*;
 
 import javax.lang.model.element.Modifier;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -62,7 +60,7 @@ public class DictItemModelGenerator
 				.addSuperinterface(AbstractDictItem.class)
 				.addAnnotation(ClassName.get("lombok", "Getter"))
 				.addAnnotation(ClassName.get("lombok", "Setter"))
-				.addAnnotation(generatedAnnotation())
+				.addAnnotation(DictCodegenUtils.generatedAnnotation(this))
 				.addTypes(dict.getEnums().stream()
 						.map(this::addEnum)
 						.toList());
@@ -92,18 +90,11 @@ public class DictItemModelGenerator
 		return typeSpec.build();
 	}
 
-	protected AnnotationSpec generatedAnnotation()
-	{
-		return AnnotationSpec.builder(Generated.class)
-				.addMember("value", "$S", this.getClass().getName())
-				.addMember("date", "$S", DateUtils.toZonedDateTime(LocalDateTime.now()))
-				.build();
-	}
-
 	private MethodSpec addConstructor(Map<FieldSpec, DictFieldDto> fieldSpecMapping)
 	{
 		var methodSpec = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
+				.addAnnotation(DictCodegenUtils.suppressWarningsAnnotation())
 				.addParameter(DictItem.class, "dictItem");
 
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
@@ -119,7 +110,9 @@ public class DictItemModelGenerator
 			{
 				if (dictField.isMultivalued())
 				{
-					methodSpec.addStatement("this.$N = new $T<>(($T) dictItem.getData().get($N))", fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
+					methodSpec.addStatement("this.$N = new $T<>(($T) $T.requireNonNullElse(dictItem.getData().get($N), $T.of())",
+							fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, ClassName.get(Objects.class),
+							com.backstage.app.dict.api.service.codegen.generator.DictModelNameUtils.constantName(fieldSpec.name), ClassName.get(List.class));
 				}
 				else
 				{

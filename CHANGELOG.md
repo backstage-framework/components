@@ -60,6 +60,7 @@
 	update attachment_binding set type = 'DICT_ITEM', object_id = concat(split_part(type, '_', 2), '_', split_part(type, '_', 3)) where type like 'DICTS\_%\_%\_%';
 	update attachment_binding set user_id = '00000000-0000-0000-0000-000000000000' where user_id = '-1';
 	```
+- Исправили генерацию моделей для справочников с незаполненными multivalued полями.
 
 ### Jobs
 - Добавили подсветку синтаксиса cron выражений в AbstractCronJob.
