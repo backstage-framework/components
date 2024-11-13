@@ -44,7 +44,7 @@ public class DictCodegenUtils
 	public AnnotationSpec suppressWarningsAnnotation(String value)
 	{
 		return AnnotationSpec.builder(SuppressWarnings.class)
-				.addMember("value", value)
+				.addMember("value", "$S", value)
 				.build();
 	}
 }
