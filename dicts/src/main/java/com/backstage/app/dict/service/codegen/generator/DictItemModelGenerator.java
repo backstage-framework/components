@@ -30,6 +30,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.springframework.javapoet.*;
 
 import javax.lang.model.element.Modifier;
@@ -94,8 +95,9 @@ public class DictItemModelGenerator
 	{
 		var methodSpec = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
-				.addAnnotation(DictCodegenUtils.suppressWarningsAnnotation())
 				.addParameter(DictItem.class, "dictItem");
+
+		var suppressWarnings = new MutableBoolean(false);
 
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
 			if (DEFAULT_FIELDS.contains(dictField.getId()))
@@ -110,6 +112,8 @@ public class DictItemModelGenerator
 			{
 				if (dictField.isMultivalued())
 				{
+					suppressWarnings.setTrue();
+
 					methodSpec.addStatement("this.$N = new $T<>(($T) $T.requireNonNullElse(dictItem.getData().get($N), $T.of()))",
 							fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, ClassName.get(Objects.class),
 							com.backstage.app.dict.api.service.codegen.generator.DictModelNameUtils.constantName(fieldSpec.name), ClassName.get(List.class));
@@ -120,6 +124,11 @@ public class DictItemModelGenerator
 				}
 			}
 		});
+
+		if (suppressWarnings.isTrue())
+		{
+			methodSpec.addAnnotation(DictCodegenUtils.suppressWarningsAnnotation());
+		}
 
 		return methodSpec.build();
 	}
