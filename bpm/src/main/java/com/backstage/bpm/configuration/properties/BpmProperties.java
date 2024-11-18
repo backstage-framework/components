@@ -34,6 +34,8 @@ import java.util.Set;
 @ConfigurationProperties("app.bpm")
 public class BpmProperties
 {
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.bpm.api-enabled";
+
 	@Getter
 	@RequiredArgsConstructor
 	public enum WorkflowProviderType
@@ -99,4 +101,6 @@ public class BpmProperties
 	 * Параметры для DDLProvider.
 	 */
 	private DDLProperties ddl = new DDLProperties();
+
+	private boolean apiEnabled = true;
 }

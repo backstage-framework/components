@@ -23,6 +23,7 @@ import com.backstage.app.dict.api.model.dto.DictEnumDto;
 import com.backstage.app.dict.api.model.dto.request.CreateDictEnumRequest;
 import com.backstage.app.dict.api.model.dto.request.CreateDictRequest;
 import com.backstage.app.dict.api.model.dto.request.DeleteDictRequest;
+import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.conversion.dto.DictEnumConverter;
 import com.backstage.app.dict.conversion.dto.DictEnumRequestConverter;
@@ -34,6 +35,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -47,6 +49,7 @@ import static java.util.function.Predicate.not;
 @RequiredArgsConstructor
 @RequestMapping("/api/dicts")
 @Tag(name = "dict-endpoint", description = "Методы для работы со схемами справочников.")
+@ConditionalOnProperty(value = DictsProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class DictEndpoint
 {
 	private final DictConverter schemeConverter;

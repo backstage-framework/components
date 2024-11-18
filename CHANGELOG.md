@@ -30,10 +30,12 @@
 - Изменилась сигнатура метода AttachmentServiceAdvice::handleAddAttachment.
 - При вызове attachmentService.bindAttachment добавлен вызов entityManager.refresh для корректной работы внутри транзакции при проверке на существующие связи.
 - При вызове attachmentService.releaseAttachment добавлен вызов entityManager.flush для корректной работы внутри транзакции.
+- Добавлена возможность выключить REST API параметром конфигурации.
 
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
 - Переработали инициализацию CacheManager в CacheUtils.
+- Добавлена возможность выключить REST API параметром конфигурации.
 
 ### Database
 - При инициализации EntityManager по умолчанию включаются сущности из appProperties.basePackages.
@@ -61,9 +63,17 @@
 	update attachment_binding set user_id = '00000000-0000-0000-0000-000000000000' where user_id = '-1';
 	```
 - Исправили генерацию моделей для справочников с незаполненными multivalued полями.
+- Добавлена возможность выключить REST API параметром конфигурации.
 
 ### Jobs
 - Добавили подсветку синтаксиса cron выражений в AbstractCronJob.
+- Добавлена возможность выключить REST API параметром конфигурации.
+
+### JMS
+- Добавлена возможность выключить REST API параметром конфигурации.
+
+### BPM
+- Добавлена возможность выключить REST API параметром конфигурации.
 
 ## 5.0.41 - 2024-08-08
 ### Dicts

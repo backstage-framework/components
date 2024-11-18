@@ -36,6 +36,7 @@ public class DictsProperties
 	public static final String STORAGE_PROPERTY = "app.dicts.storage";
 	public static final String DDL_ACTIVATION_PROPERTY = "app.dicts.ddl.enabled";
 	public static final String DEFAULT_ENGINE_PROPERTY = "app.dicts.default-engine";
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.dicts.api-enabled";
 	public static String DEFAULT_ENGINE;
 
 	private boolean enabled = false;
@@ -53,6 +54,8 @@ public class DictsProperties
 
 	@NotBlank
 	private String defaultEngine;
+
+	private boolean apiEnabled = true;
 
 	public void setDefaultEngine(String defaultEngine)
 	{

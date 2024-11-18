@@ -17,6 +17,7 @@
 package com.backstage.bpm.endpoint;
 
 import com.backstage.app.api.model.ApiResponse;
+import com.backstage.bpm.configuration.properties.BpmProperties;
 import com.backstage.bpm.model.dto.KillProcessRequest;
 import com.backstage.bpm.model.dto.MigrateProcessRequest;
 import com.backstage.bpm.model.dto.StartProcessRequest;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping(value = "/api/bpm/process", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "bpm-endpoint", description = "Методы для работы с процессами.")
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = BpmProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class BpmEndpoint
 {
 	private final ProcessService processService;

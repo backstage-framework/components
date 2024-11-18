@@ -17,6 +17,7 @@
 package com.backstage.app.dict.endpoint;
 
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
+import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.backstage.app.dict.service.DictDataService;
@@ -24,11 +25,13 @@ import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.export.DictExportService;
 import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.service.imp.ImportJsonService;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping("/api/dicts")
+@ConditionalOnProperty(value = DictsProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class DictDataEndpoint<T extends DictItemDto> extends GenericDictDataEndpoint<DictItemDto>
 {
 	public DictDataEndpoint(DictService dictService,

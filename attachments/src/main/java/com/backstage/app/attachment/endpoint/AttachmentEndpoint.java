@@ -40,7 +40,7 @@ import java.util.List;
 @Tag(name = "attachment-endpoint", description = "Методы для работы с вложениями.")
 @RestController
 @RequiredArgsConstructor
-@ConditionalOnProperty(AttachmentProperties.ACTIVATION_PROPERTY)
+@ConditionalOnProperty({AttachmentProperties.ACTIVATION_PROPERTY, AttachmentProperties.REST_API_ACTIVATION_PROPERTY})
 @RequestMapping("/api/attachment")
 public class AttachmentEndpoint
 {

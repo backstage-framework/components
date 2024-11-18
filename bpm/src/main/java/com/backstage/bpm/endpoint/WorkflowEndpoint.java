@@ -18,6 +18,7 @@ package com.backstage.bpm.endpoint;
 
 import com.backstage.app.api.model.ApiResponse;
 import com.backstage.app.api.model.OkResponse;
+import com.backstage.bpm.configuration.properties.BpmProperties;
 import com.backstage.bpm.conversion.dto.WorkflowConverter;
 import com.backstage.bpm.model.dto.DeployWorkflowRequest;
 import com.backstage.bpm.model.dto.WorkflowDto;
@@ -26,6 +27,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,6 +37,7 @@ import java.util.List;
 @RequestMapping(value = "/api/bpm/workflow", produces = MediaType.APPLICATION_JSON_VALUE)
 @Tag(name = "workflow-endpoint", description = "Методы для работы с описаниями бизнес-процессов.")
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = BpmProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class WorkflowEndpoint
 {
 	private final WorkflowService workflowService;

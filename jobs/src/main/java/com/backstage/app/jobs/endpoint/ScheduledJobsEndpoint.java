@@ -17,6 +17,7 @@
 package com.backstage.app.jobs.endpoint;
 
 import com.backstage.app.api.model.ApiResponse;
+import com.backstage.app.jobs.configuration.properties.SchedulerProperties;
 import com.backstage.app.jobs.model.dto.JobTrigger;
 import com.backstage.app.jobs.model.dto.RescheduleJobRequest;
 import com.backstage.app.jobs.model.dto.param.JobParams;
@@ -25,6 +26,7 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -33,6 +35,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/scheduledJobs")
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = SchedulerProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class ScheduledJobsEndpoint
 {
 	private final JobManager jobManager;

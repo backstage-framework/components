@@ -34,6 +34,7 @@ import java.util.Set;
 public class AttachmentProperties
 {
 	public static final String ACTIVATION_PROPERTY = "app.attachments.enabled";
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.attachments.api-enabled";
 
 	public static final String IMAGE_BPM_VALUE = "image/bmp";
 	public static final String IMAGE_MS_BPM_VALUE = "image/x-ms-bmp";
@@ -159,4 +160,6 @@ public class AttachmentProperties
 	 * Интервал, после которого не привязанное вложение будет удалено.
 	 */
 	private Duration deleteUnboundDuration = Duration.ofDays(1);
+
+	private boolean apiEnabled = true;
 }

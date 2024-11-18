@@ -19,6 +19,7 @@ package com.backstage.app.jms.endpoint;
 import com.backstage.app.api.model.ApiResponse;
 import com.backstage.app.api.model.OkResponse;
 import com.backstage.app.jms.configuration.conditional.ConditionalOnEmbeddedBroker;
+import com.backstage.app.jms.configuration.properties.JmsProperties;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +27,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.broker.jmx.QueueViewMBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
 import javax.management.ObjectName;
@@ -37,6 +39,7 @@ import java.util.Hashtable;
 @RequestMapping("/api/jms")
 @ConditionalOnEmbeddedBroker
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = JmsProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class JMSEndpoint
 {
 	private final BrokerService brokerService;

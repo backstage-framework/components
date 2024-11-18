@@ -26,6 +26,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 public class SchedulerProperties
 {
 	public static final String ACTIVATION_PROPERTY = "app.scheduler.enabled";
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.scheduler.api-enabled";
 
 	private boolean enabled = true;
 
@@ -33,4 +34,6 @@ public class SchedulerProperties
 	 * Размер пула планировщика приложения.
 	 */
 	private int poolSize = 20;
+
+	private boolean apiEnabled = true;
 }

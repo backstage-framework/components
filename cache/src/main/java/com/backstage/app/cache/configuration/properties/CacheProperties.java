@@ -32,6 +32,7 @@ public class CacheProperties
 {
 	public static final String ACTIVATION_PROPERTY = "app.cache.enabled";
 	public static final String DISTRIBUTED_OPERATIONS_ACTIVATION_PROPERTY = "app.cache.distributed-operations";
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.cache.api-enabled";
 
 	private boolean enabled = true;
 
@@ -39,6 +40,8 @@ public class CacheProperties
 	 * Если true, то инвалидация кэша будет синхронизирована с завершением транзакций.
 	 */
 	private boolean transactional = true;
+
+	private boolean apiEnabled = true;
 
 	private Map<String, Set<DistributedCacheOperations.DistributedCacheOperation>> distributedOperations = new HashMap<>();
 }

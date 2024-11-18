@@ -18,6 +18,7 @@ package com.backstage.app.dict.endpoint.remote;
 
 import com.backstage.app.dict.api.model.dto.data.DictItemRemoteDto;
 import com.backstage.app.dict.api.service.remote.InternalDictDataService;
+import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.backstage.app.dict.endpoint.GenericDictDataEndpoint;
@@ -28,6 +29,7 @@ import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.service.imp.ImportJsonService;
 import io.swagger.v3.oas.annotations.Hidden;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -36,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/api/remote/dicts")
 @Hidden
 @Tag(name = "remote-dict-data-endpoint", description = "Методы для работы с данными справочников (Remote)")
+@ConditionalOnProperty(value = DictsProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class RemoteDictDataEndpoint extends GenericDictDataEndpoint<DictItemRemoteDto> implements InternalDictDataService
 {
 	public RemoteDictDataEndpoint(DictService dictService,

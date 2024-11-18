@@ -31,6 +31,7 @@ import java.util.Map;
 public class JmsProperties
 {
 	public static final String ACTIVATION_PROPERTY = "app.jms.enabled";
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.jms.api-enabled";
 
 	private boolean enabled = false;
 
@@ -127,6 +128,8 @@ public class JmsProperties
 	private BrokerChannels brokerChannels = new BrokerChannels();
 
 	private boolean jacksonMessageConverterEnabled = true;
+
+	private boolean apiEnabled = true;
 
 	public String getBrokerUrl()
 	{
