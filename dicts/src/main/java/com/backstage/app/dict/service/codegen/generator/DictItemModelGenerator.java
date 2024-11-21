@@ -20,21 +20,20 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.DictEnumDto;
 import com.backstage.app.dict.api.model.dto.DictFieldDto;
+import com.backstage.app.dict.api.service.codegen.generator.DictCodegenUtils;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.service.codegen.base.AbstractDictItem;
-import com.backstage.app.utils.DateUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.annotation.Generated;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.springframework.javapoet.*;
 
 import javax.lang.model.element.Modifier;
-import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -62,7 +61,7 @@ public class DictItemModelGenerator
 				.addSuperinterface(AbstractDictItem.class)
 				.addAnnotation(ClassName.get("lombok", "Getter"))
 				.addAnnotation(ClassName.get("lombok", "Setter"))
-				.addAnnotation(generatedAnnotation())
+				.addAnnotation(DictCodegenUtils.generatedAnnotation(this))
 				.addTypes(dict.getEnums().stream()
 						.map(this::addEnum)
 						.toList());
@@ -92,19 +91,13 @@ public class DictItemModelGenerator
 		return typeSpec.build();
 	}
 
-	protected AnnotationSpec generatedAnnotation()
-	{
-		return AnnotationSpec.builder(Generated.class)
-				.addMember("value", "$S", this.getClass().getName())
-				.addMember("date", "$S", DateUtils.toZonedDateTime(LocalDateTime.now()))
-				.build();
-	}
-
 	private MethodSpec addConstructor(Map<FieldSpec, DictFieldDto> fieldSpecMapping)
 	{
 		var methodSpec = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
 				.addParameter(DictItem.class, "dictItem");
+
+		var suppressWarnings = new MutableBoolean(false);
 
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
 			if (DEFAULT_FIELDS.contains(dictField.getId()))
@@ -117,9 +110,25 @@ public class DictItemModelGenerator
 			}
 			else
 			{
-				methodSpec.addStatement("this.$N = ($T) dictItem.getData().get($N)", fieldSpec, fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
+				if (dictField.isMultivalued())
+				{
+					suppressWarnings.setTrue();
+
+					methodSpec.addStatement("this.$N = new $T<>(($T) $T.requireNonNullElse(dictItem.getData().get($N), $T.of()))",
+							fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, ClassName.get(Objects.class),
+							com.backstage.app.dict.api.service.codegen.generator.DictModelNameUtils.constantName(fieldSpec.name), ClassName.get(List.class));
+				}
+				else
+				{
+					methodSpec.addStatement("this.$N = ($T) dictItem.getData().get($N)", fieldSpec, fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
+				}
 			}
 		});
+
+		if (suppressWarnings.isTrue())
+		{
+			methodSpec.addAnnotation(DictCodegenUtils.suppressWarningsAnnotation());
+		}
 
 		return methodSpec.build();
 	}

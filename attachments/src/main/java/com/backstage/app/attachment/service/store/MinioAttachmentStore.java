@@ -20,6 +20,7 @@ import com.backstage.app.attachment.configuration.properties.AttachmentPropertie
 import com.backstage.app.attachment.model.AttachmentsAppStatusCode;
 import com.backstage.app.attachment.model.domain.Attachment;
 import com.backstage.app.exception.AppException;
+import com.backstage.app.utils.DateUtils;
 import io.minio.*;
 import io.minio.errors.ErrorResponseException;
 import jakarta.annotation.PostConstruct;
@@ -40,7 +41,10 @@ public class MinioAttachmentStore implements AttachmentStore
 	private final AttachmentProperties attachmentProperties;
 
 	private MinioClient minioClient;
+
 	private String bucket;
+
+	private Long uploadPartSize;
 
 	@PostConstruct
 	private void initialize()
@@ -49,6 +53,7 @@ public class MinioAttachmentStore implements AttachmentStore
 		{
 			var config = attachmentProperties.getMinio();
 			bucket = config.getBucket();
+			uploadPartSize = attachmentProperties.getMinio().getUploadPartSize().toBytes();
 
 			minioClient = MinioClient.builder()
 					.endpoint(config.getEndpoint())
@@ -103,15 +108,21 @@ public class MinioAttachmentStore implements AttachmentStore
 	{
 		try
 		{
-			var minioResponse = minioClient.getObject(GetObjectArgs.builder()
+			var statResponse = minioClient.statObject(StatObjectArgs.builder()
 					.bucket(bucket)
 					.object(attachment.getId())
 					.build());
 
-			var lastModified = attachment.getUpdated() != null ? attachment.getUpdated() : attachment.getCreated();
-			var contentLength = attachment.getSize();
+			var objectResponse = minioClient.getObject(GetObjectArgs.builder()
+					.bucket(bucket)
+					.object(attachment.getId())
+					.versionId(statResponse.versionId())
+					.build());
 
-			return new MinioResource(minioResponse, lastModified, contentLength);
+			var lastModified = DateUtils.toLocalDateTime(statResponse.lastModified());
+			var contentLength = statResponse.size();
+
+			return new MinioResource(objectResponse, lastModified, contentLength);
 		}
 		catch (Exception e)
 		{
@@ -119,7 +130,7 @@ public class MinioAttachmentStore implements AttachmentStore
 		}
 	}
 
-	public void saveAttachment(Attachment attachment, InputStream stream)
+	public Resource saveAttachment(Attachment attachment, InputStream stream)
 	{
 		try
 		{
@@ -127,8 +138,10 @@ public class MinioAttachmentStore implements AttachmentStore
 					.bucket(bucket)
 					.contentType(attachment.getMimeType())
 					.object(attachment.getId())
-					.stream(stream, attachment.getSize(), -1)
+					.stream(stream, -1, uploadPartSize)
 					.build());
+
+			return getAttachment(attachment);
 		}
 		catch (Exception e)
 		{

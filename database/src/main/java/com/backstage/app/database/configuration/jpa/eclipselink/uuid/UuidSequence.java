@@ -25,16 +25,11 @@ import java.util.Vector;
 
 public class UuidSequence extends Sequence
 {
+	public static final String NAME = "system-uuid";
+
 	public UuidSequence()
 	{
-		super();
-
-		shouldAlwaysOverrideExistingValue = false;
-	}
-
-	public UuidSequence(String name)
-	{
-		super(name);
+		super(NAME);
 	}
 
 	@Override
@@ -44,7 +39,7 @@ public class UuidSequence extends Sequence
 	}
 
 	@Override
-	public Vector getGeneratedVector(Accessor accessor, AbstractSession writeSession, String seqName, int size)
+	public Vector<?> getGeneratedVector(Accessor accessor, AbstractSession writeSession, String seqName, int size)
 	{
 		return null;
 	}

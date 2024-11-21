@@ -16,6 +16,9 @@
 
 package com.backstage.app.database.configuration.jpa;
 
+import com.backstage.app.configuration.conditional.ConditionalOnMissingQualifiedBean;
+import com.backstage.app.database.configuration.annotation.AppDataSource;
+import com.backstage.app.database.configuration.annotation.DDLDataSource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
@@ -35,7 +38,6 @@ import javax.sql.DataSource;
 public class DataSourceConfiguration
 {
 	@Bean
-	@Primary
 	@ConfigurationProperties(prefix = "app.datasource")
 	public DataSourceProperties dataSourceProperties()
 	{
@@ -44,8 +46,10 @@ public class DataSourceConfiguration
 
 	@Bean
 	@Primary
+	@AppDataSource
+	@ConditionalOnMissingQualifiedBean
 	@ConfigurationProperties(prefix = "app.datasource")
-	public DataSource dataSource()
+	public DataSource appDataSource()
 	{
 		return dataSourceProperties().initializeDataSourceBuilder().build();
 	}
@@ -72,6 +76,8 @@ public class DataSourceConfiguration
 	}
 
 	@Bean
+	@DDLDataSource
+	@ConditionalOnMissingQualifiedBean
 	@ConfigurationProperties(prefix = "app.ddldatasource")
 	public DataSource ddlDataSource()
 	{
@@ -82,7 +88,7 @@ public class DataSourceConfiguration
 	@Primary
 	public NamedParameterJdbcTemplate namedParameterJdbcTemplate()
 	{
-		return new NamedParameterJdbcTemplate(dataSource());
+		return new NamedParameterJdbcTemplate(appDataSource());
 	}
 
 	@Bean(name = "noTimeoutJdbcTemplate")

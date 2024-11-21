@@ -80,11 +80,10 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 		var field = expression.field.process(this, context).getField();
 		var paramName = paramName(field, context);
 
-		var template = expression.template.process(this, context).getValue();
-		var paramValue = ".*%s.*".formatted(template);
+		var paramValue = (String) expression.template.process(this, context).getValue();
 
 		var parameterSource = new MapSqlParameterSource(paramName, paramValue);
-		var sqlExpression = "%s ~ :%s".formatted(field.getJoint(), paramName);
+		var sqlExpression = "%s like :%s".formatted(field.getJoint(), paramName);
 
 		return PostgresQuery.builder()
 				.sqlExpression(sqlExpression)
@@ -99,11 +98,10 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 		var field = expression.field.process(this, context).getField();
 		var paramName = paramName(field, context);
 
-		var template = expression.template.process(this, context).getValue();
-		var paramValue = ".*%s.*".formatted(template);
+		var paramValue = (String) expression.template.process(this, context).getValue();
 
 		var parameterSource = new MapSqlParameterSource(paramName, paramValue);
-		var sqlExpression = "%s ~* :%s".formatted(field.getJoint(), paramName);
+		var sqlExpression = "%s ilike :%s".formatted(field.getJoint(), paramName);
 
 		return PostgresQuery.builder()
 				.sqlExpression(sqlExpression)

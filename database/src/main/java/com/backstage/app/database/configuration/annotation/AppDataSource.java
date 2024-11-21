@@ -14,26 +14,19 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.attachment.repository;
+package com.backstage.app.database.configuration.annotation;
 
-import com.backstage.app.attachment.AbstractTests;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
-class JPATests extends AbstractTests
+import java.lang.annotation.*;
+
+/**
+ * Маркер, позволяющий получить основной источник данных приложения.
+ */
+@Target({ ElementType.FIELD, ElementType.METHOD, ElementType.PARAMETER, ElementType.TYPE, ElementType.ANNOTATION_TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+@Qualifier
+public @interface AppDataSource
 {
-	@Autowired private AttachmentRepository attachmentRepository;
-	@Autowired private AttachmentBindingRepository attachmentBindingRepository;
-
-	@Test
-	void checkAttachmentRepository()
-	{
-		attachmentRepository.findAll();
-	}
-
-	@Test
-	void checkAttachmentBindingRepository()
-	{
-		attachmentBindingRepository.findAll();
-	}
 }

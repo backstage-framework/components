@@ -323,6 +323,7 @@ public class DictDataService
 		dictPermissionService.checkEditPermission(dict, userId);
 
 		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, DictService.getDataFieldsByDict(dict));
+		mappedItem.setId(itemId);
 
 		for (var advice : serviceAdviceList)
 		{

@@ -16,12 +16,12 @@
 
 package com.backstage.app.dict.service.backend.postgres;
 
+import com.backstage.app.dict.configuration.annotation.DictsPostgresJdbcTemplate;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.exception.BiFunctionException;
 import com.backstage.app.dict.exception.TriFunctionException;
 import com.backstage.app.dict.model.postgres.backend.PostgresWord;
 import com.backstage.app.dict.service.migration.DictTransactionProvider;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -38,9 +38,7 @@ import java.util.stream.Stream;
 public abstract class AbstractPostgresBackend
 {
 	@Autowired
-	protected ObjectMapper mapper;
-
-	@Autowired
+	@DictsPostgresJdbcTemplate
 	protected NamedParameterJdbcTemplate jdbc;
 
 	@Autowired

@@ -68,6 +68,41 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
+	void getByFilterWithPrefixLikeExpressionCorrect()
+	{
+		getByFilterWithPrefixLikeExpression();
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
+	void getByFilterWithInnerLikeExpressionCorrect()
+	{
+		getByFilterWithInnerLikeExpression();
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
+	void getByFilterWithPostfixLikeExpressionCorrect()
+	{
+		getByFilterWithPostfixLikeExpression();
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
+	void getByFilterWithUnderscoreLikeExpressionCorrect()
+	{
+		getByFilterWithUnderscoreLikeExpression();
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
+	void getByFilterWithEscapeLikeSpecialSymbolsCorrect()
+	{
+		getByFilterWithEscapeLikeSpecialSymbols();
+	}
+
+	@Test
 	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_WITH_LOGICAL_EXPRESSION_TEST)
 	void getByFilterWithLogicalExpressionCorrect()
 	{

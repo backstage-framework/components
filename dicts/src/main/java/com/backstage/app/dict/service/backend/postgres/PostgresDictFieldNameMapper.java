@@ -30,6 +30,11 @@ public class PostgresDictFieldNameMapper
 {
 	private final PostgresReservedKeyword reservedKeyword;
 
+	public PostgresDictFieldName mapFrom(String dictId, String fieldName)
+	{
+		return postgresDictFieldName(dictId, new DictFieldName(dictId, fieldName));
+	}
+
 	public PostgresDictFieldName mapFrom(String dictId, DictFieldName fieldName)
 	{
 		return postgresDictFieldName(dictId, fieldName);

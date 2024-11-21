@@ -16,8 +16,6 @@
 
 package com.backstage.app.database;
 
-import com.backstage.app.database.configuration.jpa.DataSourceConfiguration;
-import com.backstage.app.database.configuration.jpa.JpaConfiguration;
 import org.junit.ClassRule;
 import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -26,14 +24,16 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.images.builder.ImageFromDockerfile;
 import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
+@EnableWebMvc
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTest.Initializer.class})
-@Import({DataSourceConfiguration.class, JpaConfiguration.class, JacksonAutoConfiguration.class})
+@Import({JacksonAutoConfiguration.class})
 public class AbstractTest
 {
 	public static final String POSTGRES_IMAGE_NAME = "postgres:14";

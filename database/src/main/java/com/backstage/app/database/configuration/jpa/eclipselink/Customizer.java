@@ -50,15 +50,11 @@ public class Customizer implements SessionCustomizer, ApplicationContextAware
 	{
 		var eventManager = session.getEventManager();
 
-		if (jpaProperties.isPostgisEnabled())
-		{
-			eventManager.addListener(new GeolatteExtension());
-		}
-
-		session.getLogin().addSequence(new UuidSequence("system-uuid"));
+		session.getLogin().addSequence(new UuidSequence());
 		eventManager.addListener(new ReadOnlyFieldAnnotationExtension());
 		eventManager.addListener(new SpringAwareTableSchemaResolvingExtension(beanFactory, appProperties));
 		eventManager.addListener(new UuidSupportExtension());
+		eventManager.addListener(new GeolatteExtension());
 
 		var defaultScheme = jpaProperties.getDefaultScheme();
 

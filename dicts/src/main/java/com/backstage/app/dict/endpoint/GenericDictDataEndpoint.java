@@ -90,7 +90,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 	@Operation(summary = "Получение записей справочника по фильтру.")
 	@PostMapping("/{dictId}/list")
 	public ApiResponse<List<T>> getByFilter(@PathVariable String dictId, @RequestBody @Valid SearchRequest request,
-	                                                  @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
+	                                        @PageableDefault(size = Integer.MAX_VALUE) Pageable pageable)
 	{
 		var result = dictDataService.getByFilter(dictId, request.getFields(), request.getQuery(), pageable);
 
@@ -118,7 +118,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 	@Operation(summary = "Получение уникальных значений полей справочника по фильтру.")
 	@PostMapping("/{dictId}/distinctValues")
 	public ApiResponse<List<Object>> getDistinctValuesByFilter(@PathVariable String dictId,
-	                                                      @RequestBody @Valid SearchDistinctRequest request)
+	                                                           @RequestBody @Valid SearchDistinctRequest request)
 	{
 		var result = dictDataService.getDistinctValuesByFilter(dictId, request.getField(), request.getQuery());
 
@@ -191,7 +191,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 		return ApiResponse.ok();
 	}
 
-	@Operation(summary = "Экспорт элементов справочника.")
+	@Operation(summary = "Экспорт справочника.")
 	@PostMapping("/{dictId}/export")
 	public ResponseEntity<Resource> export(@PathVariable String dictId, @RequestBody @Valid ExportDictRequest request)
 	{

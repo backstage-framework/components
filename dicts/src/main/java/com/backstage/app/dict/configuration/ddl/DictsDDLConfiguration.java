@@ -16,34 +16,19 @@
 
 package com.backstage.app.dict.configuration.ddl;
 
-import com.backstage.app.dict.configuration.properties.DictsProperties;
 import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
-import org.springframework.core.annotation.AnnotationAwareOrderComparator;
 
-import java.util.List;
-
-@Slf4j
 @Configuration
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = DictsProperties.DDL_ACTIVATION_PROPERTY, matchIfMissing = true)
-@EnableConfigurationProperties(DictsProperties.class)
-@DependsOn({"dictsStorageDDLConfiguration", "dictLockInitializer"})
 public class DictsDDLConfiguration
 {
-	private final List<DictsDDLProvider> dictsDDLProviders;
+	private final DictsDDLProvider dictsDDLProvider;
 
 	@PostConstruct
 	public void initialize()
 	{
-		dictsDDLProviders.stream()
-				.sorted(AnnotationAwareOrderComparator.INSTANCE)
-				.peek(it -> log.info("Applying DDL with '{}'...", it.getName()))
-				.forEach(DictsDDLProvider::update);
+		dictsDDLProvider.update();
 	}
 }

@@ -30,7 +30,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.codec.binary.Hex;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
@@ -38,6 +37,9 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
@@ -147,6 +149,8 @@ public class AttachmentService
 
 		Attachment attachment = attachmentRepository.findByIdEx(attachmentId);
 
+		attachmentRepository.getEntityManager().refresh(attachment);
+
 		for (AttachmentBinding binding : attachment.getBindings())
 		{
 			if (binding.getUserId().equals(userId) && binding.getType().equals(type) && binding.getObjectId().equals(objectId))
@@ -174,21 +178,25 @@ public class AttachmentService
 	}
 
 	@Transactional
-	public void bindAttachments(@NonNull Collection<String> attachmentIds, @NonNull String userId, @NonNull String type, @NonNull String objectIds)
+	public void bindAttachments(@NonNull Collection<String> attachmentIds, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
-		attachmentIds.forEach(attachmentId -> bindAttachment(attachmentId, userId, type, objectIds));
+		attachmentIds.forEach(attachmentId -> bindAttachment(attachmentId, userId, type, objectId));
 	}
 
 	@Transactional
 	public void releaseAttachment(@NonNull String attachmentId)
 	{
 		attachmentBindingRepository.deleteByAttachmentId(attachmentId);
+
+		attachmentBindingRepository.flush();
 	}
 
 	@Transactional
 	public void releaseAttachments(@NonNull Collection<String> attachmentIds, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
 		attachmentIds.forEach(id -> attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectId(id, userId, type, objectId));
+
+		attachmentBindingRepository.flush();
 	}
 
 	@Transactional
@@ -201,6 +209,8 @@ public class AttachmentService
 	public void releaseAttachment(@NonNull String attachmentId, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
 		attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectId(attachmentId, userId, type, objectId);
+
+		attachmentBindingRepository.flush();
 	}
 
 	@Transactional
@@ -213,49 +223,88 @@ public class AttachmentService
 	public void releaseAttachments(@NotNull String type, @NotNull String objectId)
 	{
 		attachmentBindingRepository.deleteByTypeAndObjectId(type, objectId);
+
+		attachmentBindingRepository.flush();
+	}
+
+	public boolean isAttachmentBound(@NonNull String attachmentId, @NonNull Enum<?> type)
+	{
+		return isAttachmentBound(attachmentId, type.name());
+	}
+
+	public boolean isAttachmentBound(@NonNull String attachmentId, @NonNull String type)
+	{
+		return attachmentBindingRepository.existsByAttachmentIdAndType(attachmentId, type);
 	}
 
 	@Transactional
 	public Attachment addAttachment(@NonNull String fileName, @NonNull String mimeType, @NonNull String userId, byte[] data)
 	{
-		return addAttachment(null, fileName, mimeType, userId, data);
+		return addAttachment(null, fileName, mimeType, userId, new ByteArrayInputStream(data));
 	}
 
 	@Transactional
-	public Attachment addAttachment(String id, @NonNull String fileName, @NonNull String mimeType, @NonNull String userId, byte[] data)
+	public Attachment addAttachment(@NonNull String fileName, @NonNull String mimeType, @NonNull String userId, InputStream stream)
 	{
-		serviceAdviceList.forEach(advice -> advice.handleAddAttachment(id, fileName, mimeType, userId, data));
+		return addAttachment(null, fileName, mimeType, userId, stream);
+	}
 
+	@Transactional
+	public Attachment addAttachment(String id, @NonNull String fileName, @NonNull String mimeType, @NonNull String userId, InputStream stream)
+	{
 		var attachment = attachmentRepository.save(Attachment.builder()
 				.id(id)
 				.userId(userId)
 				.created(LocalDateTime.now())
 				.fileName(fileName)
 				.mimeType(mimeType)
-				.size((long) data.length)
-				.checksum(calculateChecksum(data))
 				.build());
 
-		attachmentStore.saveAttachment(attachment, data);
+		var resource = attachmentStore.saveAttachment(attachment, stream);
 
 		TransactionalUtils.doOnRollback(() -> attachmentStore.deleteAttachment(attachment));
 
-		return attachment;
+		try (var resourceStream = resource.getInputStream())
+		{
+			attachment.setSize(resource.contentLength());
+			attachment.setChecksum(calculateChecksum(resourceStream));
+		}
+		catch (IOException e)
+		{
+			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_ADD_ERROR, e);
+		}
+
+		serviceAdviceList.forEach(advice -> advice.handleAddAttachment(id, fileName, mimeType, userId, attachmentStore.getAttachment(attachment)));
+
+		return attachmentRepository.saveAndFlush(attachment);
 	}
 
 	@Transactional
 	public Attachment updateAttachment(@NonNull String id, @NonNull String fileName, @NonNull String mimeType, @NonNull String userId, byte[] data)
+	{
+		return addAttachment(id, fileName, mimeType, userId, new ByteArrayInputStream(data));
+	}
+
+	@Transactional
+	public Attachment updateAttachment(@NonNull String id, @NonNull String fileName, @NonNull String mimeType, @NonNull String userId, InputStream stream)
 	{
 		var attachment = getAttachment(id);
 		attachment.setUpdated(LocalDateTime.now());
 		attachment.setFileName(fileName);
 		attachment.setMimeType(mimeType);
 		attachment.setUserId(userId);
-		attachment.setSize((long) data.length);
-		attachment.setChecksum(calculateChecksum(data));
 
-		attachmentStore.deleteAttachment(attachment);
-		attachmentStore.saveAttachment(attachment, data);
+		var resource = attachmentStore.saveAttachment(attachment, stream);
+
+		try (var resourceStream = resource.getInputStream())
+		{
+			attachment.setSize(resource.contentLength());
+			attachment.setChecksum(calculateChecksum(resourceStream));
+		}
+		catch (IOException e)
+		{
+			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_ADD_ERROR, e);
+		}
 
 		return attachment;
 	}
@@ -298,9 +347,16 @@ public class AttachmentService
 		log.info("Хранилища синхронизированы.");
 	}
 
-	public String calculateChecksum(byte[] data)
+	public String calculateChecksum(InputStream stream)
 	{
-		return Hex.encodeHexString(DigestUtils.getMd5Digest().digest(data)).toUpperCase();
+		try
+		{
+			return DigestUtils.md5Hex(stream).toUpperCase();
+		}
+		catch (Exception e)
+		{
+			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_STORE_ERROR, "При вычислении контрольной суммы вложения произошла ошибка.");
+		}
 	}
 
 	public AttachmentStore getAttachmentStore(AttachmentProperties.StoreType storeType)

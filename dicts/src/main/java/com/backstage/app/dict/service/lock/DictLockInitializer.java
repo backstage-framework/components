@@ -16,23 +16,11 @@
 
 package com.backstage.app.dict.service.lock;
 
-import com.backstage.app.dict.configuration.ddl.DictsStorageDDLConfiguration;
-import com.backstage.app.dict.configuration.ddl.StorageDictsDDLProvider;
-import com.backstage.app.dict.configuration.ddl.StorageMigrationDictsDDLProvider;
 import com.backstage.app.dict.service.DictService;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Component;
 
-/**
- * Должен быть выполнен после {@link DictsStorageDDLConfiguration}, по причине необходимости
- * наличия созданной схемы dict.
- * @see StorageDictsDDLProvider
- * @see StorageMigrationDictsDDLProvider
- */
 @Component
-@DependsOn("dictsStorageDDLConfiguration")
 @RequiredArgsConstructor
 public class DictLockInitializer
 {
@@ -44,7 +32,6 @@ public class DictLockInitializer
 	 * Первоначальное наполнение коллекции локов, чтобы гарантировать их наличие на каждый справочник.
 	 * @see DictLockService
 	 */
-	@PostConstruct
 	public void initialize()
 	{
 		dictService.getAll()

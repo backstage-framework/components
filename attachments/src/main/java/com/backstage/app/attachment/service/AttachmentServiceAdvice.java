@@ -16,11 +16,15 @@
 
 package com.backstage.app.attachment.service;
 
+import org.springframework.core.annotation.Order;
+import org.springframework.core.io.Resource;
+
 import java.util.List;
 
 /**
  * Класс, который может быть использован для уточнения основных операций {@link AttachmentService}.
  */
+@Order(0)
 public interface AttachmentServiceAdvice
 {
 	/**
@@ -54,9 +58,9 @@ public interface AttachmentServiceAdvice
 	 * @param fileName название файла
 	 * @param mimeType MIME-тип
 	 * @param userId идентификатор владельца вложения
-	 * @param data данные вложения
+	 * @param resource данные вложения
 	 */
-	default void handleAddAttachment(String id, String fileName, String mimeType, String userId, byte[] data)
+	default void handleAddAttachment(String id, String fileName, String mimeType, String userId, Resource resource)
 	{
 	}
 

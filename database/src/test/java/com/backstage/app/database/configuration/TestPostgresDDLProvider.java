@@ -16,6 +16,7 @@
 
 package com.backstage.app.database.configuration;
 
+import com.backstage.app.database.configuration.annotation.DDLDataSource;
 import com.backstage.app.database.configuration.ddl.AbstractDDLProvider;
 import com.backstage.app.database.configuration.properties.PostgresTestProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -30,7 +31,7 @@ import javax.sql.DataSource;
 @EnableConfigurationProperties(PostgresTestProperties.class)
 public class TestPostgresDDLProvider extends AbstractDDLProvider
 {
-	public TestPostgresDDLProvider(PostgresTestProperties testProperties, DataSource dataSource)
+	public TestPostgresDDLProvider(@DDLDataSource DataSource dataSource, PostgresTestProperties testProperties)
 	{
 		super("postgres", testProperties.getDdl(), dataSource);
 	}

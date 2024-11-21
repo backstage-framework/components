@@ -36,11 +36,6 @@ public class JPAProperties
 	private String defaultScheme;
 
 	/**
-	 * Если флаг установлен, то активируется поддержка Postgis.
-	 */
-	private boolean postgisEnabled;
-
-	/**
 	 * Включает проверку корректной инициализации полей в сгенерированных моделях EntityClass_.
 	 */
 	private boolean validateMetaModel = true;

@@ -16,12 +16,12 @@
 
 package com.backstage.app.database.partman;
 
+import com.backstage.app.database.configuration.annotation.DDLDataSource;
 import com.backstage.app.database.configuration.properties.PartmanProperties;
 import com.backstage.app.jobs.model.dto.other.JobResult;
 import com.backstage.app.jobs.model.dto.param.EmptyJobParams;
 import com.backstage.app.jobs.service.AbstractCronJob;
 import com.backstage.app.jobs.service.JobDescription;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
@@ -49,7 +49,7 @@ public class AutoCreatePartitionJob extends AbstractCronJob<EmptyJobParams>
 
 	private final JdbcTemplate jdbc;
 
-	public AutoCreatePartitionJob(@Qualifier("ddlDataSource") DataSource dataSource,
+	public AutoCreatePartitionJob(@DDLDataSource DataSource dataSource,
 	                              PartmanProperties properties)
 	{
 		super(properties.getCron());

@@ -1,12 +1,9 @@
 app:
     partman:
         enabled: true
-    jpa.enabled: true
-    api.swagger.enabled: false
 
-    jms:
-        enabled: false
-        storeType: memory
+    jpa.enabled: true
+
     test:
         postgres:
             ddl:

@@ -1,23 +1,35 @@
-## 5.1.0 - 2024-10-02
+## 5.1.0 - 2024-11-07
 ### Dependency Upgrades
-- Spring Boot 3.3.4
-- Spring Cloud 4.1.3
+- Spring Boot 3.3.5
 - EclipseLink 4.0.4
-- Flyway 10.18.1
+- Flyway 10.20.1
 - Postgresql JDBC 42.7.4
 - ClickHouse JDBC 0.6.5
 - Groovy 4.0.23
-- MinIO 8.5.12
+- MinIO 8.5.13
 - Guava 33.3.1-jre
+- Commons-io 2.17.0
+- Commons-codec 1.17.1
+- Jersey 3.1.9
+- PostGIS 2024.1.0
 
 ### App
 - Реализована возможность запуска в составе приложений, корневой пакет которых отличается от com.backstage.
+- Добавлена аннотация @ConditionalOnMissingQualifiedBean.
 
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
+- Добавлен параметр для активации GlobalMvcExceptionHandler.
 
 ### Attachments
 - Добавили поддержку HTTP заголовка Range в AttachmentEndpoint.
+- Добавили параметр app.attachments.deleteUnboundDuration для управления окном удаления не привязанных к объектам вложений.
+- Добавили CheckAttachmentsJob для получения показателей утилизации хранилища.
+- Загрузка больших файлов теперь требует значительно меньше оперативной памяти.
+- Добавлен параметр app.attachments.minio.uploadPartSize для ограничения потребления оперативной памяти во время загрузки файлов в MinIO.
+- Изменилась сигнатура метода AttachmentServiceAdvice::handleAddAttachment.
+- При вызове attachmentService.bindAttachment добавлен вызов entityManager.refresh для корректной работы внутри транзакции при проверке на существующие связи.
+- При вызове attachmentService.releaseAttachment добавлен вызов entityManager.flush для корректной работы внутри транзакции.
 
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
@@ -26,6 +38,8 @@
 ### Database
 - При инициализации EntityManager по умолчанию включаются сущности из appProperties.basePackages.
 - Для @SequenceGenerator добавлена поддержка SpEL и placeholder.
+- При подключении модуля параметр spring.flyway.enabled устанавливается в false.
+- Удалили параметр app.jpa.postgis-enabled, расширения JPA для PostGIS активируются автоматически.
 
 ### Dicts
 - Метод dictDataService.getByIds при передаче пустого списка идентификаторов теперь возвращает пустой список вместо исключения.
@@ -35,7 +49,18 @@
 - Добавили в миграции поддержку инструкции COPY FROM для импорта справочника из файла.
 - Добавили поддержку multivalued полей при экспорте/импорте CSV.
 - Добавили получение уникальных значений полей справочника по фильтру.
-- BindingDictDataServiceAdvice теперь срабатывает с наименьшим приоритетом, чтобы учесть изменения от других advice'ов.
+- AttachmentDictDataServiceAdvice теперь срабатывает с наименьшим приоритетом, чтобы учесть изменения от других advice'ов.
+- Для DictItemDto исключаются null поля из JSON в ответах API.
+- Исправили построение запросов с сортировками в PostgreSQL в случае когда имя справочника совпадает со служебными словами.
+- Добавили возможность через @Configuration переопределять dataSource (Postgres) и mongoTemplate (Mongo).
+- Шаблоны для операторов like и ilike теперь SQL совместимы вне зависимости от используемого бэкэнда.
+- В методе DictDataServiceAdvice::handleUpdate не заполнялся id у поля item.
+- Изменены типы связей вложений со строками справочников. В прикладных сервисах необходимо выполнить миграцию.
+	```sql
+	update attachment_binding set type = 'DICT_ITEM', object_id = concat(split_part(type, '_', 2), '_', split_part(type, '_', 3)) where type like 'DICTS\_%\_%\_%';
+	update attachment_binding set user_id = '00000000-0000-0000-0000-000000000000' where user_id = '-1';
+	```
+- Исправили генерацию моделей для справочников с незаполненными multivalued полями.
 
 ### Jobs
 - Добавили подсветку синтаксиса cron выражений в AbstractCronJob.
@@ -935,7 +960,7 @@
 
 ### App
 - Исправили отображение наименования компонента с периодичными задачами в актуаторе.
-- Исправили работу DeleteUnboundedAttachmentsJob.
+- Исправили работу DeleteUnboundAttachmentsJob.
 - Параметр конфигурации app.attachments.store-path заменен на app.attachments.directory.path.
 
 ### BPM

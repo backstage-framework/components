@@ -16,6 +16,9 @@
 
 package com.backstage.app.utils;
 
+import com.backstage.app.configuration.AppConfiguration;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import lombok.experimental.UtilityClass;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
@@ -53,5 +56,10 @@ public class SpringContextUtils
 				});
 
 		return factory;
+	}
+
+	public <T> Supplier<T> createBeanSupplier(Class<T> beanClass)
+	{
+		return Suppliers.memoize(() -> AppConfiguration.getApplicationContext().getBean(beanClass));
 	}
 }

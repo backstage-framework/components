@@ -28,6 +28,7 @@ import com.backstage.app.dict.exception.dict.DictConcurrentUpdateException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
+import com.backstage.app.dict.service.advice.AttachmentDictDataServiceAdvice;
 import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.model.other.date.DateConstants;
 import com.backstage.app.model.other.user.UserInfo;
@@ -68,7 +69,6 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 import static com.backstage.app.dict.constant.ServiceFieldConstants.ID;
-import static com.backstage.app.dict.service.advice.BindingDictDataServiceAdvice.DICTS_ATTACHMENT_TYPE_TEMPLATE;
 import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -251,7 +251,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	protected void getByFilter()
 	{
 		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
-				"stringField like 'str' and (integerField = 1 or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1) and stringField != 'stringFieldLogicalExpressionTest'",
+				"stringField like 'string' and (integerField = 1 or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1)",
 				PageRequest.of(0, 10));
 
 		var allMatchStringField = result.getContent()
@@ -263,7 +263,106 @@ public class CommonDictDataServiceTest extends CommonTest
 				.map(Map.Entry::getValue)
 				.allMatch(DATA_MAP.get("stringField")::equals);
 
+		assertFalse(result.getContent().isEmpty());
 		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithPrefixLikeExpression()
+	{
+		var queryValue = "str";
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like '%s%%' and stringField ilike '%s%%'".formatted(queryValue, queryValue.toUpperCase()),
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(it -> ((String) it).startsWith(queryValue));
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithInnerLikeExpression()
+	{
+		var queryValue = "rin";
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like '%%%s%%' and stringField ilike '%%%s%%'".formatted(queryValue, queryValue.toUpperCase()),
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(it -> ((String) it).contains(queryValue));
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithPostfixLikeExpression()
+	{
+		var queryValue = "ring";
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like '%%%s' and stringField ilike '%%%s'".formatted(queryValue, queryValue.toUpperCase()),
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(it -> ((String) it).endsWith(queryValue));
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithUnderscoreLikeExpression()
+	{
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like 'strin_' and stringField ilike 'STRIN_'",
+				PageRequest.of(0, 10));
+
+		var allMatchStringField = result.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(Map::entrySet)
+				.flatMap(Collection::stream)
+				.filter(it -> "stringField".equals(it.getKey()))
+				.map(Map.Entry::getValue)
+				.allMatch(DATA_MAP.get("stringField")::equals);
+
+		assertFalse(result.getContent().isEmpty());
+		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithEscapeLikeSpecialSymbols()
+	{
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put("stringField", "st%i_g");
+
+		var dictItemId = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap))
+				.getId();
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
+				"stringField like 'st\\%i\\_g' and stringField ilike 'ST\\%I\\_G'",
+				PageRequest.of(0, 10));
+
+		assertEquals(result.getContent().size(), 1);
+		assertEquals(result.getContent().get(0).getId(), dictItemId);
 	}
 
 	protected void getByFilterWithLogicalExpression()
@@ -284,7 +383,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void getIdsByFilter()
 	{
-		var result = dictDataService.getIdsByFilter(TESTABLE_DICT_ID, "integerField = 1 or stringField like 'str' or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1");
+		var result = dictDataService.getIdsByFilter(TESTABLE_DICT_ID, "integerField = 1 or stringField like 'string' or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1");
 
 		assertNotNull(result.getContent().get(0));
 	}
@@ -566,10 +665,8 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataMap));
 
-		var singleFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentField"), dictItem.getId());
-		var multivaluedFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentsField"), dictItem.getId());
+		var singleFieldAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, dictItem));
+		var multivaluedFieldAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, dictItem));
 
 		assertNotNull(dictItem);
 		assertEquals(firstAttachment.getId(), singleFieldAttachments.get(0).getId());
@@ -596,19 +693,15 @@ public class CommonDictDataServiceTest extends CommonTest
 				"booleanField", false);
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataMap));
-
 		var updatedDictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataUpdateMap), dictItem.getVersion());
 
-		var singleFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, updatedDictItem.getId(), "attachmentField"), updatedDictItem.getId());
-		var multivaluedFieldAttachments = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, updatedDictItem.getId(), "attachmentsField"), updatedDictItem.getId());
+		var fieldAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, updatedDictItem));
+		var fieldAttachmentsIds = fieldAttachments.stream().map(Attachment::getId).toList();
 
 		assertNotNull(dictItem);
-		assertEquals(secondAttachment.getId(), singleFieldAttachments.get(0).getId());
-		assertEquals(multivaluedFieldAttachments.size(), 2);
-		assertEquals(secondAttachment.getId(), multivaluedFieldAttachments.get(0).getId());
-		assertEquals(thirdAttachment.getId(), multivaluedFieldAttachments.get(1).getId());
+		assertTrue(fieldAttachmentsIds.contains(secondAttachmentId));
+		assertTrue(fieldAttachmentsIds.contains(thirdAttachmentId));
+		assertEquals(fieldAttachmentsIds.size(), 2);
 	}
 
 	protected void checkAttachmentReleaseWithDeleteDictItem()
@@ -626,8 +719,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
 
-		var attachmentsAfterDelete = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentField"), dictItem.getId());
+		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, dictItem.getId());
 
 		assertTrue(attachmentsAfterDelete.isEmpty());
 	}
@@ -647,8 +739,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
 
-		var attachmentsAfterDelete = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), "attachmentField"), dictItem.getId());
+		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + dictItem.getId());
 
 		assertTrue(attachmentsAfterDelete.isEmpty());
 
@@ -656,8 +747,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), false, deletedDictItem.getVersion());
 
-		var attachmentsAfterRestore = attachmentService.getAttachments(
-				DICTS_ATTACHMENT_TYPE_TEMPLATE.formatted(TESTABLE_ATTACH_DICT_ID, deletedDictItem.getId(), "attachmentField"), deletedDictItem.getId());
+		var attachmentsAfterRestore = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + deletedDictItem.getId());
 
 		assertEquals(attachmentsAfterRestore.size(), 1);
 	}

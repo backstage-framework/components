@@ -18,10 +18,10 @@ package com.backstage.app.audit.configuration;
 
 import com.backstage.app.audit.configuration.conditional.ConditionalOnAudit;
 import com.backstage.app.audit.configuration.properties.AuditProperties;
+import com.backstage.app.database.configuration.annotation.DDLDataSource;
 import com.backstage.app.database.configuration.ddl.AbstractDDLProvider;
 import com.backstage.app.database.configuration.ddl.DDLConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
@@ -35,7 +35,7 @@ public class AuditDDLProvider extends AbstractDDLProvider
 	public static final int PRECEDENCE = DDLConfiguration.DDL_PRECEDENCE_SYSTEM + 80;
 
 	@Autowired
-	public AuditDDLProvider(@Qualifier("ddlDataSource") DataSource dataSource, AuditProperties auditProperties)
+	public AuditDDLProvider(@DDLDataSource DataSource dataSource, AuditProperties auditProperties)
 	{
 		super("audit", auditProperties.getDdl(), dataSource);
 	}

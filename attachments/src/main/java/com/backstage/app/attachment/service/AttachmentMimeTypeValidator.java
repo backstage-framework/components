@@ -21,9 +21,13 @@ import com.backstage.app.attachment.model.AttachmentsAppStatusCode;
 import com.backstage.app.exception.AppException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.Ordered;
+import org.springframework.core.annotation.Order;
+import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
 @Component
+@Order(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnProperty(name = "app.attachments.check-mime-types")
 @RequiredArgsConstructor
 public class AttachmentMimeTypeValidator implements AttachmentServiceAdvice
@@ -31,7 +35,7 @@ public class AttachmentMimeTypeValidator implements AttachmentServiceAdvice
 	private final AttachmentProperties attachmentProperties;
 
 	@Override
-	public void handleAddAttachment(String id, String fileName, String mimeType, String userId, byte[] data)
+	public void handleAddAttachment(String id, String fileName, String mimeType, String userId, Resource resource)
 	{
 		if (!attachmentProperties.getMimeTypes().contains(mimeType.toLowerCase()))
 		{

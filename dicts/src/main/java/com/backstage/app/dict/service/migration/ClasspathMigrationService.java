@@ -16,7 +16,7 @@
 
 package com.backstage.app.dict.service.migration;
 
-import com.backstage.app.dict.configuration.ddl.ClasspathMigrationDictsDDLProvider;
+import com.backstage.app.dict.configuration.ddl.DictsDDLProvider;
 import com.backstage.app.dict.domain.VersionScheme;
 import com.backstage.app.dict.exception.migration.MigrationAppliedException;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
@@ -50,7 +50,8 @@ public class ClasspathMigrationService
 	@Transactional
 	public void migrate(Map.Entry<String, String> migration)
 	{
-		var appliedMigration = ClasspathMigrationDictsDDLProvider.MIGRATIONS_PATH + ClasspathMigrationDictsDDLProvider.SEPARATOR + migration.getKey();
+		var migrationName = migration.getKey();
+		var migrationPath = DictsDDLProvider.MIGRATIONS_PATH + DictsDDLProvider.SEPARATOR + migrationName;
 
 		try
 		{
@@ -58,7 +59,7 @@ public class ClasspathMigrationService
 
 			var expressions = sqlParser.parse(migration.getValue());
 
-			migrationValidationService.validateMigration(appliedMigration, expressions);
+			migrationValidationService.validateMigration(migrationPath, expressions);
 
 			interpreter.execute(expressions);
 
@@ -67,21 +68,22 @@ public class ClasspathMigrationService
 							.id(String.valueOf(UUID.randomUUID().getLeastSignificantBits()))
 							.checksum(MigrationUtils.getFileHash(migration.getValue()))
 							.installed(LocalDateTime.now())
-							.script(appliedMigration)
-							.version(MigrationUtils.parseVersion(appliedMigration))
+							.script(migrationPath)
+							.version(MigrationUtils.parseVersion(migrationPath))
 							.build());
 
 			transactionProvider.commit();
 
-			log.info("Применение миграции {} завершено успешно.", migration.getKey());
+			log.info("Миграция '{}' применена успешно.", migrationName);
 		}
 		catch (Exception e)
 		{
+			log.error("Ошибка применения миграции '{}'.", migrationName, e);
+
+			// TODO: откат работает некорректно как минимум для PG. Добавить тесты.
 			transactionProvider.rollback();
 
-			log.error("Ошибка применения миграции: {}", appliedMigration);
-
-			throw new MigrationAppliedException(appliedMigration, e);
+			throw new MigrationAppliedException(migrationName, e);
 		}
 	}
 }

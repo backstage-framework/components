@@ -32,6 +32,7 @@ import org.springframework.core.io.Resource;
 import org.springframework.http.MediaType;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.io.ByteArrayInputStream;
 import java.util.Objects;
 import java.util.UUID;
 
@@ -70,7 +71,7 @@ public abstract class AbstractStoreTests extends AbstractTests
 	{
 		var attachment = attachmentService.getAttachment(attachmentId);
 		var dataResource = attachmentService.getAttachmentData(attachment.getId());
-		var dataChecksum = attachmentService.calculateChecksum(IOUtils.toByteArray(dataResource.getInputStream()));
+		var dataChecksum = attachmentService.calculateChecksum(dataResource.getInputStream());
 
 		assertEquals(attachment.getChecksum(), dataChecksum);
 	}
@@ -91,7 +92,7 @@ public abstract class AbstractStoreTests extends AbstractTests
 		attachmentService.syncAttachmentStores(source.getType(), target.getType());
 
 		var dataResource = target.getAttachment(attachment);
-		var dataChecksum = attachmentService.calculateChecksum(IOUtils.toByteArray(dataResource.getInputStream()));
+		var dataChecksum = attachmentService.calculateChecksum(dataResource.getInputStream());
 
 		assertEquals(attachment.getChecksum(), dataChecksum);
 	}
@@ -119,7 +120,7 @@ public abstract class AbstractStoreTests extends AbstractTests
 		try
 		{
 			transactionTemplate.execute(status -> {
-				attachment.setValue(attachmentService.addAttachment(rolledBackAttachmentId, Objects.requireNonNull(fileResource.getFilename()), MediaType.IMAGE_PNG_VALUE, UserInfo.SYSTEM_USER_ID, bytes));
+				attachment.setValue(attachmentService.addAttachment(rolledBackAttachmentId, Objects.requireNonNull(fileResource.getFilename()), MediaType.IMAGE_PNG_VALUE, UserInfo.SYSTEM_USER_ID, new ByteArrayInputStream(bytes)));
 
 				throw new RuntimeException("rolling back");
 			});

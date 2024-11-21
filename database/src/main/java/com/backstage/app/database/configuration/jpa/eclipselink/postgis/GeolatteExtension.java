@@ -38,19 +38,15 @@ public class GeolatteExtension extends SessionEventAdapter
 
 		final var descriptorMap = session.getDescriptors();
 
-		// Walk through all descriptors...
 		for (final var entry : descriptorMap.entrySet())
 		{
 			final ClassDescriptor desc = entry.getValue();
 			final Vector<DatabaseMapping> mappings = desc.getMappings();
 
-			// walk through all mappings for some class...
 			for (final DatabaseMapping mapping : mappings)
 			{
-				if (mapping instanceof DirectToFieldMapping)
+				if (mapping instanceof DirectToFieldMapping dfm)
 				{
-					final DirectToFieldMapping dfm = (DirectToFieldMapping) mapping;
-
 					if (isCandidateConverter(dfm))
 					{
 						final var type = entry.getKey();
@@ -78,13 +74,9 @@ public class GeolatteExtension extends SessionEventAdapter
 		}
 	}
 
-	/**
-	 * Return the field associated with the specified name.
-	 * Walk the parent class to locate the field as necessary.
-	 */
-	private Field getField(final Class type, final String attributeName)
+	private Field getField(final Class<?> type, final String attributeName)
 	{
-		Class t = type;
+		var t = type;
 
 		while (t != Object.class)
 		{
@@ -107,7 +99,6 @@ public class GeolatteExtension extends SessionEventAdapter
 	// byte[] database fields from object...
 	private boolean isCandidateConverter(final DirectToFieldMapping mapping)
 	{
-		final Converter converter = mapping.getConverter();
-		return null != converter && converter instanceof SerializedObjectConverter;
+		return mapping.getConverter() instanceof SerializedObjectConverter;
 	}
 }

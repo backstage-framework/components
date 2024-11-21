@@ -14,9 +14,11 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.attachment.service;
+package com.backstage.app.attachment.service.job;
 
+import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
 import com.backstage.app.attachment.repository.AttachmentRepository;
+import com.backstage.app.attachment.service.AttachmentService;
 import com.backstage.app.jobs.model.dto.other.JobResult;
 import com.backstage.app.jobs.model.dto.param.EmptyJobParams;
 import com.backstage.app.jobs.service.AbstractFixedDelayJob;
@@ -32,13 +34,15 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@ConditionalOnProperty("app.attachments.deleteUnbounded")
+@ConditionalOnProperty("app.attachments.deleteUnbound")
 @JobDescription("Удаление мусорных вложений, для которых нет связей с объектами системы")
 @RequiredArgsConstructor
-public class DeleteUnboundedAttachmentsJob extends AbstractFixedDelayJob<EmptyJobParams>
+public class DeleteUnboundAttachmentsJob extends AbstractFixedDelayJob<EmptyJobParams>
 {
 	private final AttachmentRepository attachmentRepository;
 	private final AttachmentService attachmentService;
+
+	private final AttachmentProperties attachmentProperties;
 
 	@Override
 	public long getFixedDelay()
@@ -49,11 +53,11 @@ public class DeleteUnboundedAttachmentsJob extends AbstractFixedDelayJob<EmptyJo
 	@Override
 	protected JobResult execute()
 	{
-		log.info("Deleting unbounded attachments...");
+		log.info("Deleting unbound attachments...");
 
-		var expirationDate = LocalDateTime.now().minusDays(1);
+		var expirationDate = LocalDateTime.now().minusSeconds(attachmentProperties.getDeleteUnboundDuration().toSeconds());
 
-		var expiredAttachmentIds = attachmentRepository.findExpiredUnbounded(expirationDate, PageRequest.of(0, 500));
+		var expiredAttachmentIds = attachmentRepository.findExpiredUnbound(expirationDate, PageRequest.of(0, 500));
 
 		for (var attachmentId : expiredAttachmentIds)
 		{
@@ -63,13 +67,13 @@ public class DeleteUnboundedAttachmentsJob extends AbstractFixedDelayJob<EmptyJo
 			}
 			catch (Exception e)
 			{
-				log.info(String.format("Failed to delete unbounded attachment '%s'.", attachmentId), e);
+				log.info(String.format("Failed to delete unbound attachment '%s'.", attachmentId), e);
 			}
 		}
 
 		if (!expiredAttachmentIds.isEmpty())
 		{
-			log.info("'{}' unbounded attachment(s) processed.", expiredAttachmentIds.size());
+			log.info("'{}' unbound attachment(s) processed.", expiredAttachmentIds.size());
 		}
 
 		return JobResult.ok(Map.of("processed", expiredAttachmentIds.size()));

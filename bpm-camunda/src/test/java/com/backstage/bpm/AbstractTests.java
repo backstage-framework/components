@@ -16,8 +16,6 @@
 
 package com.backstage.bpm;
 
-import com.backstage.app.database.configuration.jpa.DataSourceConfiguration;
-import com.backstage.app.database.configuration.jpa.JpaConfiguration;
 import org.camunda.bpm.spring.boot.starter.CamundaBpmAutoConfiguration;
 import org.camunda.bpm.spring.boot.starter.CamundaBpmConfiguration;
 import org.junit.ClassRule;
@@ -33,7 +31,7 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 @SpringBootTest
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTests.Initializer.class})
-@Import({DataSourceConfiguration.class, JpaConfiguration.class, JacksonAutoConfiguration.class, TaskSchedulingAutoConfiguration.class, CamundaBpmAutoConfiguration.class, CamundaBpmConfiguration.class})
+@Import({JacksonAutoConfiguration.class, TaskSchedulingAutoConfiguration.class, CamundaBpmAutoConfiguration.class, CamundaBpmConfiguration.class})
 public abstract class AbstractTests
 {
 	@ClassRule

@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.api.model.dto.data;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,23 +36,31 @@ import java.util.Map;
 @Schema(description = "Запись в справочнике")
 public class DictItemDto
 {
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String id;
 
 	@Schema(description = "Пользовательские поля")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private Map<String, Object> data = new HashMap<>();
 
 	@Schema(description = "История изменений записи")
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<Map<String, Object>> history = new ArrayList<>();
 
 	@Schema(description = "Текущая версия записи")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private Long version;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private LocalDateTime created;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private LocalDateTime updated;
 
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private LocalDateTime deleted;
 
 	@Schema(description = "Причина удаления")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private String deletionReason;
 }

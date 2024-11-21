@@ -26,7 +26,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ ElementType.TYPE, ElementType.METHOD })
-@ConditionalOnProperty(JmsProperties.ACTIVATION_PROPERTY)
+@ConditionalOnProperty(value = JmsProperties.ACTIVATION_PROPERTY, matchIfMissing = true)
 public @interface ConditionalOnJms
 {
 }

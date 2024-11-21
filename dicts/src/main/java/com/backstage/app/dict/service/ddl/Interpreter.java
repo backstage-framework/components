@@ -311,6 +311,7 @@ public class Interpreter
 
 		var filtersQuery = buildFilterQuery(update.getRow());
 
+		// FIXME: заменить на updateByFilter.
 		dictDataService.getByFilter(dictId, List.of("*"), filtersQuery, Pageable.unpaged()).stream()
 				.peek(dictItem -> {
 					var updatedMap = new HashMap<>(dictItem.getData());

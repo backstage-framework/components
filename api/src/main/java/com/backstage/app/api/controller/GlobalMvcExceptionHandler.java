@@ -29,6 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -47,6 +48,7 @@ import static com.backstage.app.utils.ExceptionUtils.extract;
 @Slf4j
 @ControllerAdvice
 @RequiredArgsConstructor
+@ConditionalOnProperty(value = ApiProperties.EXCEPTION_HANDLER_ACTIVATION_PROPERTY, matchIfMissing = true)
 public class GlobalMvcExceptionHandler
 {
 	private final ApiProperties apiProperties;

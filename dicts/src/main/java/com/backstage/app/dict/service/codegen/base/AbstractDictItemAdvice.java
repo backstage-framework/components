@@ -19,8 +19,7 @@ package com.backstage.app.dict.service.codegen.base;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.service.advice.DictDataServiceAdvice;
-import com.google.common.base.Suppliers;
-import org.springframework.beans.factory.ObjectProvider;
+import com.backstage.app.utils.SpringContextUtils;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -30,9 +29,9 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 {
 	private final Supplier<S> dictItemServiceSupplier;
 
-	public AbstractDictItemAdvice(ObjectProvider<S> dictItemServiceProvider)
+	public AbstractDictItemAdvice()
 	{
-		this.dictItemServiceSupplier = Suppliers.memoize(dictItemServiceProvider::getObject);
+		this.dictItemServiceSupplier = SpringContextUtils.createBeanSupplier(getDictItemServiceClass());
 	}
 
 	@Override
@@ -94,15 +93,19 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	@Override
 	public final void handleBeforeCreateMany(Dict dict, List<DictItem> items)
 	{
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			items.forEach(item -> handleBeforeCreate(dict, item));
+		}
 	}
 
 	@Override
 	public final void handleAfterCreateMany(Dict dict, List<DictItem> items)
 	{
-	}
-
-	public void handleAfterCreateMany(List<T> items)
-	{
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			items.forEach(item -> handleAfterCreate(dict, item));
+		}
 	}
 
 	@Override
@@ -164,6 +167,8 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	public void handleDeleteAll(boolean deleted)
 	{
 	}
+
+	protected abstract Class<S> getDictItemServiceClass();
 
 	protected S getDictItemService()
 	{

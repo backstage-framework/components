@@ -22,7 +22,6 @@ import com.backstage.app.attachment.model.domain.Attachment;
 import com.backstage.app.exception.AppException;
 import org.springframework.core.io.Resource;
 
-import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -34,18 +33,13 @@ public interface AttachmentStore
 
 	Resource getAttachment(Attachment attachment);
 
-	default void saveAttachment(Attachment attachment, byte[] data)
-	{
-		saveAttachment(attachment, new ByteArrayInputStream(data));
-	}
+	Resource saveAttachment(Attachment attachment, InputStream stream);
 
-	void saveAttachment(Attachment attachment, InputStream stream);
-
-	default void saveAttachment(Attachment attachment, Resource resource)
+	default Resource saveAttachment(Attachment attachment, Resource resource)
 	{
 		try
 		{
-			saveAttachment(attachment, resource.getInputStream());
+			return saveAttachment(attachment, resource.getInputStream());
 		}
 		catch (IOException e)
 		{

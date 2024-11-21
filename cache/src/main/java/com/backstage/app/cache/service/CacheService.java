@@ -16,9 +16,8 @@
 
 package com.backstage.app.cache.service;
 
-import com.backstage.app.cache.configuration.properties.CacheProperties;
+import com.backstage.app.cache.configuration.conditional.ConditionalOnCache;
 import lombok.RequiredArgsConstructor;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
@@ -29,7 +28,7 @@ import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
-@ConditionalOnProperty(value = CacheProperties.ACTIVATION_PROPERTY, matchIfMissing = true)
+@ConditionalOnCache
 public class CacheService
 {
 	private final CacheManager cacheManager;

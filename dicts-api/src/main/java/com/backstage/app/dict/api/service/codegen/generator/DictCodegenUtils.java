@@ -26,11 +26,25 @@ import java.time.LocalDateTime;
 @UtilityClass
 public class DictCodegenUtils
 {
+	private final String DEFAULT_SUPPRESS_WARNINGS_VALUE = "unchecked";
+
 	public AnnotationSpec generatedAnnotation(Object generator)
 	{
 		return AnnotationSpec.builder(Generated.class)
 				.addMember("value", "$S", generator.getClass().getName())
 				.addMember("date", "$S", DateUtils.toZonedDateTime(LocalDateTime.now()))
+				.build();
+	}
+
+	public AnnotationSpec suppressWarningsAnnotation()
+	{
+		return suppressWarningsAnnotation(DEFAULT_SUPPRESS_WARNINGS_VALUE);
+	}
+
+	public AnnotationSpec suppressWarningsAnnotation(String value)
+	{
+		return AnnotationSpec.builder(SuppressWarnings.class)
+				.addMember("value", "$S", value)
 				.build();
 	}
 }

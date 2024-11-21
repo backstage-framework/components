@@ -21,7 +21,6 @@ import com.backstage.app.utils.DateUtils;
 import jakarta.annotation.Generated;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.javapoet.*;
 
 import javax.lang.model.element.Modifier;
@@ -43,10 +42,10 @@ public class DictItemAdviceGenerator
 				.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
 				.superclass(ParameterizedTypeName.get(ClassName.get(AbstractDictItemAdvice.class), modelClassName, serviceClassName))
 				.addAnnotation(generatedAnnotation())
-				.addMethod(MethodSpec.constructorBuilder()
+				.addMethod(MethodSpec.methodBuilder("getDictItemServiceClass")
 						.addModifiers(Modifier.PROTECTED)
-						.addParameter(ParameterizedTypeName.get(ClassName.get(ObjectProvider.class), serviceClassName), "dictItemServiceProvider")
-						.addStatement("super(dictItemServiceProvider)")
+						.returns(ParameterizedTypeName.get(ClassName.get(Class.class), serviceClassName))
+						.addStatement("return $T.class", serviceClassName)
 						.build())
 				.build();
 	}
