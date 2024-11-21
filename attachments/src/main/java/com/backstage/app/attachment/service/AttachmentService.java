@@ -271,7 +271,7 @@ public class AttachmentService
 		}
 		catch (IOException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_ADD_ERROR, e);
+			throw new AppException(AttachmentsAppStatusCode.ATTACHMENT_ADD_ERROR, e);
 		}
 
 		serviceAdviceList.forEach(advice -> advice.handleAddAttachment(id, fileName, mimeType, userId, attachmentStore.getAttachment(attachment)));
@@ -303,7 +303,7 @@ public class AttachmentService
 		}
 		catch (IOException e)
 		{
-			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_ADD_ERROR, e);
+			throw new AppException(AttachmentsAppStatusCode.ATTACHMENT_ADD_ERROR, e);
 		}
 
 		return attachment;
@@ -355,7 +355,7 @@ public class AttachmentService
 		}
 		catch (Exception e)
 		{
-			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_STORE_ERROR, "При вычислении контрольной суммы вложения произошла ошибка.");
+			throw new AppException(AttachmentsAppStatusCode.ATTACHMENT_STORE_ERROR, "При вычислении контрольной суммы вложения произошла ошибка.");
 		}
 	}
 

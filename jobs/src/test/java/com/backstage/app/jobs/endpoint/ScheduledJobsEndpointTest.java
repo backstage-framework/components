@@ -16,7 +16,6 @@
 
 package com.backstage.app.jobs.endpoint;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.backstage.app.jobs.TestApplication;
 import com.backstage.app.jobs.configuration.SchedulerConfiguration;
 import com.backstage.app.jobs.data.TestJobs;
@@ -24,6 +23,7 @@ import com.backstage.app.jobs.service.JobHealthIndicator;
 import com.backstage.app.jobs.service.JobManager;
 import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import com.backstage.app.utils.TaskUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +105,7 @@ class ScheduledJobsEndpointTest
 		mvc.perform(post("/api/scheduledJobs/testJobs.TestManualJobWithValidationParams/execute")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(mapper.writeValueAsString(params)))
-				.andExpect(status().isOk())
+				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("message").value(Matchers.is(CoreAppStatusCode.ILLEGAL_INPUT.getMessage())))
 				.andDo(print());
 	}
