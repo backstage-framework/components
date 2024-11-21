@@ -111,7 +111,7 @@ public class GlobalMvcExceptionHandler
 	{
 		log.error("Handling missing request argument exception.", ex);
 
-		return buildResponseEntity(ApiResponse.of(CoreAppStatusCode.ILLEGAL_INPUT, String.format("Отсутствует обязательный атрибут: %s.", ex.getParameterName())));
+		return buildResponseEntity(ApiResponse.of(CoreAppStatusCode.ILLEGAL_INPUT, "Отсутствует обязательный атрибут: %s.".formatted(ex.getParameterName())));
 	}
 
 	@ExceptionHandler(MethodArgumentTypeMismatchException.class)
