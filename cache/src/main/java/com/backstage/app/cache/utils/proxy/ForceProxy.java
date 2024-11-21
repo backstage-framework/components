@@ -16,16 +16,23 @@
 
 package com.backstage.app.cache.utils.proxy;
 
+import com.backstage.app.cache.utils.proxy.model.FieldProxySupplier;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * Позволяет придутельно сделать прокси для полей, являющихся доменными объектами или списками.
+ * Позволяет принудительно сделать прокси для полей, являющихся доменными объектами или списками.
  */
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ForceProxy
 {
+	interface UNDEFINED extends FieldProxySupplier<Object>
+	{
+	}
+
+	Class<? extends FieldProxySupplier> proxySupplierBean() default UNDEFINED.class;
 }

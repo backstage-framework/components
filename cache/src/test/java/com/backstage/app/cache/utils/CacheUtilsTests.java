@@ -16,15 +16,19 @@
 
 package com.backstage.app.cache.utils;
 
+import com.backstage.app.cache.AbstractTests;
 import com.backstage.app.cache.utils.proxy.ForceProxy;
 import com.backstage.app.cache.utils.proxy.NoProxy;
 import com.backstage.app.cache.utils.proxy.ReadOnlyObjectProxyFactory;
+import com.backstage.app.cache.utils.proxy.model.FieldProxySupplier;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -32,8 +36,22 @@ import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-public class CacheUtilsTests
+public class CacheUtilsTests extends AbstractTests
 {
+	@Component
+	public static class MapFieldSupplier implements FieldProxySupplier<CacheItem>
+	{
+		public static final Map<String, String> TEST_MAP = Map.of(
+				UUID.randomUUID().toString(), UUID.randomUUID().toString()
+		);
+
+		@Override
+		public Object getProxy(CacheItem source, Field field)
+		{
+			return TEST_MAP;
+		}
+	}
+
 	@Data
 	@NoArgsConstructor
 	public static class CacheItem
@@ -70,6 +88,9 @@ public class CacheUtilsTests
 		@ForceProxy
 		private Map<String, InnerItem> complexMap;
 
+		@ForceProxy(proxySupplierBean = MapFieldSupplier.class)
+		private Map<String, String> suppliedMap;
+
 		public CacheItem(UUID id)
 		{
 			var stringId = id.toString();
@@ -98,6 +119,7 @@ public class CacheUtilsTests
 		Assertions.assertEquals(sourceItem.getId(), cachedItem.getId());
 		assertNotNull(sourceItem.getIgnoredId());
 		assertNull(cachedItem.getIgnoredId());
+		assertNull(sourceItem.getSuppliedMap());
 
 		assertNotNull(sourceItem.getIgnoredList());
 		assertNull(cachedItem.getIgnoredList());
@@ -109,5 +131,6 @@ public class CacheUtilsTests
 		assertNull(cachedItem.getIgnoredMap());
 		assertIterableEquals(sourceItem.getBasicMap().entrySet(), cachedItem.getBasicMap().entrySet());
 		assertIterableEquals(sourceItem.getComplexMap().entrySet(), cachedItem.getComplexMap().entrySet());
+		assertIterableEquals(cachedItem.getSuppliedMap().entrySet(), MapFieldSupplier.TEST_MAP.entrySet());
 	}
 }

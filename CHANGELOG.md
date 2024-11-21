@@ -34,6 +34,7 @@
 ### Cache
 - Добавили поддержку типа UUID в ReadOnlyObjectProxyFactory.
 - Переработали инициализацию CacheManager в CacheUtils.
+- Для аннотации @ForceProxy добавили возможность через атрибут proxySupplierBean указывать фабрику, из которой будет получаться проксированное значение аннотированного поля.
 
 ### Database
 - При инициализации EntityManager по умолчанию включаются сущности из appProperties.basePackages.

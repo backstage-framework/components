@@ -102,6 +102,17 @@ public class ProxyModel
 				continue;
 			}
 
+			var forceProxyAnnotation = field.getAnnotation(ForceProxy.class);
+
+			if (forceProxyAnnotation != null && !forceProxyAnnotation.proxySupplierBean().equals(ForceProxy.UNDEFINED.class))
+			{
+				fieldProxies.add(new SuppliedFieldProxy(field, forceProxyAnnotation.proxySupplierBean()));
+
+				field.setAccessible(true);
+
+				continue;
+			}
+
 			if (Collection.class.isAssignableFrom(fieldType))
 			{
 				fieldProxies.add(new CollectionFieldProxy(field));
@@ -118,7 +129,7 @@ public class ProxyModel
 			{
 				if (fieldType.getAnnotation(Entity.class) != null)
 				{
-					if (field.getAnnotation(ForceProxy.class) == null)
+					if (forceProxyAnnotation == null)
 					{
 						continue;
 					}
