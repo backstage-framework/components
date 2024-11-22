@@ -102,6 +102,11 @@ public class ProxyModel
 				continue;
 			}
 
+			if (fieldType.isArray())
+			{
+				throw new RuntimeException("unable to proxy arrays");
+			}
+
 			var forceProxyAnnotation = field.getAnnotation(ForceProxy.class);
 
 			if (forceProxyAnnotation != null && !forceProxyAnnotation.proxySupplierBean().equals(ForceProxy.UNDEFINED.class))
@@ -120,10 +125,6 @@ public class ProxyModel
 			else if (Map.class.isAssignableFrom(fieldType))
 			{
 				fieldProxies.add(new MapFieldProxy(field));
-			}
-			else if (fieldType.isArray())
-			{
-				throw new RuntimeException("unable to proxy arrays");
 			}
 			else
 			{
