@@ -58,8 +58,14 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 	{
 		var attachmentService = attachmentServiceSupplier.get();
 
-		releaseAttachments(attachmentService, dict, oldItem);
-		bindAttachments(attachmentService, dict, item);
+		var oldAttachmentIds = getAttachmentIds(dict, oldItem);
+		var actualAttachmentIds = getAttachmentIds(dict, item);
+
+		if (!oldAttachmentIds.equals(actualAttachmentIds))
+		{
+			releaseAttachments(attachmentService, dict, oldItem, oldAttachmentIds);
+			bindAttachments(attachmentService, dict, item, actualAttachmentIds);
+		}
 	}
 
 	@Override
@@ -77,8 +83,11 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 
 	private void bindAttachments(AttachmentService attachmentService, Dict dict, DictItem item)
 	{
-		var attachmentIds = getAttachmentIds(dict, item);
+		bindAttachments(attachmentService, dict, item, getAttachmentIds(dict, item));
+	}
 
+	private void bindAttachments(AttachmentService attachmentService, Dict dict, DictItem item, Set<String> attachmentIds)
+	{
 		if (!attachmentIds.isEmpty())
 		{
 			attachmentService.bindAttachments(attachmentIds, DEFAULT_USER_ID, DICT_ITEM_ATTACHMENT_TYPE, getAttachmentOwnerId(dict, item));
@@ -87,8 +96,11 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 
 	private void releaseAttachments(AttachmentService attachmentService, Dict dict, DictItem item)
 	{
-		var attachmentIds = getAttachmentIds(dict, item);
+		releaseAttachments(attachmentService, dict, item, getAttachmentIds(dict, item));
+	}
 
+	private void releaseAttachments(AttachmentService attachmentService, Dict dict, DictItem item, Set<String> attachmentIds)
+	{
 		if (!attachmentIds.isEmpty())
 		{
 			attachmentService.releaseAttachments(DICT_ITEM_ATTACHMENT_TYPE, getAttachmentOwnerId(dict, item));

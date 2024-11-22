@@ -20,7 +20,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
 /**
- * класс для теста в рамках ProxyModelTest
+ * Класс для теста в рамках ProxyModelTest.
  */
 @Entity
 public class EntityClass
