@@ -36,7 +36,7 @@ public class OnDistributedCachePropertiesCondition extends SpringBootCondition
 			{
 				if (propertySource instanceof EnumerablePropertySource)
 				{
-					for (String key : ((EnumerablePropertySource) propertySource).getPropertyNames())
+					for (String key : ((EnumerablePropertySource<?>) propertySource).getPropertyNames())
 					{
 						if (key.startsWith(CacheProperties.DISTRIBUTED_OPERATIONS_ACTIVATION_PROPERTY))
 						{
