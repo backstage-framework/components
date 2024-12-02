@@ -346,6 +346,17 @@ public class DictDataService
 	}
 
 	@Transactional
+	public void updateByFilter(String dictId, String filtersQuery, Map<String, Object> updatedParams)
+	{
+		getByFilter(dictId, List.of("*"), filtersQuery, Pageable.unpaged()).stream()
+				.forEach(dictItem -> {
+					dictItem.getData().putAll(updatedParams);
+
+					update(dictItem.getId(), buildDictDataItem(dictId, dictItem.getData()), dictItem.getVersion());
+				});
+	}
+
+	@Transactional
 	public void delete(String dictId, String itemId, boolean deleted, long version)
 	{
 		delete(dictId, itemId, deleted, null, SecurityUtils.getCurrentUserId(), version);
