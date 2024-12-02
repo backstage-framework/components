@@ -23,6 +23,7 @@ import com.backstage.app.dict.api.model.dto.DictEnumDto;
 import com.backstage.app.dict.api.model.dto.request.CreateDictEnumRequest;
 import com.backstage.app.dict.api.model.dto.request.CreateDictRequest;
 import com.backstage.app.dict.api.model.dto.request.DeleteDictRequest;
+import com.backstage.app.dict.configuration.conditional.ConditionalOnApi;
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.conversion.dto.DictEnumConverter;
 import com.backstage.app.dict.conversion.dto.DictEnumRequestConverter;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 import static java.util.function.Predicate.not;
 
 @Slf4j
+@ConditionalOnApi
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/dicts")
