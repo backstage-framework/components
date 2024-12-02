@@ -14,20 +14,18 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.ddl.ast.expression.table.operation;
+package com.backstage.app.dict.service.ddl.ast.expression.table.operation.column;
 
 import com.backstage.app.dict.service.ddl.ast.Id;
-import com.backstage.app.dict.service.ddl.ast.value.Value;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.TableOperation;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class AlterTableColumnOperation implements TableOperation
+public class AlterTableColumn implements TableOperation
 {
-	private final Id field;
+	private final Id column;
 
-	private final ColumnParameter parameter;
-
-	private final Value<?> value;
+	private final AlterTableColumnOperation operation;
 }
