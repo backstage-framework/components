@@ -32,7 +32,7 @@ import java.util.Set;
 @Validated
 public class DictsProperties
 {
-	public static final String REST_API_ACTIVATION_PROPERTY = "app.bpm.api-enabled";
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.dicts.api-enabled";
 
 	public static final String STORAGE_PROPERTY = "app.dicts.storage";
 
