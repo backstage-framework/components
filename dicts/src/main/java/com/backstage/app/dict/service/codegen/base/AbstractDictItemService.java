@@ -60,6 +60,11 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 		return dictDataService.existsByFilter(getDictId(), ConditionBuilder.buildQuery(condition));
 	}
 
+	public long countByFilter(Condition condition)
+	{
+		return dictDataService.countByFilter(getDictId(), ConditionBuilder.buildQuery(condition));
+	}
+
 	public T create(T item)
 	{
 		return buildItem(dictDataService.create(DictDataItem.of(getDictId(), item.toMap())));
