@@ -84,11 +84,29 @@ public class DictItemModelGenerator
 		});
 
 		typeSpec.addFields(fieldSpecMapping.keySet());
+		typeSpec.addMethod(addBuilder(fieldSpecMapping));
 		typeSpec.addMethod(addConstructor(fieldSpecMapping));
 		typeSpec.addMethods(addFetchMethods(fieldSpecMapping));
 		typeSpec.addMethod(addMethod(fieldSpecMapping));
 
 		return typeSpec.build();
+	}
+
+	protected MethodSpec addBuilder(Map<FieldSpec, DictFieldDto> fieldSpecMapping)
+	{
+		var methodSpec = MethodSpec.constructorBuilder()
+				.addModifiers(Modifier.PUBLIC)
+				.addAnnotation(ClassName.get("lombok", "Builder"));
+
+		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
+			if (!DEFAULT_FIELDS.contains(dictField.getId()))
+			{
+				methodSpec.addParameter(fieldSpec.type, fieldSpec.name);
+				methodSpec.addStatement("this.$N = $N", fieldSpec.name, fieldSpec.name);
+			}
+		});
+
+		return methodSpec.build();
 	}
 
 	private MethodSpec addConstructor(Map<FieldSpec, DictFieldDto> fieldSpecMapping)
