@@ -161,7 +161,7 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		var sql = """
 				insert into %s.dict values
 				(:id, :name, :fields::jsonb, :indexes::jsonb, :constraints::jsonb, :enums::jsonb, :view_permission,
-				:edit_permission, :deleted, :engine)
+				:edit_permission, :deleted, :engine, :version)
 				""".formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
@@ -177,9 +177,16 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 
 		var sql = """
 				update %s.dict
-				set name = :name, fields = :fields::jsonb, indexes = :indexes::jsonb, constraints = :constraints::jsonb,
-				enums = :enums::jsonb, view_permission = :view_permission, edit_permission = :edit_permission,
-				deleted = :deleted, engine = :engine
+				set name = :name,
+					fields = :fields::jsonb,
+					indexes = :indexes::jsonb,
+					constraints = :constraints::jsonb,
+					enums = :enums::jsonb,
+					view_permission = :view_permission,
+					edit_permission = :edit_permission,
+					deleted = :deleted,
+					engine = :engine,
+					version = :version
 				where id = :id
 				""".formatted(dictsProperties.getDdl().getScheme());
 
@@ -213,8 +220,10 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 
 		addParameter(parameterMap, DictColumnName.ID.getName(), dict.getId());
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 
-		var sql = "update %s.dict set enums = :enums::jsonb where id = :id".formatted(dictsProperties.getDdl().getScheme());
+		var sql = "update %s.dict set enums = :enums::jsonb, version = :version where id = :id"
+				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
 
@@ -235,9 +244,11 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		var parameterMap = new MapSqlParameterSource();
 
 		addParameter(parameterMap, DictColumnName.ID.getName(), dict.getId());
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
 
-		var sql = "update %s.dict set enums = :enums::jsonb where id = :id".formatted(dictsProperties.getDdl().getScheme());
+		var sql = "update %s.dict set enums = :enums::jsonb, version = :version where id = :id"
+				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
 
@@ -249,9 +260,11 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		var parameterMap = new MapSqlParameterSource();
 
 		addParameter(parameterMap, DictColumnName.ID.getName(), dict.getId());
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
 
-		var sql = "update %s.dict set enums = :enums::jsonb where id = :id".formatted(dictsProperties.getDdl().getScheme());
+		var sql = "update %s.dict set enums = :enums::jsonb, version = :version where id = :id"
+				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
 	}
@@ -268,5 +281,6 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		addParameter(parameterMap, DictColumnName.EDIT_PERMISSION.getName(), dict.getEditPermission());
 		addParameter(parameterMap, DictColumnName.DELETED.getName(), dict.getDeleted());
 		addParameter(parameterMap, DictColumnName.ENGINE.getName(), dict.getEngine().getName());
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 	}
 }
