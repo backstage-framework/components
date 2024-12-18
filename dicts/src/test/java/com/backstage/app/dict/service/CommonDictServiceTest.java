@@ -255,6 +255,9 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
+		// Создание справочника + создание индекса
+		expectedDict.setVersion(2L);
+
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getIndexes().size());
 
@@ -269,6 +272,8 @@ public class CommonDictServiceTest extends CommonTest
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getIndexes().size() - 1;
 
+		// Создание справочника + создание индекса + удаление индекса
+		expectedDict.setVersion(3L);
 		dictService.deleteIndex(expectedDict.getId(), index.getId());
 
 		var actualDict = dictService.getById(expectedDict.getId());
@@ -292,6 +297,9 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
+		// Создание справочника + создание констрэинта
+		expectedDict.setVersion(2L);
+
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getConstraints().size());
 
@@ -310,6 +318,9 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
+		// Создание справочника + создание констрэинта + удаление констрэинта
+		expectedDict.setVersion(3L);
+
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getConstraints().size());
 
@@ -326,6 +337,9 @@ public class CommonDictServiceTest extends CommonTest
 		enums.add(dictService.createEnum(expectedDict.getId(), buildEnum(expectedDict.getId())));
 
 		expectedDict.setEnums(enums);
+
+		// Создание справочника + создание енама
+		expectedDict.setVersion(2L);
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
@@ -349,6 +363,9 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actual = dictService.updateEnum(expectedDict.getId(), dictEnum);
 
+		// Создание справочника + создание енама + обновление енама
+		expectedDict.setVersion(3L);
+
 		assertEquals(expectedDict, dictService.getById(expectedDict.getId()));
 		assertEquals(dictEnum.getName(), actual.getName());
 
@@ -366,6 +383,9 @@ public class CommonDictServiceTest extends CommonTest
 		dictService.deleteEnum(expectedDict.getId(), dictEnum.getId());
 
 		var actualDict = dictService.getById(expectedDict.getId());
+
+		// Создание справочника + создание енама + удаление енама
+		expectedDict.setVersion(3L);
 
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getEnums().size());

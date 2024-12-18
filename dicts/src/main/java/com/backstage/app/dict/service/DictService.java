@@ -209,6 +209,8 @@ public class DictService
 		dict.setIndexes(actualIndexes);
 		dict.setConstraints(actualConstraints);
 
+		incrementVersion(dict);
+
 		dictBackend.updateDict(dict);
 
 		return renamed;
@@ -245,6 +247,8 @@ public class DictService
 //		TODO: Валидация - ни один из адапатеров самостоятельно не добавил constraint
 		dict.getConstraints().add(created);
 
+		incrementVersion(dict);
+
 		dictBackend.updateDict(dict);
 
 		return created;
@@ -275,6 +279,8 @@ public class DictService
 				.collect(Collectors.toList());
 
 		dict.setConstraints(actualConstraints);
+
+		incrementVersion(dict);
 
 		dictBackend.updateDict(dict);
 	}
@@ -310,6 +316,8 @@ public class DictService
 //		TODO: Валидация - ни один из адапатеров самостоятельно не добавил index
 		dict.getIndexes().add(created);
 
+		incrementVersion(dict);
+
 		dictBackend.updateDict(dict);
 
 		return created;
@@ -341,6 +349,8 @@ public class DictService
 
 		dict.setIndexes(actualIndexes);
 
+		incrementVersion(dict);
+
 		dictBackend.updateDict(dict);
 	}
 
@@ -363,6 +373,8 @@ public class DictService
 //		TODO: Валидация - ни один из адапатеров самостоятельно не добавил enum
 		dict.getEnums().add(dictEnum);
 
+		incrementVersion(dict);
+
 		return dictBackend.createEnum(dict, dictEnum);
 	}
 
@@ -372,6 +384,8 @@ public class DictService
 	public DictEnum updateEnum(String dictId, DictEnum dictEnum)
 	{
 		var dict = getById(dictId);
+
+		incrementVersion(dict);
 
 		return dictBackend.updateEnum(dict, dictEnum);
 	}
@@ -399,6 +413,8 @@ public class DictService
 				.toList();
 
 		dict.setEnums(actualEnums);
+
+		incrementVersion(dict);
 
 		dictBackend.deleteEnum(dict, enumId);
 	}
@@ -435,6 +451,7 @@ public class DictService
 		target.setIndexes(source.getIndexes());
 		target.setConstraints(source.getConstraints());
 		target.setEngine(source.getEngine());
+		incrementVersion(target);
 
 		return target;
 	}
@@ -520,5 +537,14 @@ public class DictService
 		return field.getDefaultValue() == null
 				? null
 				: dictItemMappingService.mapField(field, field.getDefaultValue());
+	}
+
+	private void incrementVersion(Dict dict)
+	{
+		var version = dict.getVersion() == null
+				? 1L
+				: dict.getVersion() + 1;
+
+		dict.setVersion(version);
 	}
 }

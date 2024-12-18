@@ -49,6 +49,7 @@ public class DictRowMapper implements RowMapper<Dict>
 				.editPermission(rs.getString(DictColumnName.EDIT_PERMISSION.getName()))
 				.deleted(deleted)
 				.engine(new DictEngine(rs.getString(DictColumnName.ENGINE.getName())))
+				.version(rs.getLong(DictColumnName.VERSION.getName()))
 				.build();
 		}
 		catch (Exception e)
