@@ -1,13 +1,14 @@
 ## 5.1.0 - 2024-11-07
 ### Dependency Upgrades
 - Spring Boot 3.3.6
+- Spring Doc 2.7.0
 - EclipseLink 4.0.3
 - Flyway 11.1.0
 - Postgresql JDBC 42.7.4
 - ClickHouse JDBC 0.7.1-patch1
 - Groovy 4.0.24
 - MinIO 8.5.13
-- Guava 33.3.1-jre
+- Guava 33.4.0-jre
 - Commons-io 2.18.0
 - Commons-codec 1.17.1
 - Jersey 3.1.9
