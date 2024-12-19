@@ -2,6 +2,9 @@
 <configuration>
 	<springProperty name="customConfig" source="app.logging.logback.custom-config"/>
 	<springProperty name="jsonOutput" source="app.logging.json-output"/>
+	<springProperty name="rollingMaxHistory" source="app.logging.file.max-history" defaultValue="100"/>
+	<springProperty name="rollingMaxFileSize" source="app.logging.file.max-size" defaultValue="30MB"/>
+	<springProperty name="rollingTotalSizeCap" source="app.logging.file.total-size-cap" defaultValue="0"/>
 
 	<if condition='p("customConfig").equals("true")'>
 		<then>

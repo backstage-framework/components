@@ -19,6 +19,7 @@ package com.backstage.app.configuration.properties;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.util.unit.DataSize;
 
 @Getter
 @Setter
@@ -35,10 +36,32 @@ public class LoggingProperties
 		boolean customConfig = false;
 	}
 
+	@Getter
+	@Setter
+	public static class FileProperties
+	{
+		/**
+		 * Максимальное количество архивов с лог-файлами в режиме ротации.
+		 */
+		int maxHistory = 100;
+
+		/**
+		 * Максимальный размер лог-файла, после которого он ротируется.
+		 */
+		DataSize maxSize = DataSize.ofMegabytes(30);
+
+		/**
+		 * Максимальный суммарный размер лог-файлов, при превышении которого старые архивы начинают удаляться.
+		 */
+		DataSize totalSizeCap = DataSize.ofBytes(0);
+	}
+
 	/**
 	 * Если флаг установлен, то все логи пишутся в формате json.
 	 */
 	private boolean jsonOutput;
 
 	private LogbackProperties logback = new LogbackProperties();
+
+	private FileProperties file = new FileProperties();
 }

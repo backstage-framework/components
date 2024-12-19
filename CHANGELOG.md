@@ -1,10 +1,10 @@
 ## 5.1.0 - 2024-11-07
 ### Dependency Upgrades
 - Spring Boot 3.3.6
-- EclipseLink 4.0.4
-- Flyway 10.20.1
+- EclipseLink 4.0.3
+- Flyway 11.1.0
 - Postgresql JDBC 42.7.4
-- ClickHouse JDBC 0.6.5
+- ClickHouse JDBC 0.7.1-patch1
 - Groovy 4.0.24
 - MinIO 8.5.13
 - Guava 33.3.1-jre
@@ -16,6 +16,7 @@
 ### App
 - Реализована возможность запуска в составе приложений, корневой пакет которых отличается от com.backstage.
 - Добавлена аннотация @ConditionalOnMissingQualifiedBean.
+- Добавлены параметры конфигурации ротации лог-файлов: rollingMaxHistory, rollingMaxFileSize, rollingTotalSizeCap.
 
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
