@@ -1,4 +1,4 @@
-## 5.1.0 - 2025-12-24
+## 5.1.0 - 2024-12-24
 ### Dependency Upgrades
 - Spring Boot 3.3.7
 - Spring Doc 2.6.0
