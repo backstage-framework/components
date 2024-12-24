@@ -89,7 +89,19 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	@Override
 	public void deleteDictSchemeById(String dictId)
 	{
-		transactionWithoutResult(() -> deleteScheme(dictId), dictId, DictDeletedException::new);
+		if (!existsDictSchemeById(dictId))
+		{
+			throw new DictNotFoundException(dictId);
+		}
+
+		Map<String, String> parameterMap = Map.of(
+				"scheme", dictsProperties.getDdl().getScheme(),
+				"dictId", wordMap(dictId).get(dictId).getQuotedIfKeyword()
+		);
+
+		var sql = sqlWithParameters("drop table ${scheme}.${dictId}", parameterMap);
+
+		jdbc.update(sql, new EmptySqlParameterSource());
 	}
 
 	@Override
@@ -258,23 +270,6 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		);
 
 		var sql = sqlWithParameters("alter table ${scheme}.${oldDictId} rename to ${newDictId}", parameterMap);
-
-		jdbc.update(sql, new EmptySqlParameterSource());
-	}
-
-	private void deleteScheme(String dictId)
-	{
-		if (!existsDictSchemeById(dictId))
-		{
-			throw new DictNotFoundException(dictId);
-		}
-
-		Map<String, String> parameterMap = Map.of(
-				"scheme", dictsProperties.getDdl().getScheme(),
-				"dictId", wordMap(dictId).get(dictId).getQuotedIfKeyword()
-		);
-
-		var sql = sqlWithParameters("drop table ${scheme}.${dictId}", parameterMap);
 
 		jdbc.update(sql, new EmptySqlParameterSource());
 	}
