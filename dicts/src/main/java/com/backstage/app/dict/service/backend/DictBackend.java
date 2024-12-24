@@ -19,7 +19,6 @@ package com.backstage.app.dict.service.backend;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEnum;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 public interface DictBackend extends Backend
@@ -33,8 +32,6 @@ public interface DictBackend extends Backend
 	Dict updateDict(Dict dict);
 
 	void deleteById(String id);
-
-	void softDelete(String id, LocalDateTime deleted);
 
 	boolean existsById(String id);
 

@@ -33,11 +33,6 @@ public class DictRowMapper implements RowMapper<Dict>
 
 		try
 		{
-			var deletedTimestamp = rs.getTimestamp(DictColumnName.DELETED.getName());
-			var deleted = deletedTimestamp != null
-					? deletedTimestamp.toLocalDateTime()
-					: null;
-
 			return Dict.builder()
 				.id(rs.getString(DictColumnName.ID.getName()))
 				.name(rs.getString(DictColumnName.NAME.getName()))
@@ -47,7 +42,6 @@ public class DictRowMapper implements RowMapper<Dict>
 				.enums(mapper.readValue(rs.getString(DictColumnName.ENUMS.getName()), new TypeReference<>() { }))
 				.viewPermission(rs.getString(DictColumnName.VIEW_PERMISSION.getName()))
 				.editPermission(rs.getString(DictColumnName.EDIT_PERMISSION.getName()))
-				.deleted(deleted)
 				.engine(new DictEngine(rs.getString(DictColumnName.ENGINE.getName())))
 				.version(rs.getLong(DictColumnName.VERSION.getName()))
 				.build();

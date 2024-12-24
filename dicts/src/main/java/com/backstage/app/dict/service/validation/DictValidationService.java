@@ -22,12 +22,16 @@ import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.exception.EngineException;
+import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.exception.dict.field.ForbiddenFieldNameException;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.utils.SpringContextUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.function.Supplier;
 
 @Service
 @RequiredArgsConstructor
@@ -38,6 +42,26 @@ public class DictValidationService
 	private final DictDataValidationService dictDataValidationService;
 
 	private final DictSchemeBackendProvider schemeBackendProvider;
+
+	private final Supplier<DictService> dictServiceSupplier = SpringContextUtils.createBeanSupplier(DictService.class);
+
+	public void validateDrop(String dictId)
+	{
+		var relatedDictIds = dictServiceSupplier.get()
+				.getAll()
+				.stream()
+				.filter(it -> isContainsReference(it, dictId))
+				.map(Dict::getId)
+				.toList();
+
+		if (!relatedDictIds.isEmpty())
+		{
+			throw new DictException(
+					"Невозможно удалить справочник '%s': в других справочниках присутствуют ссылки на него: %s."
+							.formatted(dictId, String.join(", ", relatedDictIds))
+			);
+		}
+	}
 
 	public void validateDictScheme(Dict dict, DictService dictService)
 	{
@@ -137,5 +161,13 @@ public class DictValidationService
 	private boolean checkSingleElementType(Object value, Class<?> clazz)
 	{
 		return value == null || value.getClass().equals(clazz);
+	}
+
+	private boolean isContainsReference(Dict dict, String relatedDictId)
+	{
+		return dict.getFields()
+				.stream()
+				.filter(it -> it.getDictRef() != null)
+				.anyMatch(it -> relatedDictId.equals(it.getDictRef().getDictId()));
 	}
 }

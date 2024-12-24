@@ -45,7 +45,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -172,9 +171,14 @@ public class DictService
 	//	TODO: История изменений схемы, даты создания/обновления схемы?
 	@LockDictSchemaModifyOperation("#dictId")
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
-	public void delete(String dictId, boolean deleted)
+	public void delete(String dictId)
 	{
-		dictBackend.softDelete(dictId, deleted ? LocalDateTime.now() : null);
+		dictValidationService.validateDrop(dictId);
+
+		var dict = getById(dictId);
+
+		schemeBackend(dict).deleteDictSchemeById(dictId);
+		dictBackend.deleteById(dictId);
 	}
 
 	@Transactional
@@ -447,7 +451,6 @@ public class DictService
 		target.setFields(source.getFields());
 		target.setViewPermission(source.getViewPermission());
 		target.setEditPermission(source.getEditPermission());
-		target.setDeleted(source.getDeleted());
 		target.setIndexes(source.getIndexes());
 		target.setConstraints(source.getConstraints());
 		target.setEngine(source.getEngine());

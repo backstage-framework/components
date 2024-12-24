@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,9 +47,6 @@ public class DictDto
 
 	@Schema(description = "Название разрешения для изменения данных справочника")
 	private String editPermission;
-
-	@Schema(description = "Флаг удаления")
-	private LocalDateTime deleted;
 
 	@Schema(description = "Место хранения справочника")
 	private String engine;
