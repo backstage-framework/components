@@ -1,14 +1,15 @@
-## 5.1.0 - 2024-11-07
+## 5.1.0 - 2024-12-24
 ### Dependency Upgrades
-- Spring Boot 3.3.6
-- EclipseLink 4.0.4
-- Flyway 10.20.1
+- Spring Boot 3.3.7
+- Spring Doc 2.6.0
+- EclipseLink 4.0.3
+- Flyway 11.1.0
 - Postgresql JDBC 42.7.4
-- ClickHouse JDBC 0.6.5
+- ClickHouse JDBC 0.7.1-patch1
 - Groovy 4.0.24
 - MinIO 8.5.13
-- Guava 33.3.1-jre
-- Commons-io 2.18.0
+- Guava 33.4.0-jre
+- Commons-IO 2.18.0
 - Commons-codec 1.17.1
 - Jersey 3.1.9
 - PostGIS 2024.1.0
@@ -16,6 +17,7 @@
 ### App
 - Реализована возможность запуска в составе приложений, корневой пакет которых отличается от com.backstage.
 - Добавлена аннотация @ConditionalOnMissingQualifiedBean.
+- Добавлены параметры конфигурации ротации лог-файлов: rollingMaxHistory, rollingMaxFileSize, rollingTotalSizeCap.
 
 ### Api
 - Удалена LocaleConfiguration, все необходимая функциональность есть в Spring.
@@ -62,6 +64,10 @@
 	update attachment_binding set user_id = '00000000-0000-0000-0000-000000000000' where user_id = '-1';
 	```
 - Исправили генерацию моделей для справочников с незаполненными multivalued полями.
+- Добавили возможность менять not null ограничение у полей справочников в sql миграциях.
+- В сгенерированные модели добавили @Builder для упрощения создания новых элементов справочников.
+- Добавили версионирование схемы справочника.
+- Вынесли генерацию клиентов dicts в отдельный модуль.
 
 ### Jobs
 - Добавили подсветку синтаксиса cron выражений в AbstractCronJob.
@@ -347,7 +353,7 @@
 - Postgresql JDBC 42.7.3
 - ClickHouse JDBC 0.6.0-patch3
 - Guava 33.1.0-jre
-- Commons-io 2.16.1
+- Commons-IO 2.16.1
 - Commons-codec 1.16.1
 
 ### App
@@ -816,7 +822,7 @@
 - Spring Boot 2.7.13
 - MinIO 8.4.6
 - Guava 32.0.1-jre
-- Commons-io 2.13.0
+- Commons-IO 2.13.0
 - Commons-codec 1.16.0
 
 ## 4.5.17 - 2023-06-19

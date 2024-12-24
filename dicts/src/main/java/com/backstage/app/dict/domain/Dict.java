@@ -54,4 +54,6 @@ public class Dict
 	private LocalDateTime deleted;
 
 	private DictEngine engine;
+
+	private Long version;
 }

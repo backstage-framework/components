@@ -31,6 +31,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -56,7 +57,7 @@ import java.util.stream.StreamSupport;
 @Component
 @Order(DDLConfiguration.DDL_PRECEDENCE_APP)
 @RequiredArgsConstructor
-public class DictsDDLProvider
+public class DictsDDLProvider implements InitializingBean
 {
 	public static final String SEPARATOR = "/";
 	public static final String SQL_EXTENSION = "sql";
@@ -66,6 +67,12 @@ public class DictsDDLProvider
 	private final ClasspathMigrationService classpathMigrationService;
 
 	private final VersionSchemeBackend versionSchemeBackend;
+
+	@Override
+	public void afterPropertiesSet()
+	{
+		update();
+	}
 
 	//TODO: провести декомпозицию и рефакторинг метода
 	public void update()

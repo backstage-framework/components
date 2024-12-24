@@ -55,7 +55,7 @@ public class PostgresEngine implements Engine
 	@Override
 	public void createDict()
 	{
-		var sql = """
+		var createSql = """
 				create table if not exists %s.dict (
 					id                varchar(40)   not null,
 					name              varchar(500),
@@ -67,10 +67,16 @@ public class PostgresEngine implements Engine
 					edit_permission   varchar(100),
 					deleted           timestamp,
 					engine            varchar(40)   not null,
+					version           bigint        not null default 1,
 					primary key (id))
 				""".formatted(dictsProperties.getDdl().getScheme());
 
-		jdbcTemplate.update(sql, Map.of());
+		jdbcTemplate.update(createSql, Map.of());
+
+		var addVersionSql = "alter table %s.dict add column if not exists version bigint not null default 1"
+				.formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(addVersionSql, Map.of());
 	}
 
 	@Override

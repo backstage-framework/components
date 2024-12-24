@@ -16,19 +16,23 @@
 
 package com.backstage.app.dict.configuration.ddl;
 
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
+import com.backstage.app.configuration.AppConfiguration;
+import com.backstage.app.dict.service.backend.VersionSchemeBackend;
+import com.backstage.app.dict.service.lock.DictLockInitializer;
+import com.backstage.app.dict.service.migration.ClasspathMigrationService;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
+@AutoConfigureAfter(AppConfiguration.class)
 public class DictsDDLConfiguration
 {
-	private final DictsDDLProvider dictsDDLProvider;
-
-	@PostConstruct
-	public void initialize()
+	@Bean
+	public DictsDDLProvider dictsDDLProvider(DictLockInitializer dictLockInitializer,
+	                                         ClasspathMigrationService classpathMigrationService,
+	                                         VersionSchemeBackend versionSchemeBackend)
 	{
-		dictsDDLProvider.update();
+		return new DictsDDLProvider(dictLockInitializer, classpathMigrationService, versionSchemeBackend);
 	}
 }

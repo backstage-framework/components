@@ -33,6 +33,9 @@ import com.backstage.app.dict.service.ddl.ast.expression.table.CreateIndexExpres
 import com.backstage.app.dict.service.ddl.ast.expression.table.CreateTable;
 import com.backstage.app.dict.service.ddl.ast.expression.table.DeleteIndexExpression;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.*;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.AlterTableColumn;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetNotNullColumnOperation;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetParameterColumnOperation;
 import com.backstage.app.dict.service.ddl.ast.value.*;
 import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.service.imp.ImportJsonService;
@@ -222,9 +225,9 @@ public class Interpreter
 
 			return;
 		}
-		else if (alterTable.getOperation() instanceof AlterTableColumnOperation alterTableColumnOperation)
+		else if (alterTable.getOperation() instanceof AlterTableColumn alterTableColumn)
 		{
-			executeAlterTableColumn(alterTableColumnOperation, fields);
+			executeAlterTableColumn(alterTableColumn, dictId, fields);
 		}
 
 		dict.setFields(fields);
@@ -427,25 +430,52 @@ public class Interpreter
 		}
 	}
 
-	private void executeAlterTableColumn(AlterTableColumnOperation alterTableColumnOperation, List<DictField> fields)
+	private void executeAlterTableColumn(AlterTableColumn alterTableColumn, String dictId, List<DictField> fields)
 	{
-		var fieldId = alterTableColumnOperation.getField().getName();
+		var fieldId = alterTableColumn.getColumn().getName();
 
 		var field = fields.stream()
 				.filter(it -> it.getId().equals(fieldId))
 				.findAny()
 				.orElseThrow();
 
-		var value = alterTableColumnOperation.getValue();
+		var operation = alterTableColumn.getOperation();
 
-		switch (alterTableColumnOperation.getParameter())
+		if (operation instanceof SetParameterColumnOperation setParameterColumnOperation)
 		{
-			case MIN_SIZE -> field.setMinSize(getFieldSizeValue(value));
-			case MAX_SIZE -> field.setMaxSize(getFieldSizeValue(value));
-			case DEFAULT_VALUE -> field.setDefaultValue(value.getValue());
-			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT,
-					"Неизвестная операция при ALTER COLUMN: '%s'."
-							.formatted(alterTableColumnOperation.getParameter().getAlias()));
+			var value = setParameterColumnOperation.getValue();
+
+			switch (setParameterColumnOperation.getParameter())
+			{
+				case MIN_SIZE -> field.setMinSize(getFieldSizeValue(value));
+				case MAX_SIZE -> field.setMaxSize(getFieldSizeValue(value));
+				case DEFAULT_VALUE -> field.setDefaultValue(value.getValue());
+
+				default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT,
+						"Неизвестная операция при ALTER COLUMN: '%s'."
+								.formatted(setParameterColumnOperation.getParameter().getAlias()));
+			}
+		}
+		else if (operation instanceof SetNotNullColumnOperation setNotNullColumnOperation)
+		{
+			if (setNotNullColumnOperation.isNotNull())
+			{
+				var filterExpression = "%s = null".formatted(field.getId());
+
+				if (field.getDefaultValue() == null)
+				{
+					if (dictDataService.existsByFilter(dictId, filterExpression))
+					{
+						throw new DictException("В колонке '%s' справочника '%s' присутствуют значения null.".formatted(field.getId(), dictId));
+					}
+				}
+				else
+				{
+					dictDataService.updateByFilter(dictId, filterExpression, Map.of(field.getId(), field.getDefaultValue()));
+				}
+			}
+
+			field.setRequired(setNotNullColumnOperation.isNotNull());
 		}
 	}
 

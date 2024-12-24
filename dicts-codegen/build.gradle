@@ -1,0 +1,30 @@
+plugins {
+	id 'java-library'
+	id 'org.springframework.boot' version "$springBootVersion"
+	id 'io.freefair.lombok' version "$lombokVersion"
+}
+
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'maven-publish'
+
+delombok {
+	enabled = false
+}
+
+jar {
+	enabled = true
+}
+
+bootJar {
+	enabled = false
+}
+
+dependencies {
+	api project(":dicts-api")
+
+	compileOnly project(":dicts")
+}
+
+test {
+	useJUnitPlatform()
+}

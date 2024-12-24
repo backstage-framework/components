@@ -18,4 +18,7 @@ alter table testDict2 alter column field1 set default 'defaultValue';
 alter table testDict2 alter column field2 set default 2;
 alter table testDict2 alter column field3 set default 2;
 
+alter table testDict2 alter column field1 set not null;
+alter table testDict2 alter column field1 drop not null;
+
 insert into testDict2(field4) values('Тест');

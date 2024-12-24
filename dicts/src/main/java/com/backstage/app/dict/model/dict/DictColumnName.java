@@ -32,7 +32,8 @@ public enum DictColumnName
 	VIEW_PERMISSION("view_permission"),
 	EDIT_PERMISSION("edit_permission"),
 	DELETED("deleted"),
-	ENGINE("engine");
+	ENGINE("engine"),
+	VERSION("version");
 
 	private final String name;
 }
