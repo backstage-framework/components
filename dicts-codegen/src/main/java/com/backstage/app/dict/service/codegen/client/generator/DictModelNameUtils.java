@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.generator;
+package com.backstage.app.dict.service.codegen.client.generator;
 
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.DictFieldDto;

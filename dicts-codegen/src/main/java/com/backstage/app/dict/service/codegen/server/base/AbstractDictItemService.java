@@ -14,11 +14,12 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.base;
+package com.backstage.app.dict.service.codegen.server.base;
 
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.DictDataService;
+import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
 import org.springframework.data.domain.Pageable;

@@ -14,14 +14,15 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.service.codegen;
+package com.backstage.app.dict.service.codegen.client;
 
 import com.backstage.app.api.utils.RemoteServiceUtils;
-import com.backstage.app.dict.api.service.codegen.generator.DictItemModelGenerator;
-import com.backstage.app.dict.api.service.codegen.generator.DictItemServiceGenerator;
 import com.backstage.app.dict.api.service.remote.RemoteDictService;
+import com.backstage.app.dict.service.codegen.client.generator.DictItemModelGenerator;
+import com.backstage.app.dict.service.codegen.client.generator.DictItemServiceGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.javapoet.JavaFile;
 
 import java.io.IOException;
@@ -29,9 +30,9 @@ import java.nio.file.Path;
 
 @Slf4j
 @RequiredArgsConstructor
-public class DictApiCodegenExtension
+public class ClientCodegenExtension
 {
-	private final RemoteDictService dictService;
+	private final ApplicationContext applicationContext;
 
 	private final DictItemModelGenerator modelGenerator = new DictItemModelGenerator();
 	private final DictItemServiceGenerator serviceGenerator = new DictItemServiceGenerator();
@@ -39,8 +40,10 @@ public class DictApiCodegenExtension
 	private final String outputPath;
 	private final String outputPackage;
 
-	protected void generate()
+	public void generate()
 	{
+		var dictService = applicationContext.getBean(RemoteDictService.class);
+
 		RemoteServiceUtils.executeAndGetData(dictService::list).forEach(dict -> {
 			var model = JavaFile.builder(outputPackage, modelGenerator.generate(dict)).build();
 			var service = JavaFile.builder(outputPackage, serviceGenerator.generate(model)).build();

@@ -14,9 +14,10 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.base;
+package com.backstage.app.dict.service.codegen.server.base;
 
 import com.backstage.app.api.model.ApiResponse;
+import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
 import io.swagger.v3.oas.annotations.Operation;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;

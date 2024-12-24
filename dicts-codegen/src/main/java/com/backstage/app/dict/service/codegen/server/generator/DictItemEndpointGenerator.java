@@ -14,9 +14,10 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.generator;
+package com.backstage.app.dict.service.codegen.server.generator;
 
-import com.backstage.app.dict.service.codegen.base.AbstractDictItemEndpoint;
+import com.backstage.app.dict.service.codegen.client.generator.DictItemModelGenerator;
+import com.backstage.app.dict.service.codegen.server.base.AbstractDictItemEndpoint;
 import com.backstage.app.utils.DateUtils;
 import jakarta.annotation.Generated;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +47,7 @@ public class DictItemEndpointGenerator
 				.addAnnotation(generatedAnnotation())
 				.addAnnotation(RestController.class)
 				.addAnnotation(AnnotationSpec.builder(RequestMapping.class)
-						.addMember("value", "$S + $L.$L", "/api/dicts/", modelClassName, DictItemModelGenerator.FIELD_DICT_ID)
+						.addMember("value", "$S + $L.$L", "/api/dicts/", modelClassName, DictItemModelGenerator.DICT_ID_FIELD)
 						.build())
 				.addMethod(MethodSpec.constructorBuilder()
 						.addParameter(serviceClassName, "dictItemService")

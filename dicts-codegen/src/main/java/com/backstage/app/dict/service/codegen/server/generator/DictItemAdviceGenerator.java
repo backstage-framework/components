@@ -14,9 +14,9 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.generator;
+package com.backstage.app.dict.service.codegen.server.generator;
 
-import com.backstage.app.dict.service.codegen.base.AbstractDictItemAdvice;
+import com.backstage.app.dict.service.codegen.server.base.AbstractDictItemAdvice;
 import com.backstage.app.utils.DateUtils;
 import jakarta.annotation.Generated;
 import lombok.RequiredArgsConstructor;

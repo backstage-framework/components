@@ -14,11 +14,12 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.base;
+package com.backstage.app.dict.service.codegen.server.base;
 
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.service.advice.DictDataServiceAdvice;
+import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
 import com.backstage.app.utils.SpringContextUtils;
 import org.springframework.data.domain.Pageable;
 

@@ -14,14 +14,14 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.service.codegen.generator;
+package com.backstage.app.dict.service.codegen.client.generator;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.DictEnumDto;
 import com.backstage.app.dict.api.model.dto.DictFieldDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
-import com.backstage.app.dict.api.service.codegen.base.AbstractDictItem;
+import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -33,6 +33,7 @@ import org.apache.commons.lang3.mutable.MutableBoolean;
 import org.springframework.javapoet.*;
 
 import javax.lang.model.element.Modifier;
+import java.lang.reflect.Type;
 import java.util.*;
 
 @Slf4j
@@ -49,7 +50,7 @@ public class DictItemModelGenerator
 			"version"
 	);
 
-	static final String DICT_ID_FIELD = "DICT_ID";
+	public static final String DICT_ID_FIELD = "DICT_ID";
 
 	public TypeSpec generate(DictDto dict)
 	{
@@ -115,7 +116,7 @@ public class DictItemModelGenerator
 	{
 		var methodSpec = MethodSpec.constructorBuilder()
 				.addModifiers(Modifier.PUBLIC)
-				.addParameter(DictItemDto.class, "dictItem");
+				.addParameter(getDictItemSourceType(), "dictItem");
 
 		var suppressWarnings = new MutableBoolean(false);
 
@@ -151,6 +152,11 @@ public class DictItemModelGenerator
 		}
 
 		return methodSpec.build();
+	}
+
+	protected Type getDictItemSourceType()
+	{
+		return DictItemDto.class;
 	}
 
 	protected List<MethodSpec> addFetchMethods(Map<FieldSpec, DictFieldDto> fieldSpecMapping)

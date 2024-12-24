@@ -14,10 +14,10 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen;
+package com.backstage.app.dict.configuration;
 
-import com.backstage.app.dict.conversion.dto.DictConverter;
-import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.codegen.client.ClientCodegenExtension;
+import com.backstage.app.dict.service.codegen.server.ServerCodegenExtension;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -42,9 +42,6 @@ public class DictCodegenAppListener implements ApplicationContextAware, Applicat
 
 	private final TaskExecutor taskExecutor;
 
-	private final DictService dictService;
-	private final DictConverter dictConverter;
-
 	@Value("${app.dicts.codegen.outputPath}")
 	private String outputPath;
 
@@ -55,10 +52,20 @@ public class DictCodegenAppListener implements ApplicationContextAware, Applicat
 	public void onApplicationEvent(final ContextRefreshedEvent event)
 	{
 		taskExecutor.execute(() -> {
-			log.info("Starting dicts API (native) client generation.");
+			if (applicationContext.containsBean("dictService"))
+			{
+				log.info("Generating native dicts client.");
 
-			var modelGenerator = new DictCodegenExtension(dictService, dictConverter, outputPath, targetPackage);
-			modelGenerator.generate();
+				var codegenExtension = new ServerCodegenExtension(applicationContext, outputPath, targetPackage);
+				codegenExtension.generate();
+			}
+			else
+			{
+				log.info("Generating remote dicts client.");
+
+				var codegenExtension = new ClientCodegenExtension(applicationContext, outputPath, targetPackage);
+				codegenExtension.generate();
+			}
 
 			log.info("Done. Closing application.");
 

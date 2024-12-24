@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.base;
+package com.backstage.app.dict.service.codegen.client.base;
 
 import java.util.Map;
 

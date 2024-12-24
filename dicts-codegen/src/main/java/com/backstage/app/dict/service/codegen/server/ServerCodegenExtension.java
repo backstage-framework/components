@@ -14,16 +14,16 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen;
+package com.backstage.app.dict.service.codegen.server;
 
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.service.DictService;
-import com.backstage.app.dict.service.codegen.generator.DictItemAdviceGenerator;
-import com.backstage.app.dict.service.codegen.generator.DictItemEndpointGenerator;
-import com.backstage.app.dict.service.codegen.generator.DictItemModelGenerator;
-import com.backstage.app.dict.service.codegen.generator.DictItemServiceGenerator;
+import com.backstage.app.dict.service.codegen.server.generator.DictItemAdviceGenerator;
+import com.backstage.app.dict.service.codegen.server.generator.DictItemModelGenerator;
+import com.backstage.app.dict.service.codegen.server.generator.DictItemServiceGenerator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.ApplicationContext;
 import org.springframework.javapoet.JavaFile;
 
 import java.io.IOException;
@@ -31,27 +31,28 @@ import java.nio.file.Path;
 
 @Slf4j
 @RequiredArgsConstructor
-public class DictCodegenExtension
+public class ServerCodegenExtension
 {
-	private final DictService dictService;
-
-	private final DictConverter dictConverter;
+	private final ApplicationContext applicationContext;
 
 	private final DictItemModelGenerator modelGenerator = new DictItemModelGenerator();
 	private final DictItemServiceGenerator serviceGenerator = new DictItemServiceGenerator();
 	private final DictItemAdviceGenerator adviceGenerator = new DictItemAdviceGenerator();
-	private final DictItemEndpointGenerator endpointGenerator = new DictItemEndpointGenerator();
+//	private final DictItemEndpointGenerator endpointGenerator = new DictItemEndpointGenerator();
 
 	private final String outputPath;
 	private final String outputPackage;
 
-	protected void generate()
+	public void generate()
 	{
+		var dictService = applicationContext.getBean(DictService.class);
+		var dictConverter = applicationContext.getBean(DictConverter.class);
+
 		dictService.getAll().forEach(dict -> {
 			var model = JavaFile.builder(outputPackage, modelGenerator.generate(dictConverter.convert(dict))).build();
 			var service = JavaFile.builder(outputPackage, serviceGenerator.generate(model)).build();
 			var advice = JavaFile.builder(outputPackage, adviceGenerator.generate(service, model)).build();
-			var endpoint = JavaFile.builder(outputPackage, endpointGenerator.generate(service, model)).build();
+//			var endpoint = JavaFile.builder(outputPackage, endpointGenerator.generate(service, model)).build();
 
 			try
 			{

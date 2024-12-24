@@ -14,11 +14,11 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.service.codegen.generator;
+package com.backstage.app.dict.service.codegen.client.generator;
 
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
-import com.backstage.app.dict.api.service.codegen.base.AbstractDictItemRemoteService;
 import com.backstage.app.dict.api.service.remote.InternalDictDataService;
+import com.backstage.app.dict.service.codegen.client.base.AbstractDictItemRemoteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.javapoet.*;
@@ -56,7 +56,7 @@ public class DictItemServiceGenerator
 						.addAnnotation(Override.class)
 						.addModifiers(Modifier.PROTECTED)
 						.returns(modelClassName)
-						.addParameter(DictItemDto.class, "dictItem")
+						.addParameter(getDictItemSourceType(), "dictItem")
 						.addStatement("return new $T($L)", modelClassName, "dictItem")
 						.build())
 				.build();
@@ -75,5 +75,10 @@ public class DictItemServiceGenerator
 	protected Type getDictDataServiceType()
 	{
 		return InternalDictDataService.class;
+	}
+
+	protected Type getDictItemSourceType()
+	{
+		return DictItemDto.class;
 	}
 }

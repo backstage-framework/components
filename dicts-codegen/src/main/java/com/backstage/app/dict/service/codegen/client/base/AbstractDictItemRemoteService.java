@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.service.codegen.base;
+package com.backstage.app.dict.service.codegen.client.base;
 
 import com.backstage.app.api.utils.RemoteServiceUtils;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;

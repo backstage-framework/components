@@ -14,15 +14,18 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.service.codegen.base;
+package com.backstage.app.dict.service.codegen.server.generator;
 
-import java.util.Map;
+import com.backstage.app.dict.domain.DictItem;
+import lombok.RequiredArgsConstructor;
 
-public interface AbstractDictItem
+import java.lang.reflect.Type;
+
+@RequiredArgsConstructor
+public class DictItemModelGenerator extends com.backstage.app.dict.service.codegen.client.generator.DictItemModelGenerator
 {
-	String getId();
-
-	Long getVersion();
-
-	Map<String, Object> toMap();
+	protected Type getDictItemSourceType()
+	{
+		return DictItem.class;
+	}
 }
