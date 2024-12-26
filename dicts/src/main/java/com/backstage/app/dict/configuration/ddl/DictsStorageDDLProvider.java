@@ -50,20 +50,14 @@ public class DictsStorageDDLProvider implements DDLProvider
 	@Override
 	public void update()
 	{
-		var firstInit = engines.stream()
-				.allMatch(it -> !it.dictExists() && !it.versionSchemeExists());
+		var engine = engines.stream()
+				.filter(it -> StringUtils.equalsAny(it.getDictEngine().getName(), dictsProperties.getStorage()))
+				.toList()
+				.stream()
+				.findFirst()
+				.orElseThrow(() -> new EngineException("An engine equal to the engine from the storage property doesn't exists."));
 
-		if (firstInit)
-		{
-			var engine = engines.stream()
-					.filter(it -> StringUtils.equalsAny(it.getDictEngine().getName(), dictsProperties.getStorage()))
-					.toList()
-					.stream()
-					.findFirst()
-					.orElseThrow(() -> new EngineException("An engine equal to the engine from the storage property doesn't exists."));
-
-			engine.createDict();
-			engine.createVersionScheme();
-		}
+		engine.createDict();
+		engine.createVersionScheme();
 	}
 }

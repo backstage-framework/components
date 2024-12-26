@@ -46,7 +46,10 @@ public class MongoEngine implements Engine
 	@Override
 	public void createDict()
 	{
-		mongoTemplate.createCollection(Dict.class);
+		if (!dictExists())
+		{
+			mongoTemplate.createCollection(Dict.class);
+		}
 
 		mongoDictRepository.findAll()
 				.stream()
@@ -59,7 +62,10 @@ public class MongoEngine implements Engine
 	@Override
 	public void createVersionScheme()
 	{
-		mongoTemplate.createCollection(VersionScheme.class);
+		if (!versionSchemeExists())
+		{
+			mongoTemplate.createCollection(VersionScheme.class);
+		}
 	}
 
 	@Override
