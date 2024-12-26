@@ -18,14 +18,17 @@ package com.backstage.app.dict.service.codegen.server.base;
 
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.service.advice.DictDataServiceAdvice;
 import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
 import com.backstage.app.utils.SpringContextUtils;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 import java.util.function.Supplier;
 
+@Slf4j
 public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S extends AbstractDictItemService<T>> implements DictDataServiceAdvice
 {
 	private final Supplier<S> dictItemServiceSupplier;
@@ -112,18 +115,34 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	@Override
 	public final void handleUpdate(Dict dict, DictItem oldItem, DictItem dictItem)
 	{
-		if (getDictItemService().getDictId().equals(dict.getId()))
+		var dictItemService = getDictItemService();
+
+		if (dictItemService.getDictId().equals(dict.getId()))
 		{
-			var item = getDictItemService().buildItem(dictItem);
+			if (!dict.getVersion().equals(dictItemService.getDictVersion()))
+			{
+				handleBeforeUpdateFallback(dict, oldItem, dictItem);
+			}
+			else
+			{
+				var item = dictItemService.buildItem(dictItem);
 
-			handleBeforeUpdate(
-					getDictItemService().buildItem(oldItem),
-					item
-			);
+				handleBeforeUpdate(dictItemService.buildItem(oldItem), item);
 
-			dictItem.getData().clear();
-			dictItem.getData().putAll(item.toMap());
+				dictItem.getData().clear();
+				dictItem.getData().putAll(item.toMap());
+			}
 		}
+	}
+
+	public void handleBeforeUpdateFallback(Dict dict, DictItem oldItem, DictItem dictItem)
+	{
+		log.error("Schema version mismatch detected for dict '{}'! Client was generated for version: {}, but actual dict version: {}. Please consider implementing a fallback method.",
+				dict.getId(),
+				getDictItemService().getDictVersion(),
+				dict.getVersion());
+
+		throw new DictException("dict schema mismatch detected in generated dict client");
 	}
 
 	public void handleBeforeUpdate(T oldItem, T item)

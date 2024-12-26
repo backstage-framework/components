@@ -85,5 +85,10 @@ public abstract class AbstractDictItemRemoteService<T extends AbstractDictItem>
 
 	protected abstract String getDictId();
 
+	protected Long getDictVersion()
+	{
+		return 0L;
+	}
+
 	protected abstract T buildItem(DictItemDto dictItem);
 }

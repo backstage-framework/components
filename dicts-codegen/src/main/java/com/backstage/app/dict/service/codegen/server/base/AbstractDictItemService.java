@@ -93,5 +93,10 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 
 	protected abstract String getDictId();
 
+	protected Long getDictVersion()
+	{
+		return 0L;
+	}
+
 	protected abstract T buildItem(DictItem dictItem);
 }

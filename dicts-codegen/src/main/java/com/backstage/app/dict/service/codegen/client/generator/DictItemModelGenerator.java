@@ -51,6 +51,7 @@ public class DictItemModelGenerator
 	);
 
 	public static final String DICT_ID_FIELD = "DICT_ID";
+	public static final String DICT_VERSION_FIELD = "DICT_VERSION";
 
 	public TypeSpec generate(DictDto dict)
 	{
@@ -76,6 +77,7 @@ public class DictItemModelGenerator
 		var fieldSpecMapping = new LinkedHashMap<FieldSpec, DictFieldDto>();
 
 		typeSpec.addField(addConstant(DICT_ID_FIELD, dict.getId()));
+		typeSpec.addField(addConstant(DICT_VERSION_FIELD, dict.getVersion()));
 
 		dict.getFields().forEach(dictField -> {
 			fieldSpecMapping.put(addField(dictField), dictField);
@@ -289,6 +291,14 @@ public class DictItemModelGenerator
 		return FieldSpec.builder(String.class, name)
 				.addModifiers(Modifier.STATIC, Modifier.FINAL)
 				.initializer("$S", value)
+				.build();
+	}
+
+	protected FieldSpec addConstant(String name, Long value)
+	{
+		return FieldSpec.builder(Long.class, name)
+				.addModifiers(Modifier.STATIC, Modifier.FINAL)
+				.initializer("$LL", value)
 				.build();
 	}
 }
