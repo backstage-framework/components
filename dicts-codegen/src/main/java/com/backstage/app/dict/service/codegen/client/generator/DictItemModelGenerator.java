@@ -82,10 +82,7 @@ public class DictItemModelGenerator
 		dict.getFields().forEach(dictField -> {
 			fieldSpecMapping.put(addField(dictField), dictField);
 
-			if (!DEFAULT_FIELDS.contains(dictField.getId()))
-			{
-				typeSpec.addField(addConstant(dictField));
-			}
+			typeSpec.addField(addConstant(dictField));
 		});
 
 		typeSpec.addFields(fieldSpecMapping.keySet());
