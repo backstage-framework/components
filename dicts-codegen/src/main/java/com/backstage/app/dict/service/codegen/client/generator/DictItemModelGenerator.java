@@ -289,7 +289,7 @@ public class DictItemModelGenerator
 	protected FieldSpec addConstant(String name, String value)
 	{
 		return FieldSpec.builder(String.class, name)
-				.addModifiers(Modifier.STATIC, Modifier.FINAL)
+				.addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
 				.initializer("$S", value)
 				.build();
 	}
@@ -297,7 +297,7 @@ public class DictItemModelGenerator
 	protected FieldSpec addConstant(String name, Long value)
 	{
 		return FieldSpec.builder(Long.class, name)
-				.addModifiers(Modifier.STATIC, Modifier.FINAL)
+				.addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
 				.initializer("$LL", value)
 				.build();
 	}
