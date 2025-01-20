@@ -22,6 +22,7 @@ import com.backstage.app.dict.api.model.dto.DictEnumDto;
 import com.backstage.app.dict.api.model.dto.DictFieldDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
+import com.backstage.app.dict.utils.DictModelNameUtils;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
@@ -51,6 +52,7 @@ public class DictItemModelGenerator
 	);
 
 	public static final String DICT_ID_FIELD = "DICT_ID";
+	public static final String DICT_VERSION_FIELD = "DICT_VERSION";
 
 	public TypeSpec generate(DictDto dict)
 	{
@@ -76,14 +78,12 @@ public class DictItemModelGenerator
 		var fieldSpecMapping = new LinkedHashMap<FieldSpec, DictFieldDto>();
 
 		typeSpec.addField(addConstant(DICT_ID_FIELD, dict.getId()));
+		typeSpec.addField(addConstant(DICT_VERSION_FIELD, dict.getVersion()));
 
 		dict.getFields().forEach(dictField -> {
 			fieldSpecMapping.put(addField(dictField), dictField);
 
-			if (!DEFAULT_FIELDS.contains(dictField.getId()))
-			{
-				typeSpec.addField(addConstant(dictField));
-			}
+			typeSpec.addField(addConstant(dictField));
 		});
 
 		typeSpec.addFields(fieldSpecMapping.keySet());
@@ -287,8 +287,16 @@ public class DictItemModelGenerator
 	protected FieldSpec addConstant(String name, String value)
 	{
 		return FieldSpec.builder(String.class, name)
-				.addModifiers(Modifier.STATIC, Modifier.FINAL)
+				.addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
 				.initializer("$S", value)
+				.build();
+	}
+
+	protected FieldSpec addConstant(String name, Long value)
+	{
+		return FieldSpec.builder(Long.class, name)
+				.addModifiers(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
+				.initializer("$LL", value)
 				.build();
 	}
 }

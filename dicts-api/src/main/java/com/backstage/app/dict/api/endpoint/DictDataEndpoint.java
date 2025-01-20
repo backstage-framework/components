@@ -26,6 +26,7 @@ import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
+import com.backstage.app.dict.api.model.dto.request.SearchDistinctRequest;
 import com.backstage.app.dict.api.model.dto.request.SearchRequest;
 import com.backstage.app.dict.api.service.remote.ExternalDictDataService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -88,6 +89,14 @@ public class DictDataEndpoint implements ExternalDictDataService
 	                                                     @RequestBody List<String> ids)
 	{
 		return externalDictDataService.getByIds(dictId, ids);
+	}
+
+	@Operation(summary = "Получение уникальных значений полей справочника по фильтру.")
+	@PostMapping("/{dictId}/distinctValues")
+	public ApiResponse<List<Object>> getDistinctValuesByFilter(@PathVariable String dictId,
+	                                                           @RequestBody @Valid SearchDistinctRequest request)
+	{
+		return externalDictDataService.getDistinctValuesByFilter(dictId, request);
 	}
 
 	@Override

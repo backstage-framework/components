@@ -50,4 +50,7 @@ public class DictDto
 
 	@Schema(description = "Место хранения справочника")
 	private String engine;
+
+	@Schema(description = "Версия справочника, увеличивается при изменении схемы")
+	private Long version;
 }
