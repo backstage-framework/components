@@ -14,7 +14,7 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.service.codegen.client.generator;
+package com.backstage.app.dict.utils;
 
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.DictFieldDto;
@@ -34,19 +34,19 @@ import java.time.LocalDateTime;
 public class DictModelNameUtils
 {
 	@UtilityClass
-	class TypeNames
+	public class TypeNames
 	{
-		final ClassName STRING = ClassName.get("java.lang", "String");
-		final ClassName INTEGER = ClassName.get(Integer.class);
-		final ClassName LONG = ClassName.get(Long.class);
-		final ClassName BOOLEAN = ClassName.get(Boolean.class);
-		final ClassName BIG_DECIMAL = ClassName.get(BigDecimal.class);
-		final ClassName LOCAL_DATE = ClassName.get(LocalDate.class);
-		final ClassName LOCAL_DATE_TIME = ClassName.get(LocalDateTime.class);
-		final ClassName LIST = ClassName.get("java.util", "List");
-		final ClassName MAP = ClassName.get("java.util", "Map");
-		final TypeName JSON = ParameterizedTypeName.get(MAP, STRING, TypeName.OBJECT);
-		final ClassName GEO_JSON = ClassName.get(GeoJsonObject.class);
+		public ClassName STRING = ClassName.get("java.lang", "String");
+		public ClassName INTEGER = ClassName.get(Integer.class);
+		public ClassName LONG = ClassName.get(Long.class);
+		public ClassName BOOLEAN = ClassName.get(Boolean.class);
+		public ClassName BIG_DECIMAL = ClassName.get(BigDecimal.class);
+		public ClassName LOCAL_DATE = ClassName.get(LocalDate.class);
+		public ClassName LOCAL_DATE_TIME = ClassName.get(LocalDateTime.class);
+		public ClassName LIST = ClassName.get("java.util", "List");
+		public ClassName MAP = ClassName.get("java.util", "Map");
+		public TypeName JSON = ParameterizedTypeName.get(MAP, STRING, TypeName.OBJECT);
+		public ClassName GEO_JSON = ClassName.get(GeoJsonObject.class);
 	}
 
 	public String className(DictDto dict)
