@@ -19,6 +19,7 @@ package com.backstage.app.dict.service.codegen.client.base;
 import com.backstage.app.api.utils.RemoteServiceUtils;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
+import com.backstage.app.dict.api.model.dto.request.SearchDistinctRequest;
 import com.backstage.app.dict.api.model.dto.request.SearchRequest;
 import com.backstage.app.dict.api.service.remote.InternalDictDataService;
 import com.backstage.app.exception.ObjectNotFoundException;
@@ -71,6 +72,24 @@ public abstract class AbstractDictItemRemoteService<T extends AbstractDictItem>
 				.build();
 
 		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.countByFilter(getDictId(), searchRequest));
+	}
+
+	public <V> List<V> getDistinctValuesByFilter(String field, String query, Class<V> clazz)
+	{
+		return getDistinctValuesByFilter(field, query)
+				.stream()
+				.map(clazz::cast)
+				.toList();
+	}
+
+	public List<Object> getDistinctValuesByFilter(String field, String query)
+	{
+		var searchDistinctRequest = SearchDistinctRequest.builder()
+				.field(field)
+				.query(query)
+				.build();
+
+		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.getDistinctValuesByFilter(getDictId(), searchDistinctRequest));
 	}
 
 	public boolean existsById(String itemId)

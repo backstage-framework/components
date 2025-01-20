@@ -51,6 +51,19 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 				.collect(Collectors.toList());
 	}
 
+	public List<Object> getDistinctValuesByFilter(String field, Condition condition)
+	{
+		return dictDataService.getDistinctValuesByFilter(getDictId(), field, ConditionBuilder.buildQuery(condition));
+	}
+
+	public <V> List<V> getDistinctValuesByFilter(String field, Condition condition, Class<V> clazz)
+	{
+		return dictDataService.getDistinctValuesByFilter(getDictId(), field, ConditionBuilder.buildQuery(condition))
+				.stream()
+				.map(clazz::cast)
+				.toList();
+	}
+
 	public boolean existsById(String itemId)
 	{
 		return dictDataService.existsById(getDictId(), itemId);
