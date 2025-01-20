@@ -14,19 +14,15 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.configuration.conditional;
+package com.backstage.app.dict.service.codegen.client.base;
 
-import com.backstage.app.dict.configuration.properties.DictsProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import java.util.Map;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-@ConditionalOnProperty(value = DictsProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
-public @interface ConditionalOnApi
+public interface AbstractDictItem
 {
+	String getId();
+
+	Long getVersion();
+
+	Map<String, Object> toMap();
 }

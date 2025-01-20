@@ -40,6 +40,7 @@ public class DictConverter extends AbstractConverter<Dict, DictDto>
 				.viewPermission(source.getViewPermission())
 				.editPermission(source.getEditPermission())
 				.engine(source.getEngine().getName())
+				.version(source.getVersion())
 				.build();
 	}
 }

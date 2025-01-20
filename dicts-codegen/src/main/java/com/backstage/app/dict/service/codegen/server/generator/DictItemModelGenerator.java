@@ -14,19 +14,18 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.configuration.conditional;
+package com.backstage.app.dict.service.codegen.server.generator;
 
-import com.backstage.app.dict.configuration.properties.DictsProperties;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import com.backstage.app.dict.domain.DictItem;
+import lombok.RequiredArgsConstructor;
 
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import java.lang.reflect.Type;
 
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ ElementType.TYPE, ElementType.METHOD })
-@ConditionalOnProperty(value = DictsProperties.REST_API_ACTIVATION_PROPERTY, matchIfMissing = true)
-public @interface ConditionalOnApi
+@RequiredArgsConstructor
+public class DictItemModelGenerator extends com.backstage.app.dict.service.codegen.client.generator.DictItemModelGenerator
 {
+	protected Type getDictItemSourceType()
+	{
+		return DictItem.class;
+	}
 }
