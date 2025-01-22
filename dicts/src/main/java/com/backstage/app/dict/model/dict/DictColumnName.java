@@ -31,7 +31,6 @@ public enum DictColumnName
 	ENUMS("enums"),
 	VIEW_PERMISSION("view_permission"),
 	EDIT_PERMISSION("edit_permission"),
-	DELETED("deleted"),
 	ENGINE("engine"),
 	VERSION("version");
 

@@ -272,7 +272,7 @@ public class Interpreter
 
 	private void execute(Drop drop)
 	{
-		dictService.delete(drop.getTable().getName(), true);
+		dictService.delete(drop.getTable().getName());
 	}
 
 	private void execute(Copy copy)

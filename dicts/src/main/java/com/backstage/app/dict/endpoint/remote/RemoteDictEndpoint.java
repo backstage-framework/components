@@ -205,7 +205,7 @@ public class RemoteDictEndpoint implements RemoteDictService
 	@PostMapping("/delete")
 	public ApiResponse<?> delete(@RequestBody @Valid DeleteDictRequest request)
 	{
-		schemeService.delete(request.getId(), request.isDeleted());
+		schemeService.delete(request.getId());
 
 		log.info("Справочник {} был удален.", request.getId());
 

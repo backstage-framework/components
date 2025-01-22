@@ -25,7 +25,4 @@ public class DeleteDictRequest
 {
 	@Schema(description = "ID справочника")
 	private String id;
-
-	@Schema(description = "Флаг удаления")
-	private boolean deleted;
 }

@@ -77,12 +77,6 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	}
 
 	@Test
-	void restoreDeletedDict()
-	{
-		restoreDeletedDict(MONGO_DICT_ID);
-	}
-
-	@Test
 	void update()
 	{
 		updateDict(MONGO_DICT_ID);
@@ -131,6 +125,12 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	}
 
 	@Test
+	void deleteWithActiveReference()
+	{
+		deleteDictWithActiveReference();
+	}
+
+	@Test
 	void updateEnum()
 	{
 		updateDictEnum(MONGO_DICT_ID);
@@ -147,6 +147,6 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	@Order(TestPipeline.DICT_GET_ALL_TEST)
 	void getAll()
 	{
-		assertEquals(55, dictService.getAll().size());
+		assertEquals(38, dictService.getAll().size());
 	}
 }

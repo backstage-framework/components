@@ -21,7 +21,6 @@ import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEnum;
 import com.backstage.app.dict.exception.dict.DictCreatedException;
-import com.backstage.app.dict.exception.dict.DictDeletedException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.DictUpdatedException;
 import com.backstage.app.dict.exception.dict.enums.EnumCreatedException;
@@ -37,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,14 +57,7 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 	{
 		Objects.requireNonNull(id, "dictId не может быть null.");
 
-		var dict = getDict(id);
-
-		if (dict.getDeleted() != null)
-		{
-			throw new DictDeletedException(id);
-		}
-
-		return dict;
+		return getDict(id);
 	}
 
 	@Override
@@ -94,17 +85,9 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 	@Override
 	public void deleteById(String id)
 	{
-		transactionWithoutResult(() -> deleteDict(id), id, DictDeletedException::new);
-	}
+		var sql = "delete from %s.dict where id = :id".formatted(dictsProperties.getDdl().getScheme());
 
-	@Override
-	public void softDelete(String id, LocalDateTime deleted)
-	{
-		var dict = getDict(id);
-
-		addTransactionData(dict, true);
-
-		transactionWithoutResult(() -> softDeleteDict(id, deleted), id, DictDeletedException::new);
+		jdbc.update(sql, new MapSqlParameterSource(DictColumnName.ID.getName(), id));
 	}
 
 	@Override
@@ -139,9 +122,6 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		transactionWithoutResult(() -> deleteEnum(dict), dict.getId(), enumId, EnumDeletedException::new);
 	}
 
-	/**
-	 * Метод получения {@link Dict} для {@link #softDelete} в обход валидации в {@link #getDictById}.
-	 */
 	private Dict getDict(String id)
 	{
 		var sql = "select * from %s.dict where id = :id".formatted(dictsProperties.getDdl().getScheme());
@@ -161,7 +141,7 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		var sql = """
 				insert into %s.dict values
 				(:id, :name, :fields::jsonb, :indexes::jsonb, :constraints::jsonb, :enums::jsonb, :view_permission,
-				:edit_permission, :deleted, :engine, :version)
+				:edit_permission, :engine, :version)
 				""".formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
@@ -184,7 +164,6 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 					enums = :enums::jsonb,
 					view_permission = :view_permission,
 					edit_permission = :edit_permission,
-					deleted = :deleted,
 					engine = :engine,
 					version = :version
 				where id = :id
@@ -193,25 +172,6 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		jdbc.update(sql, parameterMap);
 
 		return dict;
-	}
-
-	private void deleteDict(String id)
-	{
-		var sql = "delete from %s.dict where id = :id".formatted(dictsProperties.getDdl().getScheme());
-
-		jdbc.update(sql, new MapSqlParameterSource(DictColumnName.ID.getName(), id));
-	}
-
-	private void softDeleteDict(String id, LocalDateTime deleted)
-	{
-		var parameterMap = new MapSqlParameterSource();
-
-		parameterMap.addValue(DictColumnName.ID.getName(), id);
-		parameterMap.addValue(DictColumnName.DELETED.getName(), deleted);
-
-		var sql = "update %s.dict set deleted = :deleted where id = :id".formatted(dictsProperties.getDdl().getScheme());
-
-		jdbc.update(sql, parameterMap);
 	}
 
 	private DictEnum createdEnum(Dict dict, DictEnum dictEnum)
@@ -279,7 +239,6 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
 		addParameter(parameterMap, DictColumnName.VIEW_PERMISSION.getName(), dict.getViewPermission());
 		addParameter(parameterMap, DictColumnName.EDIT_PERMISSION.getName(), dict.getEditPermission());
-		addParameter(parameterMap, DictColumnName.DELETED.getName(), dict.getDeleted());
 		addParameter(parameterMap, DictColumnName.ENGINE.getName(), dict.getEngine().getName());
 		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 	}

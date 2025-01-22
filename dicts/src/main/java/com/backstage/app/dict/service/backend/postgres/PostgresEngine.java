@@ -65,7 +65,6 @@ public class PostgresEngine implements Engine
 					enums             jsonb                  default '[]'::jsonb,
 					view_permission   varchar(100),
 					edit_permission   varchar(100),
-					deleted           timestamp,
 					engine            varchar(40)   not null,
 					version           bigint        not null default 1,
 					primary key (id))
@@ -77,6 +76,11 @@ public class PostgresEngine implements Engine
 				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbcTemplate.update(addVersionSql, Map.of());
+
+		var dropDeletedSql = "alter table %s.dict drop column if exists deleted"
+				.formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(dropDeletedSql, Map.of());
 	}
 
 	@Override

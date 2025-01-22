@@ -19,7 +19,6 @@ package com.backstage.app.dict.service.backend.mongo;
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEnum;
-import com.backstage.app.dict.exception.dict.DictDeletedException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.service.backend.DictBackend;
@@ -27,7 +26,6 @@ import com.backstage.app.dict.service.backend.Engine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -48,11 +46,6 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 		Objects.requireNonNull(id, "dictId не может быть null.");
 
 		var dict = getDict(id);
-
-		if (dict.getDeleted() != null)
-		{
-			throw new DictDeletedException(id);
-		}
 
 		convertMongoServiceFields(dict);
 
@@ -85,19 +78,6 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 	public void deleteById(String id)
 	{
 		mongoDictRepository.deleteById(id);
-	}
-
-	@Override
-	//	TODO: История изменений схемы, даты создания/обновления схемы?
-	public void softDelete(String id, LocalDateTime deleted)
-	{
-		var dict = getDict(id);
-
-		addTransactionData(dict, true);
-
-		dict.setDeleted(deleted);
-
-		save(dict);
 	}
 
 	@Override
@@ -143,9 +123,6 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 		save(dict);
 	}
 
-	/**
-	 * Метод получения {@link Dict} для {@link #softDelete} в обход валидации в {@link #getDictById}.
-	 */
 	private Dict getDict(String id)
 	{
 		return mongoDictRepository.findById(id)
