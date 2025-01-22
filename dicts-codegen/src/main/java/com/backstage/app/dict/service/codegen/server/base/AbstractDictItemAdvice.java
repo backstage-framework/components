@@ -66,15 +66,29 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	@Override
 	public final void handleBeforeCreate(Dict dict, DictItem item)
 	{
-		if (getDictItemService().getDictId().equals(dict.getId()))
+		var dictItemService = getDictItemService();
+
+		if (dictItemService.getDictId().equals(dict.getId()))
 		{
-			var dictItem = getDictItemService().buildItem(item);
+			if (!dict.getVersion().equals(dictItemService.getDictVersion()))
+			{
+				handleBeforeCreateFallback(dict, item);
+			}
+			else
+			{
+				var dictItem = dictItemService.buildItem(item);
 
-			handleBeforeCreate(dictItem);
+				handleBeforeCreate(dictItem);
 
-			item.getData().clear();
-			item.getData().putAll(dictItem.toMap());
+				item.getData().clear();
+				item.getData().putAll(dictItem.toMap());
+			}
 		}
+	}
+
+	public void handleBeforeCreateFallback(Dict dict, DictItem item)
+	{
+		handleDictVersionMismatch(dict);
 	}
 
 	public void handleBeforeCreate(T item)
@@ -136,6 +150,11 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	}
 
 	public void handleBeforeUpdateFallback(Dict dict, DictItem oldItem, DictItem dictItem)
+	{
+		handleDictVersionMismatch(dict);
+	}
+
+	private void handleDictVersionMismatch(Dict dict)
 	{
 		log.error("Schema version mismatch detected for dict '{}'! Client was generated for version: {}, but actual dict version: {}. Please consider implementing a fallback method.",
 				dict.getId(),
