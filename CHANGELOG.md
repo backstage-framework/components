@@ -1,3 +1,15 @@
+## 5.1.6 - 2025-01-23
+### Dependency Upgrades
+- Spring Cloud 4.1.4
+- EclipseLink 4.0.5
+- Flyway 11.2.0
+- Postgresql JDBC 42.7.5
+- ClickHouse JDBC 0.7.2
+- MinIO 8.5.17
+- Commons-codec 1.17.2
+- Apache POI 5.4.0
+- Camunda 7.22.0
+
 ## 5.1.5 - 2025-01-22
 ### Dicts
 - Расширили в AbstractDictItemAdvice fallback методы для случаев, когда версии справочника и сгенерированных классов отличаются.
