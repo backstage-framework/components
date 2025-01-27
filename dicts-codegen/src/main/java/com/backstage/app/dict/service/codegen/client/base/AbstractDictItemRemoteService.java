@@ -53,6 +53,15 @@ public abstract class AbstractDictItemRemoteService<T extends AbstractDictItem>
 				.collect(Collectors.toList());
 	}
 
+	public List<String> getIdsByFilter(String query)
+	{
+		var searchRequest = BasicSearchRequest.builder()
+				.query(query)
+				.build();
+
+		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.getIdsByFilter(getDictId(), searchRequest));
+	}
+
 	public List<T> getByFilter(String query, Pageable pageable)
 	{
 		var searchRequest = SearchRequest.builder()
