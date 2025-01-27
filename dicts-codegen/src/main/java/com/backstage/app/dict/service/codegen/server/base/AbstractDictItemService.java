@@ -44,6 +44,12 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 				.collect(Collectors.toList());
 	}
 
+	public List<String> getIdsByFilter(Condition condition)
+	{
+		return dictDataService.getIdsByFilter(getDictId(), ConditionBuilder.buildQuery(condition))
+				.getContent();
+	}
+
 	public List<T> getByFilter(Condition condition, Pageable pageable)
 	{
 		return dictDataService.getByFilter(getDictId(), List.of(), ConditionBuilder.buildQuery(condition), pageable).stream()
