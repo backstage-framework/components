@@ -24,6 +24,8 @@ import com.backstage.app.dict.api.model.dto.request.SearchRequest;
 import com.backstage.app.dict.api.service.remote.InternalDictDataService;
 import com.backstage.app.exception.ObjectNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -62,16 +64,15 @@ public abstract class AbstractDictItemRemoteService<T extends AbstractDictItem>
 		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.getIdsByFilter(getDictId(), searchRequest));
 	}
 
-	public List<T> getByFilter(String query, Pageable pageable)
+	public Page<T> getByFilter(String query, Pageable pageable)
 	{
 		var searchRequest = SearchRequest.builder()
 				.query(query)
 				.build();
 
-		return RemoteServiceUtils.executeAndGetData(() -> dictDataService.getByFilter(getDictId(), searchRequest, pageable))
-				.stream()
-				.map(this::buildItem)
-				.collect(Collectors.toList());
+		var result = RemoteServiceUtils.fetchPage(() -> dictDataService.getByFilter(getDictId(), searchRequest, pageable));
+
+		return new PageImpl<>(result.stream().map(this::buildItem).collect(Collectors.toList()), pageable, result.getTotalElements());
 	}
 
 	public long countByFilter(String query)

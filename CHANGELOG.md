@@ -1,3 +1,10 @@
+## 5.1.8 - 2025-01-28
+### Api
+- Добавили метод RemoteServiceUtils::executeAndThen.
+
+### Dicts
+- Метод getByFilter у AbstractDictItemService и AbstractDictItemRemoteService теперь возвращает страницу.
+
 ## 5.1.7 - 2025-01-27
 ### Dicts
 - Добавили метод получения идентификаторов записей справочника по фильтру в сервисы кодогенерации.

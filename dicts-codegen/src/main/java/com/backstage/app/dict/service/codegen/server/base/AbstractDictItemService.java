@@ -22,6 +22,8 @@ import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
 import lombok.RequiredArgsConstructor;
 import org.jooq.Condition;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
@@ -50,11 +52,11 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 				.getContent();
 	}
 
-	public List<T> getByFilter(Condition condition, Pageable pageable)
+	public Page<T> getByFilter(Condition condition, Pageable pageable)
 	{
-		return dictDataService.getByFilter(getDictId(), List.of(), ConditionBuilder.buildQuery(condition), pageable).stream()
-				.map(this::buildItem)
-				.collect(Collectors.toList());
+		var result = dictDataService.getByFilter(getDictId(), List.of(), ConditionBuilder.buildQuery(condition), pageable);
+
+		return new PageImpl<>(result.stream().map(this::buildItem).collect(Collectors.toList()), pageable, result.getTotalElements());
 	}
 
 	public List<Object> getDistinctValuesByFilter(String field, Condition condition)
