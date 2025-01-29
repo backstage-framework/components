@@ -17,6 +17,7 @@
 package com.backstage.app.utils;
 
 import com.backstage.app.model.other.user.Principal;
+import com.backstage.app.model.other.user.SpringPrincipal;
 import com.backstage.app.model.other.user.UserInfo;
 import com.backstage.app.utils.functional.RunnableEx;
 import lombok.SneakyThrows;
@@ -24,6 +25,7 @@ import lombok.experimental.UtilityClass;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 
 import java.util.concurrent.Callable;
 
@@ -50,6 +52,11 @@ public final class SecurityUtils
 
 		if (!(authentication.getPrincipal() instanceof Principal))
 		{
+			if (authentication.getPrincipal() instanceof UserDetails userDetails)
+			{
+				return new SpringPrincipal(userDetails);
+			}
+
 			throw new RuntimeException(String.format("unsupported principal type: %s", authentication.getPrincipal().getClass().getSimpleName()));
 		}
 

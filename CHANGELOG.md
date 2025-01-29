@@ -1,4 +1,8 @@
-## 5.1.8 - 2025-01-28
+## 5.1.9 - 2025-01-29
+### App
+- В SecurityUtils::getCurrentUser добавили совместимость с UserDetails из Spring.
+- Реализация PermissionService по умолчанию теперь возвращает для текущего пользователя дискретные права из сессии Spring через UserDetails::getAuthorities.
+
 ### Api
 - Добавили метод RemoteServiceUtils::executeAndThen.
 

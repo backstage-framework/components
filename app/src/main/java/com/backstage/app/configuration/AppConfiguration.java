@@ -17,6 +17,7 @@
 package com.backstage.app.configuration;
 
 import com.backstage.app.configuration.properties.AppProperties;
+import com.backstage.app.model.other.user.SpringPrincipal;
 import com.backstage.app.service.user.PermissionService;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.Getter;
@@ -47,12 +48,19 @@ public class AppConfiguration implements ApplicationContextAware
 
 	@Bean
 	@ConditionalOnMissingBean
-	public PermissionService noOpPermissionService()
+	public PermissionService defaultPermissionService()
 	{
 		return new PermissionService() {
 			@Override
 			public List<String> getPermissions(String userId)
 			{
+				var currentUser = SecurityUtils.getCurrentUser();
+
+				if (currentUser.getId().equals(userId) && currentUser instanceof SpringPrincipal springPrincipal)
+				{
+					return springPrincipal.getPermissions();
+				}
+
 				return List.of();
 			}
 
