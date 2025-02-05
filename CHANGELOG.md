@@ -1,3 +1,10 @@
+## 5.1.10 - 2025-02-05
+### Dependency Upgrades
+- Spring Boot 3.3.8
+
+### Api
+- Добавили PrincipalEndpoint для получения информации о текущем пользователе с возможностью расширения через PrincipalDetailsConverter.
+
 ## 5.1.9 - 2025-01-29
 ### App
 - В SecurityUtils::getCurrentUser добавили совместимость с UserDetails из Spring.
