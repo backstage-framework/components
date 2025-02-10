@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-@Tag(name = "principal-endpoint", description = "Методы для с авторизованным пользователем.")
+@Tag(name = "principal-endpoint", description = "Методы для работы с авторизованным пользователем.")
 @RestController
 @RequestMapping("/api/principal")
 @RequiredArgsConstructor
