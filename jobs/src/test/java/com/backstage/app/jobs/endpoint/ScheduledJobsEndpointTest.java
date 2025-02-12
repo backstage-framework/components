@@ -16,7 +16,6 @@
 
 package com.backstage.app.jobs.endpoint;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.backstage.app.jobs.TestApplication;
 import com.backstage.app.jobs.configuration.SchedulerConfiguration;
 import com.backstage.app.jobs.data.TestJobs;
@@ -24,6 +23,7 @@ import com.backstage.app.jobs.service.JobHealthIndicator;
 import com.backstage.app.jobs.service.JobManager;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.TaskUtils;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -92,7 +93,7 @@ class ScheduledJobsEndpointTest
 	}
 
 	@Test
-	void executeWitEmptyParams() throws Exception
+	void executeWithEmptyParams() throws Exception
 	{
 		executeJob("testJobs.TestManualJobWithParams", Map.of());
 	}
@@ -108,6 +109,14 @@ class ScheduledJobsEndpointTest
 				.andExpect(status().isOk())
 				.andExpect(jsonPath("message").value(Matchers.is(ApiStatusCodeImpl.ILLEGAL_INPUT.getMessage())))
 				.andDo(print());
+	}
+
+	@Test
+	void getParamsFromEmptyParamsJob() throws Exception
+	{
+		mvc.perform(get("/api/scheduledJobs/testJobs.TestFixedDelayRescheduling/params"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("data").isEmpty());
 	}
 
 	private <K, V> void executeJob(String jobName, Map<K, V> params) throws Exception

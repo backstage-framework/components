@@ -16,9 +16,11 @@
 
 package com.backstage.app.jobs.model.dto.param;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class EmptyJobParams implements JobParams
 {
 }
