@@ -16,7 +16,9 @@
 
 package com.backstage.app.dict.api.model.dto.data;
 
+import com.backstage.app.dict.api.configuration.jackson.MapTypedValueSerializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,6 +43,7 @@ public class DictItemDto
 
 	@Schema(description = "Пользовательские поля")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonSerialize(contentUsing = MapTypedValueSerializer.class)
 	private Map<String, Object> data = new HashMap<>();
 
 	@Schema(description = "История изменений записи")

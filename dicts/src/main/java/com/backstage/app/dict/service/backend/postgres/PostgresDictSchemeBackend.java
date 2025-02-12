@@ -24,7 +24,10 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictIndex;
-import com.backstage.app.dict.exception.dict.*;
+import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
+import com.backstage.app.dict.exception.dict.DictCreatedException;
+import com.backstage.app.dict.exception.dict.DictNotFoundException;
+import com.backstage.app.dict.exception.dict.DictUpdatedException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintCreatedException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintDeletedException;
 import com.backstage.app.dict.exception.dict.field.FieldUpdatedException;
@@ -42,6 +45,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -50,6 +54,8 @@ import java.util.stream.Collectors;
 @ConditionalOnEngine(PostgresEngine.POSTGRES)
 public class PostgresDictSchemeBackend extends AbstractPostgresBackend implements DictSchemeBackend
 {
+	private static final Set<DictFieldType> COMPLEX_FIELD_TYPES = Set.of(DictFieldType.JSON, DictFieldType.GEO_JSON);
+
 	private final DictsProperties dictsProperties;
 
 	private final DictBackend dictBackend;
@@ -387,14 +393,15 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		{
 			case INTEGER -> "bigint";
 			case DECIMAL -> "numeric";
-			case STRING, DICT, ENUM, ATTACHMENT, GEO_JSON -> "text"; //TODO: рассмотреть varchar с max ограничением символов на уровне движка БД
+			case STRING, DICT, ENUM, ATTACHMENT -> "text"; //TODO: рассмотреть varchar с max ограничением символов на уровне движка БД
 			case BOOLEAN -> "boolean";
 			case DATE -> "date";
 			case TIMESTAMP -> "timestamp";
 			case JSON -> "jsonb default '%s'::jsonb".formatted(field.isMultivalued() ? "[]" : "{}");
+			case GEO_JSON -> "jsonb%1$s default %2$s".formatted(field.isMultivalued() ? "[]" : "", field.isMultivalued() ? "array[]::jsonb[]" : "'{}'");
 		};
 
-		if (field.isMultivalued() && !DictFieldType.JSON.equals(field.getType()))
+		if (field.isMultivalued() && !COMPLEX_FIELD_TYPES.contains(field.getType()))
 		{
 			singleType += "[]";
 		}

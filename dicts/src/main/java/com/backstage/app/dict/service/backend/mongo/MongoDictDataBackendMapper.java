@@ -76,7 +76,7 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 
 		document.append(ServiceFieldConstants._ID, dictItem.getId());
 		document.append(ServiceFieldConstants.VERSION, dictItem.getVersion());
-		document.append(ServiceFieldConstants.HISTORY, dictItem.getHistory());
+		document.append(ServiceFieldConstants.HISTORY, dictItem.getHistory().stream().map(JsonUtils::toJson).map(Document::parse).toList());
 		document.append(ServiceFieldConstants.CREATED, created);
 		document.append(ServiceFieldConstants.UPDATED, updated);
 		document.append(ServiceFieldConstants.DELETED, deleted);
@@ -151,6 +151,19 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 			return new Decimal128(value);
 		}
 
+		if (field.getType() == DictFieldType.GEO_JSON)
+		{
+			if (field.isMultivalued())
+			{
+				return ((List<?>) dictDataItem).stream()
+						.map(JsonUtils::toJson)
+						.map(Document::parse)
+						.toList();
+			}
+
+			return Document.parse(JsonUtils.toJson(dictDataItem));
+		}
+
 		return dictDataItem;
 	}
 
@@ -206,14 +219,14 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 			};
 		}
 
-		if (DictFieldType.JSON.equals(fieldType))
+		if (fieldType == DictFieldType.GEO_JSON)
 		{
-			return Collections.unmodifiableMap((Map<?, ?>) value);
-		}
+			if (value instanceof Document document)
+			{
+				return JsonUtils.toObject(document.toJson(), GeoJsonObject.class);
+			}
 
-		if (DictFieldType.GEO_JSON.equals(fieldType))
-		{
-			return value == null ? null : JsonUtils.toObject(value, GeoJsonObject.class);
+			throw new FieldValidationException("Тип поля %s должен быть %s.".formatted(field.getId(), Document.class.getSimpleName()));
 		}
 
 		return value;
