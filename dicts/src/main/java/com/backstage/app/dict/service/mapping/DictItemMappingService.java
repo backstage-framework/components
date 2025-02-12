@@ -23,6 +23,7 @@ import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.model.other.date.DateConstants;
+import com.backstage.app.utils.JsonUtils;
 import com.backstage.app.utils.StreamCollectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -180,24 +181,36 @@ public class DictItemMappingService
 
 		if (field.getType() == DictFieldType.GEO_JSON)
 		{
-			if (o instanceof String)
+			if (o instanceof GeoJsonObject)
 			{
 				return o;
 			}
 
-			if (o instanceof GeoJsonObject)
+			if (o instanceof String)
 			{
 				try
 				{
-					return objectMapper.writeValueAsString(o);
+					return JsonUtils.toObject(o, GeoJsonObject.class);
 				}
-				catch (JsonProcessingException e)
+				catch (Exception e)
 				{
-					throw new RuntimeException("Некорректный формат GEO_JSON поля.");
+					throw new RuntimeException("Некорректный формат geo_json поля.", e);
 				}
 			}
 
-			throw new RuntimeException("Некорректный формат GEO_JSON поля.");
+			if (o instanceof Map<?, ?>)
+			{
+				try
+				{
+					return JsonUtils.toObject(JsonUtils.toJson(o), GeoJsonObject.class);
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException("Некорректный формат geo_json поля.", e);
+				}
+			}
+
+			throw new RuntimeException("Некорректный формат geo_json поля.");
 		}
 
 		if (field.getType() != DictFieldType.TIMESTAMP && field.getType() != DictFieldType.DATE)

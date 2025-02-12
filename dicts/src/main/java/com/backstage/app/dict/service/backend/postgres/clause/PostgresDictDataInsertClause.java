@@ -53,6 +53,15 @@ public class PostgresDictDataInsertClause
 		addInsertClause(columnPlaceholder, jsonValue(value), columns, sqlParameterSource);
 	}
 
+	public void addInsertJsonArrayClause(String columnPlaceholder, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
+	{
+		PGobject[] pgValue = ((List<?>) value).stream()
+				.map(this::jsonValue)
+				.toArray(PGobject[]::new);
+
+		addInsertClause(columnPlaceholder, pgValue, columns, sqlParameterSource);
+	}
+
 	public void addDictDataInsertClause(Dict dict, PostgresDictItem dictItem, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
 		var fieldMap = DictService.getDataFieldsByDict(dict)
@@ -79,10 +88,16 @@ public class PostgresDictDataInsertClause
 	@SuppressWarnings("unchecked")
 	private void completeMultiValue(DictField field, String column, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		// FIXME: работает неправильно, должен быть JSON[].
 		if (DictFieldType.JSON.equals(field.getType()))
 		{
 			completeSingleValue(field, column, value, columns, sqlParameterSource);
+
+			return;
+		}
+
+		if (DictFieldType.GEO_JSON.equals(field.getType()))
+		{
+			addInsertJsonArrayClause(column, value, columns, sqlParameterSource);
 
 			return;
 		}
@@ -107,7 +122,7 @@ public class PostgresDictDataInsertClause
 
 	private void completeSingleValue(DictField field, String column, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		if (DictFieldType.JSON.equals(field.getType()))
+		if (DictFieldType.JSON.equals(field.getType()) || DictFieldType.GEO_JSON.equals(field.getType()))
 		{
 			addInsertJsonClause(column, value, columns, sqlParameterSource);
 

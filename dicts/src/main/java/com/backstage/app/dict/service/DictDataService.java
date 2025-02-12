@@ -25,6 +25,7 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
+import com.backstage.app.dict.model.dictitem.DictItemHistoryMap;
 import com.backstage.app.dict.service.advice.DictDataServiceAdvice;
 import com.backstage.app.dict.service.backend.DictDataBackend;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
@@ -444,7 +445,7 @@ public class DictDataService
 				.entrySet()
 				.stream()
 				.filter(it -> !ServiceFieldConstants.ID.equals(it.getKey()))
-				.collect(HashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), HashMap<String, Object>::putAll);
+				.collect(DictItemHistoryMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), HashMap<String, Object>::putAll);
 
 		historyItemMap.put(ServiceFieldConstants.VERSION, dictItem.getVersion());
 		historyItemMap.put(ServiceFieldConstants.CREATED, dictItem.getCreated());
@@ -463,7 +464,7 @@ public class DictDataService
 		target.setUpdated(LocalDateTime.now());
 		target.setVersion(target.getVersion() + 1L);
 
-		var historyMap = new HashMap<>(target.getData());
+		var historyMap = new DictItemHistoryMap(target.getData());
 
 		historyMap.put(ServiceFieldConstants.UPDATED, target.getUpdated());
 		historyMap.put(ServiceFieldConstants.VERSION, target.getVersion());

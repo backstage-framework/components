@@ -198,6 +198,7 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 	{
 		try
 		{
+			// FIXME: если сделать массив, то нужна миграция для существующих JSON колонок
 			if (field.getType() == DictFieldType.JSON)
 			{
 				var jsonb = (PGobject) value;

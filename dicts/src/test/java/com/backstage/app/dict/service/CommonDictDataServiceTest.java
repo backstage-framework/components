@@ -883,8 +883,16 @@ public class CommonDictDataServiceTest extends CommonTest
 		var actual = dictDataService.getByFilter(TESTABLE_GEO_JSON_DICT_ID, List.of("*"), "stringField = 'geoJsonTest'", Pageable.unpaged())
 				.getContent();
 
-		assertEquals(FeatureCollection.class, actual.get(0).getData().get("geoJsonField").getClass());
-		assertEquals(2, ((List<FeatureCollection>) actual.get(0).getData().get("geoJsonMultivaluedField")).size());
+		var geoJsonFeature = actual.get(0).getData().get("geoJsonField");
+		assertInstanceOf(FeatureCollection.class, geoJsonFeature);
+		assertEquals(3, ((FeatureCollection) geoJsonFeature).getFeatures().size());
+
+		var geoJsonFeatures = (List<Map<String, Object>>) actual.get(0).getData().get("geoJsonMultivaluedField");
+		assertEquals(2, geoJsonFeatures.size());
+
+		assertInstanceOf(FeatureCollection.class, geoJsonFeatures.get(0));
+		assertEquals(3, ((FeatureCollection) geoJsonFeatures.get(0)).getFeatures().size());
+		assertEquals(3, ((FeatureCollection) geoJsonFeatures.get(1)).getFeatures().size());
 	}
 
 	protected void createDictItemWithDefaultFields(String dictId)
@@ -1010,12 +1018,15 @@ public class CommonDictDataServiceTest extends CommonTest
 	@SneakyThrows
 	protected void updateDictItemWithGeoJson()
 	{
-		var geo = objectMapper.readValue("{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[55.68154659727316,37.553090921089115],[55.646161942996564,37.58087155165372]]]}}", GeoJsonObject.class);
-		var geoJson = objectMapper.writeValueAsString(geo);
+		var geo1 = objectMapper.readValue("{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[55.68154659727316,37.553090921089115],[55.646161942996564,37.58087155165372]]]}}", GeoJsonObject.class);
+		var geo1Json = objectMapper.writeValueAsString(geo1);
+
+		var geo2 = objectMapper.readValue("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[37.412284,55.603515]}},{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[37.413423,55.604283],[37.41255,55.60361],[37.413995,55.602974],[37.414842,55.603629],[37.413423,55.604283]]]}},{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[37.411999,55.603159],[37.413568,55.602384],[37.41522,55.603516]]}}]}", GeoJsonObject.class);
+		var geo2Json = objectMapper.writeValueAsString(geo2);
 
 		var dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put("geoJsonField", geoJson);
-		dataMap.put("geoJsonMultivaluedField", List.of(geoJson, geoJson));
+		dataMap.put("geoJsonField", geo1Json);
+		dataMap.put("geoJsonMultivaluedField", List.of(geo1Json, geo2Json));
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_GEO_JSON_DICT_ID, dataMap));
 
@@ -1034,6 +1045,20 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertEquals(Feature.class, actual.getData().get("geoJsonField").getClass());
 		assertEquals(updatableGeo, actual.getData().get("geoJsonField"));
 		assertEquals(1, ((List<GeoJsonObject>) actual.getData().get("geoJsonMultivaluedField")).size());
+
+		assertNotNull(actual.getHistory().get(1));
+
+		var geoJsonHistoryFeature = (Map<String, Object>) actual.getHistory().get(1).get("geoJsonField");
+
+		assertNotNull(geoJsonHistoryFeature);
+		assertNotNull(geoJsonHistoryFeature.get("type"));
+		assertEquals("Feature", geoJsonHistoryFeature.get("type"));
+
+		geoJsonHistoryFeature = ((List<Map<String, Object>>) actual.getHistory().get(1).get("geoJsonMultivaluedField")).get(0);
+
+		assertNotNull(geoJsonHistoryFeature);
+		assertNotNull(geoJsonHistoryFeature.get("type"));
+		assertEquals("Feature", geoJsonHistoryFeature.get("type"));
 	}
 
 	protected void updateConcurrentExc()

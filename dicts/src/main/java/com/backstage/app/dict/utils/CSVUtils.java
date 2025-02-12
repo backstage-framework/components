@@ -35,7 +35,7 @@ public class CSVUtils
 			.setEscape('\\')
 			.setQuoteMode(QuoteMode.MINIMAL)
 			.setQuote('"')
-			.build();
+			.get();
 
 	public String[] parseMultiValuedCell(String stringValue)
 	{

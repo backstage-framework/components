@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.service.export;
 
+import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
@@ -23,6 +24,7 @@ import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.utils.CSVUtils;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.csv.CSVFormat;
@@ -33,6 +35,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -84,18 +87,27 @@ public class ExportCsvService implements ExportService
 				.map(it -> {
 					var value = item.getData().getOrDefault(it.getId(), "");
 
-					if (it.isMultivalued() && value instanceof Iterable<?> collection)
+					if (it.isMultivalued() && value instanceof Collection<?> collection)
 					{
-						return CSVUtils.buildMultiValuedCell(collection);
+						var values = collection.stream()
+								.map(o -> normalizeValue(it, o))
+								.collect(Collectors.toList());
+
+						return CSVUtils.buildMultiValuedCell(values);
 					}
 
-					return value;
+					return normalizeValue(it, value);
 				})
 				.forEach(builder::add);
 
 		return builder.build()
 				.map(String::valueOf)
 				.toArray(String[]::new);
+	}
+
+	private Object normalizeValue(DictField field, Object value)
+	{
+		return field.getType() == DictFieldType.GEO_JSON ? JsonUtils.toJson(value) : value;
 	}
 
 	private byte[] writeToByteArray(List<String> headers, List<String[]> data)

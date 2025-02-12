@@ -204,7 +204,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		dict.getFields()
 				.stream()
 				.filter(DictField::isRequired)
-				.filter(not(it -> it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON))
+				.filter(not(it -> it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON || it.getType() == DictFieldType.GEO_JSON))
 				.forEach(it -> {
 					var property = getPropertyByDictField(it.getType(), it.getId());
 
@@ -239,9 +239,10 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 				{
 					case INTEGER -> int64(fieldId);
 					case DECIMAL -> decimal128(fieldId);
-					case STRING, DICT, ATTACHMENT, GEO_JSON -> string(fieldId);
+					case STRING, DICT, ATTACHMENT -> string(fieldId);
 					case BOOLEAN -> named(fieldId).ofType(new Type.JsonType("boolean"));
 					case DATE, TIMESTAMP -> date(fieldId);
+					case GEO_JSON -> object(fieldId);
 
 					default -> throw new RuntimeException("unsupported type: %s".formatted(type));
 				};

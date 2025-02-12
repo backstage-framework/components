@@ -63,6 +63,20 @@ public class PostgresDictDataUpdateClause
 		addUpdateClause(column, jsonValue(oldValue), jsonValue(newValue), updateClauses, sqlParameterSource);
 	}
 
+	public void addUpdateJsonArrayClause(String column, Object oldValue, Object newValue,
+	                                LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
+	{
+		PGobject[] oldArrayValue = ((List<?>) oldValue).stream()
+				.map(this::jsonValue)
+				.toArray(PGobject[]::new);
+
+		PGobject[] newArrayValue = ((List<?>) newValue).stream()
+				.map(this::jsonValue)
+				.toArray(PGobject[]::new);
+
+		addUpdateClause(column, oldArrayValue, newArrayValue, updateClauses, sqlParameterSource);
+	}
+
 	public void addDictDataUpdateClause(Dict dict, Map<String, Object> oldData, Map<String, Object> newData,
 	                                    LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
 	{
@@ -107,6 +121,13 @@ public class PostgresDictDataUpdateClause
 			return;
 		}
 
+		if (DictFieldType.GEO_JSON.equals(field.getType()))
+		{
+			addUpdateJsonArrayClause(column, oldValue, newValue, updateClauses, sqlParameterSource);
+
+			return;
+		}
+
 		// FIXME: без каста работает некорректно - не отрабатывает автокаст в пг. Разобраться, исправить и убрать костыль
 		if (field.getType() == DictFieldType.TIMESTAMP)
 		{
@@ -139,7 +160,7 @@ public class PostgresDictDataUpdateClause
 	private void completeSingleValue(DictField field, String column, Object oldValue, Object newValue,
 	                                 LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
 	{
-		if (DictFieldType.JSON.equals(field.getType()))
+		if (DictFieldType.JSON.equals(field.getType()) || DictFieldType.GEO_JSON.equals(field.getType()))
 		{
 			addUpdateJsonClause(column, oldValue, newValue, updateClauses, sqlParameterSource);
 

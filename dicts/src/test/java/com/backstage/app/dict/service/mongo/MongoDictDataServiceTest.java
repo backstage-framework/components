@@ -30,7 +30,8 @@ import org.springframework.data.domain.PageRequest;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Order(TestPipeline.MONGO_DICT_DATA)
 @MongoStorage
