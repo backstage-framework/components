@@ -1,3 +1,7 @@
+## 5.1.13 - 2025-02-13
+### Attachments
+- Восстановлена работа DeleteUnboundAttachmentsJob и CheckAttachmentsJob.
+
 ## 5.1.12 - 2025-02-12
 ### Jobs
 - Исправлена ошибка чтения параметров джобы с EmptyJobParams.

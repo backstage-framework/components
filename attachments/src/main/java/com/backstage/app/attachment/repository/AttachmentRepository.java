@@ -33,7 +33,7 @@ public interface AttachmentRepository extends CustomJpaRepository<Attachment, St
 	@Query("select distinct a.id from Attachment a left outer join a.bindings ab where ab.attachment is null and a.created < :date")
 	List<String> findExpiredUnbound(@Param("date") LocalDateTime expirationDate, Pageable pageable);
 
-	@Query("select distinct a.id from Attachment a left outer join a.bindings ab where ab.attachment is null")
+	@Query("select count(distinct a.id) from Attachment a left outer join a.bindings ab where ab.attachment is null")
 	Long countUnbound();
 
 	@Query("select sum(a.size) from Attachment a")

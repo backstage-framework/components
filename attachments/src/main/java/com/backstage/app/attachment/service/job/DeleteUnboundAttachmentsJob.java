@@ -34,7 +34,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-@ConditionalOnProperty("app.attachments.deleteUnbound")
+@ConditionalOnProperty("app.attachments.delete-unbound")
 @JobDescription("Удаление мусорных вложений, для которых нет связей с объектами системы")
 @RequiredArgsConstructor
 public class DeleteUnboundAttachmentsJob extends AbstractFixedDelayJob<EmptyJobParams>
@@ -67,7 +67,7 @@ public class DeleteUnboundAttachmentsJob extends AbstractFixedDelayJob<EmptyJobP
 			}
 			catch (Exception e)
 			{
-				log.info(String.format("Failed to delete unbound attachment '%s'.", attachmentId), e);
+				log.info("Failed to delete unbound attachment '{}'.", attachmentId, e);
 			}
 		}
 

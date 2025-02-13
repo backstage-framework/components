@@ -94,7 +94,7 @@ public class JobManager
 				.filter(jobClass::isInstance)
 				.findFirst()
 				.map(it -> (AbstractJob<P>) it)
-				.orElseThrow(() -> new ObjectNotFoundException(AbstractJob.class, jobClass.getSimpleName()));
+				.orElseThrow(() -> new ObjectNotFoundException(jobClass, jobClass.getSimpleName()));
 
 		if (params == null)
 		{
