@@ -16,8 +16,6 @@
 
 package com.backstage.app.audit.model.dto;
 
-import com.backstage.app.audit.model.domain.AuditPropertiesField;
-import com.backstage.app.audit.model.domain.AuditPropertiesProperty;
 import com.backstage.app.model.other.date.DateConstants;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -48,8 +46,8 @@ public class AuditEvent implements Serializable
 	private boolean success;
 
 	@Schema(description = "Изменённые поля/атрибуты объекта")
-	private List<AuditPropertiesField> fields = new ArrayList<>();
+	private List<AuditEventField> fields = new ArrayList<>();
 
 	@Schema(description = "Дополнительные параметры события")
-	private List<AuditPropertiesProperty> properties = new ArrayList<>();
+	private List<AuditEventProperty> properties = new ArrayList<>();
 }

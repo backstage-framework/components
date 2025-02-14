@@ -1,3 +1,7 @@
+## 5.1.14 - 2025-02-14
+### Audit
+- Изменена модель хранения аудита.
+
 ## 5.1.13 - 2025-02-13
 ### Attachments
 - Восстановлена работа DeleteUnboundAttachmentsJob и CheckAttachmentsJob.

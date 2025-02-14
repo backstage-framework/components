@@ -1,5 +1,5 @@
-/*
- *    Copyright 2019-2025 the original author or authors.
+	/*
+ *    Copyright 2019-2024 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -14,22 +14,22 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.audit.model.domain;
+package com.backstage.app.audit.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuditPropertiesProperty implements Serializable
+public class AuditEventField
 {
-	private String key;
+	private String name;
 
-	private String value;
+	private String oldValue;
+
+	private String newValue;
 }
