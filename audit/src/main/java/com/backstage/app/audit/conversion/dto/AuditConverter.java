@@ -19,6 +19,8 @@ package com.backstage.app.audit.conversion.dto;
 import com.backstage.app.audit.configuration.conditional.ConditionalOnAudit;
 import com.backstage.app.audit.model.domain.Audit;
 import com.backstage.app.audit.model.dto.AuditEvent;
+import com.backstage.app.audit.model.dto.AuditEventField;
+import com.backstage.app.audit.model.dto.AuditEventProperty;
 import com.backstage.app.conversion.dto.AbstractConverter;
 import org.springframework.stereotype.Component;
 
@@ -38,8 +40,31 @@ public class AuditConverter extends AbstractConverter<Audit, AuditEvent>
 		target.setObjectId(source.getObjectId());
 		target.setDate(source.getDate().atZone(ZoneId.systemDefault()));
 		target.setSuccess(source.isSuccess());
-		target.setFields(source.getProperties().getFields());
-		target.setProperties(source.getProperties().getProperties());
+
+		var sourceProperties = source.getProperties();
+
+		var fields = sourceProperties.getFields()
+				.entrySet()
+				.stream()
+				.map(field -> new AuditEventField(
+						field.getKey(),
+						field.getValue().getOldValue(),
+						field.getValue().getNewValue()
+				))
+				.toList();
+
+		target.setFields(fields);
+
+		var properties = sourceProperties.getProperties()
+						.entrySet()
+						.stream()
+						.map(property -> new AuditEventProperty(
+								property.getKey(),
+								property.getValue()
+						))
+						.toList();
+
+		target.setProperties(properties);
 
 		return target;
 	}

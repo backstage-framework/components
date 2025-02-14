@@ -14,22 +14,20 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.audit.model.domain;
+package com.backstage.app.audit.model.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.io.Serializable;
-
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AuditPropertiesField implements Serializable
+public class AuditEventProperty
 {
-	private String oldValue;
+	private String key;
 
-	private String newValue;
+	private String value;
 }
