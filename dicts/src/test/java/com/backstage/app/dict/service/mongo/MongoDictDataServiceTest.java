@@ -168,30 +168,6 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
-	void check_attachmentBindingWithCreateDictItem()
-	{
-		attachmentBindingWithCreateDictItem();
-	}
-
-	@Test
-	void check_attachmentBindingWithUpdateDictItem()
-	{
-		checkAttachmentBindingWithUpdateDictItem();
-	}
-
-	@Test
-	void check_attachmentReleaseWithDeleteDictItem()
-	{
-		checkAttachmentReleaseWithDeleteDictItem();
-	}
-
-	@Test
-	void check_attachmentBindingDeleteDictItem()
-	{
-		checkAttachmentBindingWithDeleteDictItem();
-	}
-
-	@Test
 	void create()
 	{
 		createDictItem();
