@@ -134,14 +134,24 @@ public class DictsDDLProvider implements InitializingBean
 			{
 				var versions = migrationByName.keySet().stream().collect(Collectors.groupingBy(MigrationUtils::parseVersion, Collectors.mapping(Function.identity(), Collectors.toList())));
 
-				versions.values().stream().filter(it -> it.size() > 1).findFirst().ifPresent(MigrationHasSameVersionException::new);
+				var duplicate = versions.values().stream()
+						.filter(it -> it.size() > 1)
+						.findFirst();
 
-				var existingMigrations = versionSchemeBackend.findAll().stream().collect(Collectors.toMap(VersionScheme::getScript, Function.identity()));
+				if (duplicate.isPresent())
+				{
+					throw new MigrationHasSameVersionException(duplicate.get());
+				}
 
-				var appliedMigrations = migrationByName.entrySet().stream().sorted(MigrationUtils.versionComparator()).filter(entry -> applyMigration(entry, existingMigrations)).toList();
+				var existingMigrations = versionSchemeBackend.findAll().stream()
+						.collect(Collectors.toMap(VersionScheme::getScript, Function.identity()));
 
-				log.info("Применено миграций: {}.", appliedMigrations.size());
-				log.info("Проверено миграций: {}.", migrationByName.size());
+				var appliedMigrations = migrationByName.entrySet().stream()
+						.sorted(MigrationUtils.versionComparator())
+						.filter(entry -> applyMigration(entry, existingMigrations))
+						.toList();
+
+				log.info("Миграций применено: {}, проверено: {}.", appliedMigrations.size(), migrationByName.size());
 			}
 		}
 		catch (Exception e)

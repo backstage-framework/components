@@ -101,24 +101,18 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 	@Override
 	public DictEnum createEnum(Dict dict, DictEnum dictEnum)
 	{
-		addTransactionData(null, true);
-
 		return transactionWithResult(() -> createdEnum(dict, dictEnum), dict.getId(), EnumCreatedException::new);
 	}
 
 	@Override
 	public DictEnum updateEnum(Dict dict, DictEnum dictEnum)
 	{
-		addTransactionData(null, true);
-
 		return transactionWithResult(() -> updatedEnum(dict, dictEnum), dict.getId(), dictEnum.getId(), EnumUpdatedException::new);
 	}
 
 	@Override
 	public void deleteEnum(Dict dict, String enumId)
 	{
-		addTransactionData(null, true);
-
 		transactionWithoutResult(() -> deleteEnum(dict), dict.getId(), enumId, EnumDeletedException::new);
 	}
 

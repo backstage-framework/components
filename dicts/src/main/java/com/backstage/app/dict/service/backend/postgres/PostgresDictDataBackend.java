@@ -212,16 +212,12 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	@Override
 	public DictItem create(Dict dict, DictItem dictItem)
 	{
-		addTransactionData(dict, false);
-
 		return transactionWithResult(() -> createItem(dict, dictItem), dict.getId(), DictItemCreatedException::new);
 	}
 
 	@Override
 	public List<DictItem> createMany(Dict dict, List<DictItem> dictItems)
 	{
-		addTransactionData(dict, false);
-
 		var dictId = dict.getId();
 
 		return transactionWithResult(() -> createItems(dict, dictItems), dictId, DictItemCreatedException::new);
@@ -230,8 +226,6 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	@Override
 	public DictItem update(Dict dict, String itemId, DictItem dictItem, long version)
 	{
-		addTransactionData(dict, false);
-
 		var dictId = dict.getId();
 
 		return transactionWithResult(() -> updateItem(dict, itemId, dictItem), dictId, itemId, DictItemUpdatedException::new);
@@ -240,16 +234,12 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	@Override
 	public void delete(Dict dict, DictItem dictItem)
 	{
-		addTransactionData(dict, false);
-
 		transactionWithoutResult(() -> deleteItem(dict, dictItem), dict.getId(), dictItem.getId(), DictItemDeletedException::new);
 	}
 
 	@Override
 	public void deleteAll(Dict dict, List<DictItem> dictItems)
 	{
-		addTransactionData(dict, false);
-
 		transactionWithoutResult(() -> deleteItems(dict, dictItems), dict.getId(), String.join(", ", dictItems.stream().map(DictItem::getId).toList()), DictItemDeletedException::new);
 	}
 
