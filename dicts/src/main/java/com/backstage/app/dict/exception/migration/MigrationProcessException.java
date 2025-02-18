@@ -22,6 +22,6 @@ public class MigrationProcessException extends MigrationException
 {
 	public MigrationProcessException(Throwable cause)
 	{
-		super(DictsStatusCodeImpl.MIGRATION_PROCESS_UNKNOWN_ERROR, cause);
+		super(DictsStatusCodeImpl.MIGRATION_PROCESS_ERROR, cause);
 	}
 }

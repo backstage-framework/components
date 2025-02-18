@@ -69,18 +69,12 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	@Override
 	public Dict createDictScheme(Dict dict)
 	{
-		var created = transactionWithResult(() -> createdDictScheme(dict), dict.getId(), DictCreatedException::new);
-
-		addTransactionData(dict, true);
-
-		return created;
+		return transactionWithResult(() -> createdDictScheme(dict), dict.getId(), DictCreatedException::new);
 	}
 
 	@Override
 	public Dict updateDictScheme(Dict updatedDict)
 	{
-		addTransactionData(updatedDict, true);
-
 		var dictId = updatedDict.getId();
 
 		return transactionWithResult(() -> updatedDictScheme(dictId, updatedDict), dictId, DictUpdatedException::new);
@@ -125,40 +119,30 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	@Override
 	public DictField renameDictField(Dict dict, String oldFieldId, DictField field)
 	{
-		addTransactionData(dict, true);
-
 		return transactionWithResult(() -> renamedField(dict, oldFieldId, field), dict.getId(), oldFieldId, FieldUpdatedException::new);
 	}
 
 	@Override
 	public DictConstraint createConstraint(Dict dict, DictConstraint constraint)
 	{
-		addTransactionData(dict, true);
-
 		return transactionWithResult(() -> createdConstraint(dict, constraint), dict.getId(), ConstraintCreatedException::new);
 	}
 
 	@Override
 	public void deleteConstraint(Dict dict, String id)
 	{
-		addTransactionData(dict, true);
-
 		transactionWithoutResult(() -> deleteDictConstraint(dict, id), dict.getId(), id, ConstraintDeletedException::new);
 	}
 
 	@Override
 	public DictIndex createIndex(Dict dict, DictIndex index)
 	{
-		addTransactionData(dict, true);
-
 		return transactionWithResult(() -> createdIndex(dict, index), dict.getId(), IndexCreatedException::new);
 	}
 
 	@Override
 	public void deleteIndex(Dict dict, String id)
 	{
-		addTransactionData(dict, true);
-
 		transactionWithoutResult(() -> deleteDictIndex(id), dict.getId(), id, IndexDeletedException::new);
 	}
 

@@ -24,6 +24,6 @@ public class MigrationHasSameVersionException extends MigrationException
 {
 	public MigrationHasSameVersionException(List<String> migrations)
 	{
-		super(DictsStatusCodeImpl.MIGRATIONS_HAS_SAME_VERSION, "Миграции %s".formatted(String.join(", ", migrations)));
+		super(DictsStatusCodeImpl.MIGRATIONS_HAS_SAME_VERSION, String.join(", ", migrations));
 	}
 }

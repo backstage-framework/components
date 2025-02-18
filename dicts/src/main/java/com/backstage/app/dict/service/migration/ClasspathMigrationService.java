@@ -24,10 +24,10 @@ import com.backstage.app.dict.service.ddl.Interpreter;
 import com.backstage.app.dict.service.ddl.SqlParser;
 import com.backstage.app.dict.service.validation.ClasspathMigrationValidationService;
 import com.backstage.app.dict.utils.MigrationUtils;
+import com.backstage.app.utils.transactional.TransactionalExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.Map;
@@ -38,6 +38,8 @@ import java.util.UUID;
 @RequiredArgsConstructor
 public class ClasspathMigrationService
 {
+	private final TransactionalExecutor transactionalExecutor;
+
 	private final SqlParser sqlParser;
 	private final Interpreter interpreter;
 
@@ -47,7 +49,6 @@ public class ClasspathMigrationService
 
 	private final ClasspathMigrationValidationService migrationValidationService;
 
-	@Transactional
 	public void migrate(Map.Entry<String, String> migration)
 	{
 		var migrationName = migration.getKey();
@@ -55,26 +56,28 @@ public class ClasspathMigrationService
 
 		try
 		{
-			transactionProvider.begin();
+			transactionalExecutor.execute(() -> {
+				transactionProvider.begin();
 
-			var expressions = sqlParser.parse(migration.getValue());
+				var expressions = sqlParser.parse(migration.getValue());
 
-			migrationValidationService.validateMigration(migrationPath, expressions);
+				migrationValidationService.validateMigration(migrationPath, expressions);
 
-			interpreter.execute(expressions);
+				interpreter.execute(expressions);
 
-			versionSchemeBackend.saveVersionScheme(
-					VersionScheme.builder()
-							.id(String.valueOf(UUID.randomUUID().getLeastSignificantBits()))
-							.checksum(MigrationUtils.getFileHash(migration.getValue()))
-							.installed(LocalDateTime.now())
-							.script(migrationPath)
-							.version(MigrationUtils.parseVersion(migrationPath))
-							.build());
+				versionSchemeBackend.saveVersionScheme(
+						VersionScheme.builder()
+								.id(String.valueOf(UUID.randomUUID().getLeastSignificantBits()))
+								.checksum(MigrationUtils.getFileHash(migration.getValue()))
+								.installed(LocalDateTime.now())
+								.script(migrationPath)
+								.version(MigrationUtils.parseVersion(migrationPath))
+								.build());
 
-			transactionProvider.commit();
+				transactionProvider.commit();
 
-			log.info("Миграция '{}' применена успешно.", migrationName);
+				log.info("Миграция '{}' применена успешно.", migrationName);
+			});
 		}
 		catch (Exception e)
 		{

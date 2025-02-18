@@ -17,11 +17,9 @@
 package com.backstage.app.dict.service.backend.postgres;
 
 import com.backstage.app.dict.configuration.annotation.DictsPostgresJdbcTemplate;
-import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.exception.BiFunctionException;
 import com.backstage.app.dict.exception.TriFunctionException;
 import com.backstage.app.dict.model.postgres.backend.PostgresWord;
-import com.backstage.app.dict.service.migration.DictTransactionProvider;
 import org.apache.commons.text.StringSubstitutor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -45,15 +43,7 @@ public abstract class AbstractPostgresBackend
 	protected PostgresEngine postgresEngine;
 
 	@Autowired
-	protected DictTransactionProvider dictTransactionProvider;
-
-	@Autowired
 	private PostgresReservedKeyword reservedKeywords;
-
-	protected void addTransactionData(Dict dict, boolean schemeUsed)
-	{
-		dictTransactionProvider.addDictTransactionItem(dict, schemeUsed);
-	}
 
 	protected <F, E extends Throwable, T extends Throwable> void transactionWithoutResult(Runnable runnable, F dictId, BiFunctionException<F, E, T> exception)
 	{

@@ -52,10 +52,8 @@ public class DictsStorageDDLProvider implements DDLProvider
 	{
 		var engine = engines.stream()
 				.filter(it -> StringUtils.equalsAny(it.getDictEngine().getName(), dictsProperties.getStorage()))
-				.toList()
-				.stream()
 				.findFirst()
-				.orElseThrow(() -> new EngineException("An engine equal to the engine from the storage property doesn't exists."));
+				.orElseThrow(() -> new EngineException("Cannot find engine with type '%s'.".formatted(dictsProperties.getStorage())));
 
 		engine.createDict();
 		engine.createVersionScheme();
