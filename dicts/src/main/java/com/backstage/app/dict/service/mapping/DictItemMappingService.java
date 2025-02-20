@@ -171,6 +171,11 @@ public class DictItemMappingService
 		{
 			try
 			{
+				if (s.isBlank())
+				{
+					return null;
+				}
+
 				return objectMapper.readValue(s, Map.class);
 			}
 			catch (JsonProcessingException e)
@@ -186,10 +191,15 @@ public class DictItemMappingService
 				return o;
 			}
 
-			if (o instanceof String)
+			if (o instanceof String s)
 			{
 				try
 				{
+					if (s.isBlank())
+					{
+						return null;
+					}
+
 					return JsonUtils.toObject(o, GeoJsonObject.class);
 				}
 				catch (Exception e)

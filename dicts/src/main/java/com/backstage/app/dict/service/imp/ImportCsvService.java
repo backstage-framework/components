@@ -76,7 +76,7 @@ public class ImportCsvService implements ImportService
 					.setDelimiter(',')
 					.setHeader()
 					.setSkipHeaderRecord(true)
-					.build();
+					.get();
 
 			var parser = format.parse(reader);
 
