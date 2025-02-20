@@ -16,60 +16,101 @@
 
 package com.backstage.app.dict.service.export;
 
+import com.backstage.app.dict.api.domain.DictFieldType;
+import com.backstage.app.dict.constant.ServiceFieldConstants;
+import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.backstage.app.dict.service.DictService;
+import com.backstage.app.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.jooq.DataType;
+import org.jooq.SQLDialect;
+import org.jooq.conf.ParamType;
+import org.jooq.impl.DSL;
+import org.jooq.impl.DefaultDSLContext;
+import org.jooq.impl.SQLDataType;
 import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class ExportSqlService implements ExportService
 {
-	private static final String SQL_INSERT_TEMPLATE = "INSERT INTO %s (%s) VALUES (%s);";
-
-	private final ObjectMapper objectMapper;
+	private final DictService dictService;
 
 	public byte[] export(String dictId, List<DictItem> items, String userId)
 	{
-		return items.stream()
-				.map(DictItem::getData)
-				.map(data -> SQL_INSERT_TEMPLATE.formatted(dictId, mapDictKeys(data), mapDictData(data)))
-				.collect(Collectors.joining("\n"))
-				.getBytes(StandardCharsets.UTF_8);
+		var dict = dictService.getById(dictId);
+		var dictFields = dict.getFields().stream()
+				.filter(field -> !ServiceFieldConstants.HISTORY.equals(field.getId()))
+				.toList();
+
+		var context = new DefaultDSLContext(SQLDialect.POSTGRES);
+		var columns = dictFields.stream().map(field -> DSL.field(field.getId(), mapFieldType(field))).toList();
+
+		List<String> result = new ArrayList<>();
+
+		result.add(context.createTable(dictId).columns(columns).getSQL());
+
+		items.stream()
+				.map(item -> context
+						.insertInto(DSL.table(dictId), columns)
+						.values(dictFields.stream().map(field -> mapValue(field, getFieldValue(field, item))).toList())
+						.getSQL(ParamType.INLINED))
+				.forEach(result::add);
+
+		return String.join(";\n", result).getBytes(StandardCharsets.UTF_8);
 	}
 
-	private String mapDictKeys(Map<String, Object> dict)
+	private Object getFieldValue(DictField field, DictItem item)
 	{
-		return String.join(", ", dict.keySet());
-	}
-
-	private String mapDictData(Map<String, Object> dict)
-	{
-		return dict.values().stream()
-				.map(this::mapElement)
-				.collect(Collectors.joining(", "));
-	}
-
-	private String mapElement(Object el)
-	{
-		try
+		return switch (field.getId())
 		{
-			return objectMapper/*.configure(JsonGenerator.Feature.WRITE_NUMBERS_AS_STRINGS, true)*/
-					.writer()
-					.writeValueAsString(el)
-					.replace("\"", "'");
-		}
-		catch (JsonProcessingException e)
+			case ServiceFieldConstants.ID -> item.getId();
+			case ServiceFieldConstants.CREATED -> item.getCreated();
+			case ServiceFieldConstants.UPDATED -> item.getUpdated();
+			case ServiceFieldConstants.DELETED -> item.getDeleted();
+			case ServiceFieldConstants.HISTORY -> item.getHistory();
+			case ServiceFieldConstants.VERSION -> item.getVersion();
+
+			default -> item.getData().get(field.getId());
+		};
+	}
+
+	private DataType<?> mapFieldType(DictField field)
+	{
+		DataType<?> type = switch (field.getType())
 		{
-			return null;
+			case BOOLEAN -> SQLDataType.BOOLEAN;
+			case INTEGER -> SQLDataType.BIGINT;
+			case DATE -> SQLDataType.DATE;
+			case TIMESTAMP -> SQLDataType.TIMESTAMPWITHTIMEZONE;
+			case DECIMAL -> SQLDataType.DECIMAL;
+			case GEO_JSON, JSON -> SQLDataType.JSONB;
+
+			default -> SQLDataType.VARCHAR;
+		};
+
+		if (field.isMultivalued())
+		{
+			type = type.getArrayDataType();
 		}
+
+		return type;
+	}
+
+	private Object mapValue(DictField dictField, Object value)
+	{
+		if (dictField.getType() == DictFieldType.JSON || dictField.getType() == DictFieldType.GEO_JSON)
+		{
+			return JsonUtils.toJson(value);
+		}
+
+		return value;
 	}
 }
