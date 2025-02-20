@@ -362,6 +362,6 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		filterClause.addSelectClauses(dictAliasesRelation, selectClauses, requiredFields, queryContext, postgresPageable, dict, dictService);
 		filterClause.addJoinClauses(joinClauses, requiredFields, queryContext, postgresPageable, dict);
 		filterClause.addWhereClauses(whereClauses, queryContext);
-		filterClause.addOrderByClauses(orderByClauses, postgresPageable, dict);
+		filterClause.addOrderByClauses(dictAliasesRelation, orderByClauses, postgresPageable, dict);
 	}
 }

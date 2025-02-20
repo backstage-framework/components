@@ -42,7 +42,8 @@ import java.util.stream.Collectors;
 public class PostgresDictDataQueryClause
 {
 	private static final String DICT_ALIAS_KEY = "t";
-	private static final String SELECT_CLAUSE = "%s.%s as \"%s__%s\"";
+	private static final String SELECT_CLAUSE_REF = "\"%s__%s\"";
+	private static final String SELECT_CLAUSE = "%s.%s as ";
 	private static final String JOIN_CLAUSE = "left join %s.%s on %s.%s.%s = %s.%s";
 	private static final String ASCENDING_ID_ORDER_CLAUSE = "%s asc";
 
@@ -98,7 +99,7 @@ public class PostgresDictDataQueryClause
 							.getPostgresOrders()
 							.stream()
 							.map(PostgresOrder::getPostgresDictFieldName)
-							.map(PostgresDictFieldName::getWordJoint)
+							.map(it -> selectClause(dictAliasesRelation, it))
 							.collect(Collectors.toCollection(LinkedHashSet::new))
 			);
 		}
@@ -156,7 +157,7 @@ public class PostgresDictDataQueryClause
 		}
 	}
 
-	public void addOrderByClauses(LinkedHashSet<String> orderByClauses, PostgresPageable postgresPageable, Dict dict)
+	public void addOrderByClauses(BidiMap<String, String> dictAliasesRelation, LinkedHashSet<String> orderByClauses, PostgresPageable postgresPageable, Dict dict)
 	{
 		if (postgresPageable != null && postgresPageable.isPaged())
 		{
@@ -169,7 +170,7 @@ public class PostgresDictDataQueryClause
 			var orders = postgresPageable.getPostgresSort()
 					.getPostgresOrders()
 					.stream()
-					.map(it -> String.join(" ", it.getPostgresDictFieldName().getWordJoint(), it.getDirection().name()))
+					.map(it -> String.join(" ", selectClauseRef(dictAliasesRelation, it.getPostgresDictFieldName()), it.getDirection().name()))
 					.toList();
 
 			orderByClauses.addAll(orders);
@@ -229,13 +230,28 @@ public class PostgresDictDataQueryClause
 
 	private String selectClause(BidiMap<String, String> dictAliasesRelation, String maybeQuotedDictId, String originalDictId, String originalFieldId)
 	{
-		var dictAlias = dictAliasesRelation.computeIfAbsent(originalDictId.toLowerCase(), k -> {
+		return SELECT_CLAUSE.formatted(maybeQuotedDictId, escapeName(originalFieldId)) + selectClauseRef(dictAliasesRelation, originalDictId, originalFieldId);
+	}
+
+	private String selectClauseRef(BidiMap<String, String> dictAliasesRelation, PostgresDictFieldName postgresDictFieldName)
+	{
+		return selectClauseRef(dictAliasesRelation, postgresDictFieldName.getWordDictId().getOriginalWord(), postgresDictFieldName.getWordFieldId().getOriginalWord());
+	}
+
+	private String selectClauseRef(BidiMap<String, String> dictAliasesRelation, String originalDictId, String originalFieldId)
+	{
+		var dictAlias = dictAlias(dictAliasesRelation, originalDictId);
+
+		return SELECT_CLAUSE_REF.formatted(dictAlias, originalFieldId.toLowerCase());
+	}
+
+	private String dictAlias(BidiMap<String, String> dictAliasesRelation, String originalDictId)
+	{
+		return dictAliasesRelation.computeIfAbsent(originalDictId.toLowerCase(), k -> {
 			var tableAliasesRelationIncrementedSize = dictAliasesRelation.size() + 1;
 
 			return DICT_ALIAS_KEY + tableAliasesRelationIncrementedSize;
 		});
-
-		return SELECT_CLAUSE.formatted(maybeQuotedDictId, escapeName(originalFieldId), dictAlias, originalFieldId.toLowerCase());
 	}
 
 	private String joinClause(String dictId, String fieldId, String refDictId, String refFieldId)
