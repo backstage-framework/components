@@ -33,4 +33,7 @@ public class ExportDictRequest
 
 	@Schema(description = "Частичный экспорт из справочника только указанных элементов")
 	private List<String> itemIds;
+
+	@Schema(description = "Частичный экспорт из справочника по фильтру (игнорируется при задании itemIds)")
+	private String query;
 }

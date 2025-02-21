@@ -31,8 +31,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public abstract class CommonDictExportServiceTest extends CommonTest
@@ -104,12 +103,71 @@ public abstract class CommonDictExportServiceTest extends CommonTest
 	}
 
 	@Test
-	public void exportCvsNullItemsIds()
+	public void exportCvsNullItemsIds() throws IOException
 	{
 		var exportedResource = dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, null);
 
 		assertTrue(exportedResource.getResource().exists());
 		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
+
+		try (var inputStream = exportedResource.getResource().getInputStream())
+		{
+			var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+			assertTrue(StringUtils.hasText(data));
+			assertTrue(data.contains("true"));
+		}
+	}
+
+	@Test
+	public void exportCsvByItemIdsOverQuery() throws IOException
+	{
+		var exportedResource = dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, List.of("1"), "stringField = 'string'");
+
+		assertTrue(exportedResource.getResource().exists());
+		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
+
+		try (var inputStream = exportedResource.getResource().getInputStream())
+		{
+			var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+			assertTrue(StringUtils.hasText(data));
+			assertFalse(data.contains("true"));
+		}
+	}
+
+	@Test
+	public void exportCsvByQueryMatch() throws IOException
+	{
+		var exportedResource = dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, null, "stringField = 'string'");
+
+		assertTrue(exportedResource.getResource().exists());
+		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
+
+		try (var inputStream = exportedResource.getResource().getInputStream())
+		{
+			var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+			assertTrue(StringUtils.hasText(data));
+			assertTrue(data.contains("true"));
+		}
+	}
+
+	@Test
+	public void exportCsvByQueryDoesntMatch() throws IOException
+	{
+		var exportedResource = dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, null, "stringField = 'value'");
+
+		assertTrue(exportedResource.getResource().exists());
+		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
+
+		try (var inputStream = exportedResource.getResource().getInputStream())
+		{
+			var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+			assertTrue(StringUtils.hasText(data));
+			assertFalse(data.contains("true"));
+		}
 	}
 
 	@Test

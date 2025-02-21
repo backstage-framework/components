@@ -195,7 +195,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 	@PostMapping("/{dictId}/export")
 	public ResponseEntity<Resource> export(@PathVariable String dictId, @RequestBody @Valid ExportDictRequest request)
 	{
-		var exportedResource = dictExportService.exportToResource(dictId, request.getFormat(), request.getItemIds());
+		var exportedResource = dictExportService.exportToResource(dictId, request.getFormat(), request.getItemIds(), request.getQuery());
 
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, HttpUtils.buildContentDisposition(false, exportedResource.getFilename(), exportedResource.getFilename()))

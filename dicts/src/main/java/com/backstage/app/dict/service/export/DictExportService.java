@@ -47,10 +47,15 @@ public class DictExportService
 
 	public ExportedResource exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds)
 	{
-		return exportToResource(dictId, format, itemIds, SecurityUtils.getCurrentUserId());
+		return exportToResource(dictId, format, itemIds, null);
 	}
 
-	public ExportedResource exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds, String userId)
+	public ExportedResource exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds, String query)
+	{
+		return exportToResource(dictId, format, itemIds, query, SecurityUtils.getCurrentUserId());
+	}
+
+	public ExportedResource exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds, String query, String userId)
 	{
 		var dict = dictService.getById(dictId);
 
@@ -58,7 +63,7 @@ public class DictExportService
 
 		var items = (itemIds != null && !itemIds.isEmpty())
 				? dictDataService.getByIds(dictId, itemIds, userId)
-				: dictDataService.getByFilter(dictId, List.of(), null, Pageable.unpaged(), userId).getContent();
+				: dictDataService.getByFilter(dictId, List.of(), query, Pageable.unpaged(), userId).getContent();
 
 		byte[] exportedData = getExportService(format).export(dictId, items, userId);
 
