@@ -30,6 +30,7 @@ import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.index.IndexAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.index.IndexNotFoundException;
+import com.backstage.app.dict.service.advice.DictServiceAdvice;
 import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.DictSchemeBackend;
 import com.backstage.app.dict.service.lock.DictLockService;
@@ -68,19 +69,27 @@ public class DictService
 
 	private final DictItemMappingService dictItemMappingService;
 
+	private final List<DictServiceAdvice> serviceAdviceList;
+
 	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICTS, sync = true)
 	public Dict getById(String id)
 	{
+		serviceAdviceList.forEach(it -> it.handleGetById(id));
+
 		return dictBackend.getDictById(id);
 	}
 
 	public List<Dict> getAll()
 	{
+		serviceAdviceList.forEach(DictServiceAdvice::handleGetAll);
+
 		return dictBackend.getAllDicts();
 	}
 
 	public boolean existsById(String id)
 	{
+		serviceAdviceList.forEach(it -> it.handleExistsById(id));
+
 		return dictBackend.existsById(id);
 	}
 
@@ -92,6 +101,8 @@ public class DictService
 		{
 			throw new DictAlreadyExistsException(dict.getId());
 		}
+
+		serviceAdviceList.forEach(it -> it.handleBeforeCreate(dict));
 
 		if (dict.getEngine() == null)
 		{
@@ -111,6 +122,8 @@ public class DictService
 
 		dictLockService.addLock(savedDict.getId());
 
+		serviceAdviceList.forEach(it -> it.handleAfterCreate(dict));
+
 		return savedDict;
 	}
 
@@ -122,6 +135,8 @@ public class DictService
 	public Dict update(String dictId, Dict dict)
 	{
 		var actualDict = getById(dictId);
+
+		serviceAdviceList.forEach(it -> it.handleBeforeUpdate(actualDict, dict));
 
 		//TODO: разработать обновление engine через api
 		if (dict.getEngine() == null)
@@ -164,7 +179,11 @@ public class DictService
 		updated.setIndexes(actualIndexes);
 		updated.setConstraints(actualConstraints);
 
-		return dictBackend.updateDict(updated);
+		var updateDict = dictBackend.updateDict(updated);
+
+		serviceAdviceList.forEach(it -> it.handleAfterUpdate(updateDict));
+
+		return updateDict;
 	}
 
 	@Transactional
@@ -173,9 +192,11 @@ public class DictService
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	public void delete(String dictId)
 	{
-		dictValidationService.validateDrop(dictId);
-
 		var dict = getById(dictId);
+
+		serviceAdviceList.forEach(it -> it.handleDelete(dict));
+
+		dictValidationService.validateDrop(dictId);
 
 		schemeBackend(dict).deleteDictSchemeById(dictId);
 		dictBackend.deleteById(dictId);
@@ -187,6 +208,8 @@ public class DictService
 	public DictField renameField(String dictId, String fieldId, String newFieldId, String newFieldName)
 	{
 		var dict = getById(dictId);
+
+		serviceAdviceList.forEach(it -> it.handleRenameField(dict, fieldId, newFieldId, newFieldName));
 
 		var field = dict.getFields()
 				.stream()
@@ -227,6 +250,8 @@ public class DictService
 	{
 		var dict = getById(dictId);
 
+		serviceAdviceList.forEach(it -> it.handleCreateConstraint(dict, constraint));
+
 //		TODO: Валидация - в validationService
 		var dictConstraintAlreadyExistsCondition = dict.getConstraints()
 				.stream()
@@ -265,6 +290,8 @@ public class DictService
 	{
 		var dict = getById(dictId);
 
+		serviceAdviceList.forEach(it -> it.handleDeleteConstraint(dict, constraintId));
+
 		var constraintNotFoundCondition = dict.getConstraints()
 				.stream()
 				.noneMatch(it -> it.getId().equals(constraintId));
@@ -295,6 +322,8 @@ public class DictService
 	public DictIndex createIndex(String dictId, DictIndex index)
 	{
 		var dict = getById(dictId);
+
+		serviceAdviceList.forEach(it -> it.handleCreateIndex(dict, index));
 
 //		TODO: Валидация - в validationService
 		var indexAlreadyExistsCondition = dict.getIndexes()
@@ -334,6 +363,8 @@ public class DictService
 	{
 		var dict = getById(dictId);
 
+		serviceAdviceList.forEach(it -> it.handleDeleteIndex(dict, indexId));
+
 		var indexNotFoundCondition = dict.getIndexes()
 				.stream()
 				.noneMatch(it -> it.getId().equals(indexId));
@@ -365,6 +396,8 @@ public class DictService
 	{
 		var dict = getById(dictId);
 
+		serviceAdviceList.forEach(it -> it.handleCreateEnum(dict, dictEnum));
+
 		var exists = dict.getEnums()
 				.stream()
 				.anyMatch(it -> it.getId().equals(dictEnum.getId()));
@@ -389,6 +422,8 @@ public class DictService
 	{
 		var dict = getById(dictId);
 
+		serviceAdviceList.forEach(it -> it.handleUpdateEnum(dict, dictEnum));
+
 		incrementVersion(dict);
 
 		return dictBackend.updateEnum(dict, dictEnum);
@@ -400,6 +435,8 @@ public class DictService
 	public void deleteEnum(String dictId, String enumId)
 	{
 		var dict = getById(dictId);
+
+		serviceAdviceList.forEach(it -> it.handleDeleteEnum(dict, enumId));
 
 		var exists = dict.getEnums()
 				.stream()

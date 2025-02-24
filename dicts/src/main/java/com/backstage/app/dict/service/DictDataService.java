@@ -155,7 +155,7 @@ public class DictDataService
 				.filter(it -> it.getType() == DictFieldType.DICT)
 				.forEach(it -> dictPermissionService.checkViewPermission(dictService.getById(it.getDictRef().getDictId()), userId));
 
-		var internalSelectFields = selectFields.isEmpty()
+		var internalSelectFields = selectFields == null || selectFields.isEmpty()
 				? List.of("*")
 				: selectFields;
 
