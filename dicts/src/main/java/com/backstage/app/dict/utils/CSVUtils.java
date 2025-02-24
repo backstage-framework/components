@@ -41,6 +41,11 @@ public class CSVUtils
 	{
 		try
 		{
+			if (stringValue == null)
+			{
+				return new String[0];
+			}
+
 			var records = MULTI_VALUED_CELL_FORMAT.parse(new StringReader(stringValue)).getRecords();
 
 			if (!records.isEmpty())

@@ -21,13 +21,13 @@ import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.utils.CSVUtils;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.stereotype.Service;
 
@@ -74,7 +74,7 @@ public class ExportCsvService implements ExportService
 		return writeToByteArray(headers, data);
 	}
 
-	private String[] mapDictItem(List<DictField> dictFields, DictItem item)
+	private Object[] mapDictItem(List<DictField> dictFields, DictItem item)
 	{
 		var builder = Stream.builder()
 				.add(item.getId())
@@ -100,9 +100,7 @@ public class ExportCsvService implements ExportService
 				})
 				.forEach(builder::add);
 
-		return builder.build()
-				.map(String::valueOf)
-				.toArray(String[]::new);
+		return builder.build().toArray();
 	}
 
 	private Object normalizeValue(DictField field, Object value)
@@ -110,11 +108,11 @@ public class ExportCsvService implements ExportService
 		return field.getType() == DictFieldType.GEO_JSON ? JsonUtils.toJson(value) : value;
 	}
 
-	private byte[] writeToByteArray(List<String> headers, List<String[]> data)
+	private byte[] writeToByteArray(List<String> headers, List<Object[]> data)
 	{
 		try (var stream = new ByteArrayOutputStream();
 		     var streamWriter = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		     var writer = new CSVPrinter(streamWriter, CSVFormat.DEFAULT))
+		     var writer = new CSVPrinter(streamWriter, ImportCsvService.CSV_FORMAT))
 		{
 			writer.printRecord(headers);
 			writer.printRecords(data);
