@@ -25,6 +25,9 @@ import com.backstage.app.conversion.dto.AbstractConverter;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @ConditionalOnAudit
@@ -43,9 +46,10 @@ public class AuditConverter extends AbstractConverter<Audit, AuditEvent>
 
 		var sourceProperties = source.getProperties();
 
-		var fields = sourceProperties.getFields()
-				.entrySet()
+		var fields = Optional.ofNullable(sourceProperties.getFields())
+				.map(Map::entrySet)
 				.stream()
+				.flatMap(Set::stream)
 				.map(field -> new AuditEventField(
 						field.getKey(),
 						field.getValue().getOldValue(),
@@ -55,14 +59,15 @@ public class AuditConverter extends AbstractConverter<Audit, AuditEvent>
 
 		target.setFields(fields);
 
-		var properties = sourceProperties.getProperties()
-						.entrySet()
-						.stream()
-						.map(property -> new AuditEventProperty(
-								property.getKey(),
-								property.getValue()
-						))
-						.toList();
+		var properties = Optional.ofNullable(sourceProperties.getProperties())
+				.map(Map::entrySet)
+				.stream()
+				.flatMap(Set::stream)
+				.map(property -> new AuditEventProperty(
+						property.getKey(),
+						property.getValue()
+				))
+				.toList();
 
 		target.setProperties(properties);
 
