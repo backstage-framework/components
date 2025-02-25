@@ -78,7 +78,7 @@ public class AuditServiceTests extends AbstractTests
 	{
 		var actual = auditService.getByFilter(AuditFilter.builder().build(), Pageable.unpaged());
 
-		assertEquals(7, actual.getTotalElements());
+		assertEquals(8, actual.getTotalElements());
 	}
 
 	@Test

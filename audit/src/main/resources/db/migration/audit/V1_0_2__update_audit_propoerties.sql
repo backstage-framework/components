@@ -1,7 +1,7 @@
-alter table audit.audit rename column properties to properties2;
-alter table audit.audit add column properties jsonb;
+alter table audit rename column properties to properties2;
+alter table audit add column properties jsonb;
 
-update audit.audit set properties = (
+update audit set properties = (
 select
 	json_build_object(
 			'properties',
