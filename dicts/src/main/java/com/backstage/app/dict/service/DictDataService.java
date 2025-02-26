@@ -34,6 +34,7 @@ import com.backstage.app.dict.service.query.QueryParser;
 import com.backstage.app.dict.service.query.ast.QueryExpression;
 import com.backstage.app.dict.service.validation.DictDataValidationService;
 import com.backstage.app.exception.ObjectNotFoundException;
+import com.backstage.app.utils.ListUtils;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -175,13 +176,24 @@ public class DictDataService
 				.filter(it -> it.getType() == DictFieldType.DICT)
 				.forEach(it -> dictPermissionService.checkViewPermission(dictService.getById(it.getDictRef().getDictId()), userId));
 
-		var internalSelectFields = selectFields == null || selectFields.isEmpty()
-				? List.of("*")
-				: selectFields;
+		if (selectFields != null && !selectFields.isEmpty())
+		{
+			if (!selectFields.contains("*") && !selectFields.contains(ServiceFieldConstants.ID))
+			{
+				selectFields = ListUtils.copyAndAdd(selectFields, ServiceFieldConstants.ID);
+			}
+		}
+		else
+		{
+			selectFields = List.of("*");
+		}
 
-		serviceAdviceList.forEach(it -> it.handleGetByFilter(dict, internalSelectFields, filtersQuery, pageable));
+		for (var advice : serviceAdviceList)
+		{
+			advice.handleGetByFilter(dict, selectFields, filtersQuery, pageable);
+		}
 
-		var requiredFields = internalSelectFields.stream()
+		var requiredFields = selectFields.stream()
 				.map(dictFieldNameMappingService::mapDictFieldName)
 				.toList();
 
