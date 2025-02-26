@@ -203,13 +203,16 @@ public class PostgresDictDataQueryClause
 				.map(it -> selectClause(dictAliasesRelation, it.getQuotedIfKeyword(), it.getOriginalWord(), "id"))
 				.forEach(selectClauses::add);
 
-		postgresPageable.getPostgresSort()
-				.getPostgresOrders()
-				.stream()
-				.map(PostgresOrder::getPostgresDictFieldName)
-				.filter(it -> !dictId.equals(it.getWordDictId().getOriginalWord()))
-				.map(it -> selectClause(dictAliasesRelation, it, "id"))
-				.forEach(selectClauses::add);
+		if (postgresPageable != null && postgresPageable.isPaged())
+		{
+			postgresPageable.getPostgresSort()
+					.getPostgresOrders()
+					.stream()
+					.map(PostgresOrder::getPostgresDictFieldName)
+					.filter(it -> !dictId.equals(it.getWordDictId().getOriginalWord()))
+					.map(it -> selectClause(dictAliasesRelation, it, "id"))
+					.forEach(selectClauses::add);
+		}
 	}
 
 	private String selectClause(BidiMap<String, String> tableAliasesRelation, PostgresDictFieldName fieldName)
