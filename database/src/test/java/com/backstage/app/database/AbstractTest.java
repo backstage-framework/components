@@ -27,8 +27,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
-import org.testcontainers.images.builder.ImageFromDockerfile;
-import org.testcontainers.utility.DockerImageName;
 
 @SpringBootTest
 @EnableWebMvc
@@ -36,7 +34,9 @@ import org.testcontainers.utility.DockerImageName;
 @Import({JacksonAutoConfiguration.class})
 public class AbstractTest
 {
-	public static final String POSTGRES_IMAGE_NAME = "postgres:14";
+	public static final String POSTGRES_IMAGE_NAME = "postgres:16";
+
+	public static final String CLICKHOUSE_SECRET = "clickhouse";
 
 	@ClassRule
 	public static final PostgreSQLContainer<?> postgres;
@@ -49,7 +49,9 @@ public class AbstractTest
 		postgres = new PostgreSQLContainer<>(POSTGRES_IMAGE_NAME);
 		postgres.start();
 
-		clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:24.3.8");
+		clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server")
+				.withUsername(CLICKHOUSE_SECRET)
+				.withPassword(CLICKHOUSE_SECRET);
 		clickhouse.start();
 	}
 
@@ -67,23 +69,10 @@ public class AbstractTest
 
 			TestPropertyValues.of(
 					"app.clickhouse.host=" + clickhouse.getHost(),
-					"app.clickhouse.port=" + clickhouse.getFirstMappedPort()
+					"app.clickhouse.port=" + clickhouse.getFirstMappedPort(),
+					"app.clickhouse.username=" + CLICKHOUSE_SECRET,
+					"app.clickhouse.password=" + CLICKHOUSE_SECRET
 			).applyTo(configurableApplicationContext.getEnvironment());
 		}
-	}
-
-	private static DockerImageName buildCustomPgImage()
-	{
-		var customPostgresImage = new ImageFromDockerfile()
-				.withDockerfileFromBuilder(builder ->
-						builder
-								.from(POSTGRES_IMAGE_NAME)
-								.env("DEBIAN_FRONTEND", "noninteractive")
-								.run("apt-get update && apt-get install -y postgis postgresql-14-postgis-3 postgresql-14-partman --force-yes")
-								.cmd("/usr/local/bin/docker-entrypoint.sh", "postgres")
-								.build());
-
-		return DockerImageName.parse(customPostgresImage.get())
-				.asCompatibleSubstituteFor(PostgreSQLContainer.IMAGE);
 	}
 }

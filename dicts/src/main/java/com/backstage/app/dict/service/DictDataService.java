@@ -68,8 +68,6 @@ public class DictDataService
 	@Getter
 	private final List<DictDataServiceAdvice> serviceAdviceList;
 
-	//TODO: Провести рефакторинг
-	// создать апи для getDictById с проверкой секьюрити и валидацией.
 	public DictItem getById(String dictId, String itemId)
 	{
 		return getById(dictId, itemId, SecurityUtils.getCurrentUserId());
