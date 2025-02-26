@@ -134,6 +134,21 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	}
 
 	@Override
+	public Stream<DictItem> streamByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression)
+	{
+		var dictId = dict.getId();
+
+		var queryContext = mongoTranslator.process(dict, queryExpression);
+
+		var mongoClause = completedMongoClauses(requiredFields, new HashSet<>(), new Query(),
+				queryContext, new LinkedList<>(), Pageable.unpaged(), dictId);
+
+		// TODO: разобраться с формированием Query тут и в getByFilter.
+		return mongoTemplate.stream(mongoClause.getQuery().addCriteria(queryContext.getCriteria()), Document.class, dictId)
+				.map(document -> backendMapper.mapFrom(dictId, document));
+	}
+
+	@Override
 	public boolean existsById(Dict dict, String itemId)
 	{
 		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));

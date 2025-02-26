@@ -31,12 +31,14 @@ import com.backstage.app.dict.service.backend.DictDataBackend;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
 import com.backstage.app.dict.service.mapping.DictItemMappingService;
 import com.backstage.app.dict.service.query.QueryParser;
+import com.backstage.app.dict.service.query.ast.QueryExpression;
 import com.backstage.app.dict.service.validation.DictDataValidationService;
 import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.TriFunction;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -46,6 +48,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @Service
 @RequiredArgsConstructor
@@ -143,8 +146,27 @@ public class DictDataService
 		return getByFilter(dictId, selectFields, filtersQuery, pageable, SecurityUtils.getCurrentUserId());
 	}
 
-	//TODO: реализовать валидацию filtersQuery и маппинг в QueryExpression с учетом сопоставления констант с типом DictField
 	public Page<DictItem> getByFilter(String dictId, List<String> selectFields, String filtersQuery, Pageable pageable, String userId)
+	{
+		return fetchByFilter(dictId, selectFields, filtersQuery, pageable, userId,
+				(dict, requiredFields, query) ->
+						backend(dict).getByFilter(dict, requiredFields, queryParser.parse(filtersQuery), pageable));
+	}
+
+	public Stream<DictItem> streamByFilter(String dictId, List<String> selectFields, String filtersQuery)
+	{
+		return streamByFilter(dictId, selectFields, filtersQuery, SecurityUtils.getCurrentUserId());
+	}
+
+	public Stream<DictItem> streamByFilter(String dictId, List<String> selectFields, String filtersQuery, String userId)
+	{
+		return fetchByFilter(dictId, selectFields, filtersQuery, null, userId,
+				(dict, requiredFields, query) ->
+						backend(dict).streamByFilter(dict, requiredFields, query));
+	}
+
+	//TODO: реализовать валидацию filtersQuery и маппинг в QueryExpression с учетом сопоставления констант с типом DictField
+	private <T> T fetchByFilter(String dictId, List<String> selectFields, String filtersQuery, Pageable pageable, String userId, TriFunction<Dict, List<DictFieldName>, QueryExpression, T> itemProducer)
 	{
 		var dict = dictService.getById(dictId);
 
@@ -168,7 +190,7 @@ public class DictDataService
 		dictDataValidationService.validateSelectFields(dict, requiredFields);
 		dictDataValidationService.validatePageable(dict, pageable);
 
-		return backend(dict).getByFilter(dict, requiredFields, queryParser.parse(filtersQuery), pageable);
+		return itemProducer.apply(dict, requiredFields, queryParser.parse(filtersQuery));
 	}
 
 	public Page<String> getIdsByFilter(String dictId, String filtersQuery)

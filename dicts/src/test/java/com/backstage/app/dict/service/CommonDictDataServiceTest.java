@@ -20,6 +20,7 @@ import com.backstage.app.attachment.model.domain.Attachment;
 import com.backstage.app.attachment.service.AttachmentService;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
+import com.backstage.app.dict.common.TestPipeline;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
@@ -44,9 +45,7 @@ import org.assertj.core.api.ThrowingConsumer;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -224,14 +223,28 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var result = dictDataService.getDistinctValuesByFilter(TESTABLE_REF_DICT_ID, TESTABLE_DICT_ID + ".stringField", "");
 
-		assertEquals(result.size(), 6);
+		assertEquals(6, result.size());
 	}
 
 	protected void getDistinctValuesByFilterWithFilter()
 	{
 		var result = dictDataService.getDistinctValuesByFilter(TESTABLE_REF_DICT_ID, TESTABLE_DICT_ID + ".stringField", "integerField != null");
 
-		assertEquals(result.size(), 6);
+		assertEquals(6, result.size());
+	}
+
+	@Test
+	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
+	protected void streamByFilter()
+	{
+		var query = "stringField like 'string'";
+
+		try (var stream = dictDataService.streamByFilter(TESTABLE_REF_DICT_ID, List.of("*"), query))
+		{
+			var itemCount = dictDataService.getByFilter(TESTABLE_REF_DICT_ID, List.of("*"), query, PageRequest.of(0, 10)).getTotalElements();
+
+			assertEquals(itemCount, stream.count());
+		}
 	}
 
 	protected void getByFilterWithNullRefField()

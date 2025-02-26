@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface DictDataBackend extends Backend
 {
@@ -34,6 +35,8 @@ public interface DictDataBackend extends Backend
 	List<Object> getDistinctValuesByFilter(Dict dict, DictFieldName requiredField, QueryExpression queryExpression);
 
 	Page<DictItem> getByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression, Pageable pageable);
+
+	Stream<DictItem> streamByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression);
 
 	boolean existsById(Dict dict, String itemId);
 
