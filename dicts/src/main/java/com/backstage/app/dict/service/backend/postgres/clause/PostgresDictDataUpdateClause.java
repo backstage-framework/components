@@ -42,6 +42,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostgresDictDataUpdateClause
 {
+	private final DictService dictService;
+
 	private final PostgresReservedKeyword reservedKeyword;
 
 	public void addUpdateClause(String column, Object oldValue, Object newValue,
@@ -80,7 +82,7 @@ public class PostgresDictDataUpdateClause
 	public void addDictDataUpdateClause(Dict dict, Map<String, Object> oldData, Map<String, Object> newData,
 	                                    LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
 	{
-		var dictDataFields = DictService.getDataFieldsByDict(dict);
+		var dictDataFields = dictService.getDataFieldsByDict(dict);
 
 		var dataWordMap = dictDataFields.stream()
 				.map(DictField::getId)

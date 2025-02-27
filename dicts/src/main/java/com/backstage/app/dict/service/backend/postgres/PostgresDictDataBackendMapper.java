@@ -98,7 +98,7 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 			}
 
 			var dict = dictService.getById(dictId);
-			var dataFieldMap = DictService.getDataFieldsByDict(dict)
+			var dataFieldMap = dictService.getDataFieldsByDict(dict)
 					.stream()
 					.collect(Collectors.toMap(it -> it.getId().toLowerCase(), Function.identity()));
 

@@ -127,7 +127,7 @@ public class Interpreter
 		if (fieldIds.isEmpty())
 		{
 			fieldIds.addAll(
-					DictService.getDataFieldsByDict(dict)
+					dictService.getDataFieldsByDict(dict)
 							.stream()
 							.map(DictField::getId)
 							.toList());
@@ -155,8 +155,9 @@ public class Interpreter
 	private void execute(AlterTable alterTable)
 	{
 		var dict = dictService.getById(alterTable.getTable().getName());
-		var fields = dictService.getDataFieldsByDict(dict);
 		var dictId = dict.getId();
+
+		List<DictField> fields = new ArrayList<>(dictService.getDataFieldsByDict(dict));
 
 		if (alterTable.getOperation() instanceof AddTableColumnOperation addTableColumnOperation)
 		{

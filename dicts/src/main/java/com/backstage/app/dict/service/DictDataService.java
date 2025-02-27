@@ -276,7 +276,7 @@ public class DictDataService
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		var dictItem = dictItemMappingService.mapDictItem(dictDataItem, dict, DictService.getDataFieldsByDict(dict));
+		var dictItem = dictItemMappingService.mapDictItem(dictDataItem, dict, dictService.getDataFieldsByDict(dict));
 
 		for (var advice : serviceAdviceList)
 		{
@@ -284,7 +284,7 @@ public class DictDataService
 		}
 
 		// TODO: оптимизировать второй вызов
-		dictItem = dictItemMappingService.mapDictItem(dictItem, dict, DictService.getDataFieldsByDict(dict));
+		dictItem = dictItemMappingService.mapDictItem(dictItem, dict, dictService.getDataFieldsByDict(dict));
 
 		dictDataValidationService.validateDictDataItem(dictId, dictItem, userId);
 
@@ -313,7 +313,7 @@ public class DictDataService
 		dictPermissionService.checkEditPermission(dict, userId);
 
 		var mappedDictItems = dictDataItems.stream()
-				.map(dataItem -> dictItemMappingService.mapDictItem(dataItem, dict, DictService.getDataFieldsByDict(dict)))
+				.map(dataItem -> dictItemMappingService.mapDictItem(dataItem, dict, dictService.getDataFieldsByDict(dict)))
 				.toList();
 
 		for (var advice : serviceAdviceList)
@@ -323,7 +323,7 @@ public class DictDataService
 
 		// TODO: оптимизировать второй вызов
 		mappedDictItems = mappedDictItems.stream()
-				.map(dictItem -> dictItemMappingService.mapDictItem(dictItem, dict, DictService.getDataFieldsByDict(dict)))
+				.map(dictItem -> dictItemMappingService.mapDictItem(dictItem, dict, dictService.getDataFieldsByDict(dict)))
 				.toList();
 
 		var dictItems = mappedDictItems.stream()
@@ -355,7 +355,7 @@ public class DictDataService
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, DictService.getDataFieldsByDict(dict));
+		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, dictService.getDataFieldsByDict(dict));
 		mappedItem.setId(itemId);
 
 		for (var advice : serviceAdviceList)
@@ -364,7 +364,7 @@ public class DictDataService
 		}
 
 		// TODO: оптимизировать второй вызов
-		mappedItem = dictItemMappingService.mapDictItem(mappedItem, dict, DictService.getDataFieldsByDict(dict));
+		mappedItem = dictItemMappingService.mapDictItem(mappedItem, dict, dictService.getDataFieldsByDict(dict));
 
 		dictDataValidationService.validateDictDataItem(dictId, mappedItem, userId);
 		dictDataValidationService.validateOptimisticLock(dictId, itemId, version, userId);
