@@ -22,6 +22,7 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.configuration.backend.provider.DictDataBackendProvider;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
+import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
@@ -47,6 +48,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -89,7 +91,7 @@ public class DictDataService
 
 	public List<DictItem> getByIds(String dictId, List<String> ids, String userId)
 	{
-		return getByIds(dictId, ids, List.of("*"), userId);
+		return getByIds(dictId, ids, List.of(ServiceFieldConstants.ALL_FIELDS), userId);
 	}
 
 	public List<DictItem> getByIds(String dictId, List<String> ids, List<String> selectFields, String userId)
@@ -104,7 +106,7 @@ public class DictDataService
 		dictPermissionService.checkViewPermission(dict, userId);
 		serviceAdviceList.forEach(it -> it.handleGetByIds(dict, ids));
 
-		var requiredFields = selectFields.stream()
+		var requiredFields = verifySelectedFieldNames(dict, selectFields).stream()
 				.map(dictFieldNameMappingService::mapDictFieldName)
 				.toList();
 
@@ -176,17 +178,7 @@ public class DictDataService
 				.filter(it -> it.getType() == DictFieldType.DICT)
 				.forEach(it -> dictPermissionService.checkViewPermission(dictService.getById(it.getDictRef().getDictId()), userId));
 
-		if (selectFields != null && !selectFields.isEmpty())
-		{
-			if (!selectFields.contains("*") && !selectFields.contains(ServiceFieldConstants.ID))
-			{
-				selectFields = ListUtils.copyAndAdd(selectFields, ServiceFieldConstants.ID);
-			}
-		}
-		else
-		{
-			selectFields = List.of("*");
-		}
+		selectFields = verifySelectedFieldNames(dict, selectFields);
 
 		for (var advice : serviceAdviceList)
 		{
@@ -203,6 +195,40 @@ public class DictDataService
 		return itemProducer.apply(dict, requiredFields, queryParser.parse(filtersQuery));
 	}
 
+	private List<String> verifySelectedFieldNames(Dict dict, List<String> selectedFieldNames)
+	{
+		List<String> result = new LinkedList<>();
+
+		if (selectedFieldNames != null && !selectedFieldNames.isEmpty())
+		{
+			if (selectedFieldNames.contains(ServiceFieldConstants.ALL_FIELDS))
+			{
+				result = ListUtils.copyAndAdd(selectedFieldNames, dict.getFields().stream().map(DictField::getId).toList());
+				result.remove(ServiceFieldConstants.ALL_FIELDS);
+			}
+			else
+			{
+				result.addAll(selectedFieldNames);
+			}
+		}
+		else
+		{
+			result.addAll(dict.getFields().stream().map(DictField::getId).toList());
+		}
+
+		if (!result.contains(ServiceFieldConstants.ID))
+		{
+			result.add(ServiceFieldConstants.ID);
+		}
+
+		if (!result.contains(ServiceFieldConstants.VERSION))
+		{
+			result.add(ServiceFieldConstants.VERSION);
+		}
+
+		return result;
+	}
+
 	public Page<String> getIdsByFilter(String dictId, String filtersQuery)
 	{
 		return getIdsByFilter(dictId, filtersQuery, SecurityUtils.getCurrentUserId());
@@ -210,7 +236,7 @@ public class DictDataService
 
 	public Page<String> getIdsByFilter(String dictId, String filtersQuery, String userId)
 	{
-		return getByFilter(dictId, List.of("id"), filtersQuery, Pageable.unpaged(), userId)
+		return getByFilter(dictId, List.of(ServiceFieldConstants.ID), filtersQuery, Pageable.unpaged(), userId)
 				.map(Identity::getId);
 	}
 
@@ -381,7 +407,7 @@ public class DictDataService
 	@Transactional
 	public void updateByFilter(String dictId, String filtersQuery, Map<String, Object> updatedParams)
 	{
-		getByFilter(dictId, List.of("*"), filtersQuery, Pageable.unpaged()).stream()
+		getByFilter(dictId, List.of(ServiceFieldConstants.ALL_FIELDS), filtersQuery, Pageable.unpaged()).stream()
 				.forEach(dictItem -> {
 					dictItem.getData().putAll(updatedParams);
 
@@ -435,7 +461,7 @@ public class DictDataService
 
 		var backend = backend(dictId);
 
-		var dictItems = backend.getByFilter(dict, List.of(new DictFieldName(null, "*")), queryParser.parse("deleted = null"), Pageable.unpaged())
+		var dictItems = backend.getByFilter(dict, List.of(new DictFieldName(null, ServiceFieldConstants.ALL_FIELDS)), queryParser.parse("deleted = null"), Pageable.unpaged())
 				.getContent()
 				.stream()
 				.peek(it -> dictDataValidationService.validateOptimisticLock(dictId, it.getId(), it.getVersion(), userId))

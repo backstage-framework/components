@@ -483,11 +483,11 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		createDictHierarchy();
 
-		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of(ServiceFieldConstants._ID, ServiceFieldConstants.CREATED),
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of(ServiceFieldConstants.CREATED),
 						null, PageRequest.of(0, 20))
 				.getContent()
 				.stream()
-				.map(it -> StringUtils.hasText(it.getId()) && it.getCreated() != null)
+				.map(it -> StringUtils.hasText(it.getId()) && it.getCreated() != null && it.getVersion() != null)
 				.toList();
 
 		result.forEach(Assertions::assertTrue);

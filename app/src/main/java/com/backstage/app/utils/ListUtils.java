@@ -20,6 +20,7 @@ import lombok.experimental.UtilityClass;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 
 @UtilityClass
@@ -30,6 +31,14 @@ public class ListUtils
 	{
 		var list = new ArrayList<>(source);
 		list.addAll(Arrays.stream(items).toList());
+
+		return list;
+	}
+
+	public <S> List<S> copyAndAdd(List<S> source, Collection<S> items)
+	{
+		var list = new ArrayList<>(source);
+		list.addAll(items);
 
 		return list;
 	}
