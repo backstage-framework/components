@@ -115,4 +115,16 @@ public class PostgresClasspathMigrationTest extends CommonClasspathMigrationServ
 	{
 		migrateSelfJoin();
 	}
+
+	@Test
+	void migrate_withNotNullWithNullableInsert()
+	{
+		migrateNotNullWithNullableInsert();
+	}
+
+	@Test
+	void migrate_withDroppedNotNullWithNullableInsert()
+	{
+		migrateDroppedNotNullWithNullableInsert();
+	}
 }
