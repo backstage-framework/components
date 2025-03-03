@@ -42,10 +42,8 @@ import org.springframework.jdbc.core.namedparam.EmptySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -236,8 +234,11 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 				})
 				.toList();
 
+		var alterFieldNullabilityOperations = getAlterFieldNullabilityOperations(updatedDict, actualDict, updatedWordMap);
+
 		operations.addAll(addColumnOperations);
 		operations.addAll(dropColumnOperations);
+		operations.addAll(alterFieldNullabilityOperations);
 
 		jdbc.update(String.join(";", operations), new EmptySqlParameterSource());
 
@@ -396,5 +397,47 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		}
 
 		return singleType;
+	}
+
+	private List<String> getAlterFieldNullabilityOperations(Dict updatedDict, Dict actualDict, Map<String, PostgresWord> updatedWordMap)
+	{
+		var actualFieldById = actualDict.getFields()
+				.stream()
+				.collect(Collectors.toMap(DictField::getId, Function.identity()));
+
+		var schemeName = dictsProperties.getDdl().getScheme();
+		var tableName = updatedWordMap.get(updatedDict.getId()).getQuotedIfKeyword();
+
+		return updatedDict.getFields()
+				.stream()
+				.filter(it -> isFieldNullabilityUpdated(it, actualFieldById))
+				.map(it -> buildChangeNullabilityQuery(it, schemeName, tableName, updatedWordMap))
+				.toList();
+	}
+
+	private boolean isFieldNullabilityUpdated(DictField updatedField, Map<String, DictField> actualFieldById)
+	{
+		var actualField = actualFieldById.get(updatedField.getId());
+
+		if (actualField == null)
+		{
+			return false;
+		}
+
+		return updatedField.isRequired() != actualField.isRequired();
+	}
+
+	private String buildChangeNullabilityQuery(DictField field, String schemeName, String tableName,
+	                                           Map<String, PostgresWord> updatedWordMap)
+	{
+		var nullabilityOperator = field.isRequired() ? "set" : "drop";
+
+		return "alter table %s.%s alter column %s %s not null"
+				.formatted(
+						schemeName,
+						tableName,
+						updatedWordMap.get(field.getId()).getQuotedIfKeyword(),
+						nullabilityOperator
+				);
 	}
 }
