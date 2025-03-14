@@ -298,6 +298,18 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void getByFilter_withUnpagedSort()
+	{
+		getByFilterWithUnpagedSort(27);
+	}
+
+	@Test
+	void getByFilter_unpaged()
+	{
+		getByFilterUnpaged();
+	}
+
+	@Test
 	void getByFilter_dictSortDataField()
 	{
 		getByFilterDictSortDataField();

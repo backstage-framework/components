@@ -239,7 +239,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		queryClause.addSelectFields(requiredFields, query);
 		queryClause.addJoin(requiredFields, joinFields, queryContext, operations, pageable, dictId);
 
-		var mongoPageable = pageable.isUnpaged() ? pageable : buildMongoPageable(pageable);
+		var mongoPageable = pageable.isUnpaged() && !pageable.getSort().isSorted() ? pageable : buildMongoPageable(pageable);
 
 		if (mongoPageable.isPaged())
 		{
@@ -251,6 +251,14 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 			queryClause.addPageable(operations, mongoPageable);
 
 			query.with(mongoPageable);
+		}
+		else if (mongoPageable.getSort().isSorted())
+		{
+			var sort = mongoPageable.getSort();
+			var orders = queryClause.buildSort(sort, joinFields);
+
+			operations.add(Aggregation.sort(sort));
+			query.with(orders);
 		}
 
 		return new MongoClause(query, mongoPageable, joinFields, operations);
@@ -419,7 +427,12 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 					.reduce(Sort::and)
 					.orElseThrow(() -> new PrepareMongoPageableException(pageable.getSort().toString()));
 
-			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), orders);
+			if (pageable.isPaged())
+			{
+				return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), orders);
+			}
+
+			return Pageable.unpaged(orders);
 		}
 
 		return pageable;

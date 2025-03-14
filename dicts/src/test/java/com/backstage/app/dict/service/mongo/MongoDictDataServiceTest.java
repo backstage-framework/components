@@ -320,6 +320,18 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void getByFilter_withUnpagedSort()
+	{
+		getByFilterWithUnpagedSort(30);
+	}
+
+	@Test
+	void getByFilter_unpaged()
+	{
+		getByFilterUnpaged();
+	}
+
+	@Test
 	void getByFilter_dictSortDataField()
 	{
 		getByFilterDictSortDataField();
