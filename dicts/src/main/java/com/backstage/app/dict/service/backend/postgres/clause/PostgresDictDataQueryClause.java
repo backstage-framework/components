@@ -20,10 +20,7 @@ import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
-import com.backstage.app.dict.model.postgres.backend.PostgresDictFieldName;
-import com.backstage.app.dict.model.postgres.backend.PostgresOrder;
-import com.backstage.app.dict.model.postgres.backend.PostgresPageable;
-import com.backstage.app.dict.model.postgres.backend.PostgresWord;
+import com.backstage.app.dict.model.postgres.backend.*;
 import com.backstage.app.dict.model.postgres.query.PostgresQuery;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.backend.postgres.PostgresDictFieldNameMapper;
@@ -159,27 +156,40 @@ public class PostgresDictDataQueryClause
 
 	public void addOrderByClauses(BidiMap<String, String> dictAliasesRelation, LinkedHashSet<String> orderByClauses, PostgresPageable postgresPageable, Dict dict)
 	{
-		if (postgresPageable != null && postgresPageable.isPaged())
+		var isUnsorted = postgresPageable == null || postgresPageable.getPostgresSort()
+				.getPostgresOrders()
+				.isEmpty();
+
+		if (isUnsorted)
 		{
-			var ordersIncludeId = postgresPageable.getPostgresSort()
-					.getPostgresOrders()
-					.stream()
-					.anyMatch(it -> ServiceFieldConstants.ID.equals(it.getPostgresDictFieldName().getWordJoint()));
-
-			//TODO: провалидировать field's указанные в sort на наличие в dict/refDict
-			var orders = postgresPageable.getPostgresSort()
-					.getPostgresOrders()
-					.stream()
-					.map(it -> String.join(" ", selectClauseRef(dictAliasesRelation, it.getPostgresDictFieldName()), it.getDirection().name()))
-					.toList();
-
-			orderByClauses.addAll(orders);
-
-			if (!ordersIncludeId)
-			{
-				orderByClauses.add(ASCENDING_ID_ORDER_CLAUSE.formatted(dictFieldNameMapper.mapFrom(dict.getId(), ServiceFieldConstants.ID).getWordJoint()));
-			}
+			return;
 		}
+
+		var ordersIncludeId = postgresPageable.getPostgresSort()
+				.getPostgresOrders()
+				.stream()
+				.map(PostgresOrder::getPostgresDictFieldName)
+				.map(PostgresDictFieldName::getWordJoint)
+				.anyMatch(ServiceFieldConstants.ID::equals);
+
+		//TODO: провалидировать field's указанные в sort на наличие в dict/refDict
+		postgresPageable.getPostgresSort()
+				.getPostgresOrders()
+				.stream()
+				.map(it -> String.join(" ", selectClauseRef(dictAliasesRelation, it.getPostgresDictFieldName()), it.getDirection().name()))
+				.forEach(orderByClauses::add);
+
+		if (ordersIncludeId)
+		{
+			return;
+		}
+
+		var wordJoint = dictFieldNameMapper.mapFrom(dict.getId(), ServiceFieldConstants.ID)
+				.getWordJoint();
+
+		var orderClause = ASCENDING_ID_ORDER_CLAUSE.formatted(wordJoint);
+
+		orderByClauses.add(orderClause);
 	}
 
 	private void addSelectIdClause(BidiMap<String, String> dictAliasesRelation, HashSet<String> selectClauses, List<PostgresDictFieldName> requiredFields,

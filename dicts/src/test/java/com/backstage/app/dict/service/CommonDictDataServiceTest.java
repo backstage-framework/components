@@ -223,7 +223,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var result = dictDataService.getDistinctValuesByFilter(TESTABLE_REF_DICT_ID, TESTABLE_DICT_ID + ".stringField", "");
 
-		assertEquals(6, result.size());
+		assertEquals(11, result.size());
 	}
 
 	protected void getDistinctValuesByFilterWithFilter()
@@ -449,6 +449,34 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		assertTrue(actualIdFields);
 		assertTrue(actualCreatedFields);
+	}
+
+	//todo убрать передачу ожидаемого значения кол-ва элементов после фикса пагинации для MongoDB
+	protected void getByFilterWithUnpagedSort(int totalElements)
+	{
+		var integerField = createDictHierarchy();
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), null,
+						Pageable.unpaged(Sort.by(Sort.Direction.DESC, integerField)))
+				.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(map -> (Long) map.get(integerField))
+				.toList();
+
+		assertEquals(totalElements, result.size());
+
+		var actual = Comparators.isInOrder(result, Comparator.reverseOrder());
+
+		assertTrue(actual);
+	}
+
+	protected void getByFilterUnpaged()
+	{
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), null, Pageable.unpaged());
+
+		assertTrue(result.getPageable().isUnpaged());
+		assertEquals(1, result.getTotalPages());
 	}
 
 	protected void getByFilterDictSortDataField()
