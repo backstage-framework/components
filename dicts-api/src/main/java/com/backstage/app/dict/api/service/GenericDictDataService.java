@@ -35,6 +35,7 @@ import jakarta.validation.Valid;
 import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -102,5 +103,6 @@ public interface GenericDictDataService<T extends DictItemDto>
 
 	@Operation(summary = "Экспорт элементов справочника.")
 	@PostMapping("/{dictId}/export")
-	ResponseEntity<Resource> export(@PathVariable String dictId, @RequestBody @Valid ExportDictRequest request);
+	ResponseEntity<Resource> export(@PathVariable String dictId, @RequestBody @Valid ExportDictRequest request,
+	                                @RequestParam(required = false) Sort sort);
 }

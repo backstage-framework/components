@@ -44,6 +44,7 @@ import org.springframework.core.ResolvableType;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -193,9 +194,9 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 
 	@Operation(summary = "Экспорт справочника.")
 	@PostMapping("/{dictId}/export")
-	public ResponseEntity<Resource> export(@PathVariable String dictId, @RequestBody @Valid ExportDictRequest request)
+	public ResponseEntity<Resource> export(@PathVariable String dictId, @RequestBody @Valid ExportDictRequest request, Sort sort)
 	{
-		var exportedResource = dictExportService.exportToResource(dictId, request.getFormat(), request.getItemIds(), request.getQuery());
+		var exportedResource = dictExportService.exportToResource(dictId, request.getFormat(), request.getItemIds(), request.getQuery(), sort);
 
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, HttpUtils.buildContentDisposition(false, exportedResource.getFilename(), exportedResource.getFilename()))

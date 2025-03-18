@@ -38,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.io.Resource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -175,8 +176,9 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Экспорт элементов справочника.")
 	@PostMapping("/{dictId}/export")
 	public ResponseEntity<Resource> export(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                                       @RequestBody @Valid ExportDictRequest request)
+	                                       @RequestBody @Valid ExportDictRequest request,
+	                                       Sort sort)
 	{
-		return externalDictDataService.export(dictId, request);
+		return externalDictDataService.export(dictId, request, sort);
 	}
 }

@@ -17,6 +17,7 @@
 package com.backstage.app.dict.service.export;
 
 import com.backstage.app.dict.api.constant.ExportedDictFormat;
+import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.export.ExportedResource;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictPermissionService;
@@ -28,10 +29,17 @@ import com.backstage.app.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+
+import static com.backstage.app.dict.constant.ServiceFieldConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -52,10 +60,15 @@ public class DictExportService
 
 	public ExportedResource exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds, String query)
 	{
-		return exportToResource(dictId, format, itemIds, query, SecurityUtils.getCurrentUserId());
+		return exportToResource(dictId, format, itemIds, query, SecurityUtils.getCurrentUserId(), Sort.unsorted());
 	}
 
-	public ExportedResource exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds, String query, String userId)
+	public ExportedResource  exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds, String query, Sort sort)
+	{
+		return exportToResource(dictId, format, itemIds, query, SecurityUtils.getCurrentUserId(), sort);
+	}
+
+	public ExportedResource exportToResource(String dictId, ExportedDictFormat format, List<String> itemIds, String query, String userId, Sort sort)
 	{
 		var dict = dictService.getById(dictId);
 
@@ -65,7 +78,10 @@ public class DictExportService
 				? dictDataService.getByIds(dictId, itemIds, userId)
 				: dictDataService.getByFilter(dictId, List.of(), query, Pageable.unpaged(), userId).getContent();
 
-		byte[] exportedData = getExportService(format).export(dictId, items, userId);
+		var sortedItems = sortItems(items, sort);
+
+		byte[] exportedData = getExportService(format)
+				.export(dictId, sortedItems, userId);
 
 		return ExportedResource.builder()
 				.resource(new InputStreamResource(new ByteArrayInputStream(exportedData)))
@@ -83,5 +99,70 @@ public class DictExportService
 
 					default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_DATA_FORMAT);
 				};
+	}
+
+	private static List<DictItem> sortItems(List<DictItem> items, Sort sort)
+	{
+		if (sort.isUnsorted())
+		{
+			return items;
+		}
+
+		var comparator = sort.get()
+				.map(order -> Comparator.comparing(
+						(DictItem t) -> getFieldValue(t, order.getProperty()),
+						Comparator.nullsLast(getDirection(order))
+				))
+				.reduce(Comparator::thenComparing)
+				.orElseThrow(() -> new IllegalArgumentException("Невозможно создать компаратор."));
+
+		var sortedList = new ArrayList<>(items);
+
+		sortedList.sort(comparator);
+
+		return sortedList;
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> Comparable<T> getFieldValue(DictItem item, String fieldName)
+	{
+		var value = switch (fieldName)
+		{
+			case ID -> item.getId();
+			case CREATED -> item.getCreated();
+			case UPDATED -> item.getUpdated();
+			case DELETED -> item.getDeleted();
+			case DELETION_REASON -> item.getDeletionReason();
+
+			default -> getDataValue(item.getData(), fieldName);
+		};
+
+		if (value == null)
+		{
+			throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Сортировка по полю %s невозможна.".formatted(fieldName));
+		}
+
+		return (Comparable<T>) value;
+	}
+
+	private static Object getDataValue(Map<String, Object> data, String fieldName)
+	{
+		var value = data.get(fieldName);
+
+		if (value instanceof Collection<?> collection && collection.iterator().hasNext())
+		{
+			return collection.iterator()
+					.next();
+		}
+
+		return value;
+	}
+
+	private static Comparator<Comparable<Object>> getDirection(Sort.Order order)
+	{
+		return order.getDirection()
+				.isAscending()
+				? Comparator.naturalOrder()
+				: Comparator.reverseOrder();
 	}
 }

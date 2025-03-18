@@ -18,6 +18,7 @@ package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.api.constant.ExportedDictFormat;
 import com.backstage.app.dict.common.CommonTest;
+import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.export.DictExportService;
 import com.backstage.app.dict.service.imp.ImportCsvService;
 import org.apache.commons.io.IOUtils;
@@ -25,11 +26,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.domain.Sort;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -150,6 +155,41 @@ public abstract class CommonDictExportServiceTest extends CommonTest
 
 			assertTrue(StringUtils.hasText(data));
 			assertTrue(data.contains("true"));
+		}
+	}
+
+	@Test
+	public void exportCsvWithSortMatch() throws IOException
+	{
+		var dataMap = new HashMap<String, Object>(
+				Map.of(
+						"stringField", "astring",
+						"integerField", 1L,
+						"doubleField", BigDecimal.valueOf(Double.parseDouble("2.776")),
+						"timestampField", "2021-08-15T07:00:01.000Z",
+						"booleanField", false)
+		);
+
+		dictDataService.create(DictDataItem.of(TESTABLE_DICT_ID, dataMap));
+
+		var sort = Sort.by("timestampField", "stringField")
+				.descending();
+
+		var exportedResource = dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, null, null, sort);
+
+		assertTrue(exportedResource.getResource().exists());
+		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
+
+		try (var inputStream = exportedResource.getResource().getInputStream())
+		{
+			var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+			assertTrue(StringUtils.hasText(data));
+
+			int indexStart = data.indexOf("2021-08-15T06:00");
+			int indexEnd = data.indexOf("2021-08-15T07:00:01");
+
+			assertTrue(indexStart != -1 && indexStart > indexEnd);
 		}
 	}
 
