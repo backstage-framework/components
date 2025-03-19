@@ -28,8 +28,10 @@ import com.backstage.app.database.configuration.properties.JPAProperties;
 import com.backstage.app.database.repository.CustomJpaRepositoryFactoryBean;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.boot.autoconfigure.AutoConfigureAfter;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.autoconfigure.domain.EntityScanPackages;
 import org.springframework.boot.autoconfigure.orm.jpa.JpaProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -43,9 +45,9 @@ import org.springframework.orm.jpa.vendor.EclipseLinkJpaVendorAdapter;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 import javax.sql.DataSource;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 @Configuration
 @RequiredArgsConstructor
@@ -77,15 +79,16 @@ public class JpaConfiguration
 	}
 
 	@Bean
-	public LocalContainerEntityManagerFactoryBean entityManagerFactory(AppProperties appProperties,
+	public LocalContainerEntityManagerFactoryBean entityManagerFactory(BeanFactory beanFactory,
+	                                                                   AppProperties appProperties,
 	                                                                   JpaProperties jpaProperties,
 	                                                                   @AppDataSource DataSource dataSource,
 	                                                                   Customizer customizer,
 	                                                                   DDLProviderInitializer ddlProviderInitializer)
 	{
-		var packagesToScan = Stream.concat(appProperties.getBasePackages().stream(), entityManagerFactoryCustomizers.stream().flatMap(it -> it.getPackagesToScan().stream()))
-				.distinct()
-				.toArray(String[]::new);
+		List<String> packagesToScan = new LinkedList<>(appProperties.getBasePackages());
+		packagesToScan.addAll(EntityScanPackages.get(beanFactory).getPackageNames());
+		packagesToScan.addAll(entityManagerFactoryCustomizers.stream().flatMap(it -> it.getPackagesToScan().stream()).toList());
 
 		LocalContainerEntityManagerFactoryBean emf = new LocalContainerEntityManagerFactoryBean();
 
@@ -94,7 +97,7 @@ public class JpaConfiguration
 		emf.getJpaPropertyMap().putAll(jpaProperties.getProperties());
 		emf.setPersistenceUnitName(appProperties.getModule());
 		emf.setPersistenceUnitPostProcessors(entityManagerFactoryCustomizers.toArray(EntityManagerFactoryCustomizer[]::new));
-		emf.setPackagesToScan(packagesToScan);
+		emf.setPackagesToScan(packagesToScan.stream().distinct().toArray(String[]::new));
 		emf.setMappingResources(entityManagerFactoryCustomizers.stream().flatMap(it -> it.getMappingResources().stream()).toArray(String[]::new));
 
 		return emf;
