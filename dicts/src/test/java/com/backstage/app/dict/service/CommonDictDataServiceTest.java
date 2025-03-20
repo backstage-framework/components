@@ -107,6 +107,7 @@ public class CommonDictDataServiceTest extends CommonTest
 			"integerField", 1,
 			"doubleField", 2.558,
 			"timestampField", List.of("2021-08-15T06:00:00.000Z", "2021-08-15T08:00:00.000Z"),
+			"dateField", "2021-08-15",
 			"stringFieldMultivalued", List.of("one", "two", "three"),
 			"booleanField", true);
 
@@ -600,7 +601,7 @@ public class CommonDictDataServiceTest extends CommonTest
 		var result = dictDataService.getByFilter(TESTABLE_REF_DICT_ID, List.of("*"), "%s = '%s'".formatted(TESTABLE_DICT_ID, refId), PageRequest.of(0, 10))
 				.getContent();
 
-		assertEquals(result.size(), 1);
+		assertEquals(1, result.size());
 		assertEquals(result.get(0).getId(), createdDitDataItemId);
 		assertEquals(result.get(0).getData().size(), refDataMap.size());
 		assertEquals(result.get(0).getData().get(TESTABLE_DICT_ID), refId);

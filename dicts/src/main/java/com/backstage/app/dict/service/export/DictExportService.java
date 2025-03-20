@@ -27,6 +27,7 @@ import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
+import org.geojson.GeoJsonObject;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -134,13 +135,14 @@ public class DictExportService
 			case DELETED -> item.getDeleted();
 			case DELETION_REASON -> item.getDeletionReason();
 
-			default -> getDataValue(item.getData(), fieldName);
-		};
+			default -> {
+				var data = item.getData();
 
-		if (value == null)
-		{
-			throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Сортировка по полю %s невозможна.".formatted(fieldName));
-		}
+				validateDataFieldValue(data, fieldName);
+
+				yield getDataValue(data, fieldName);
+			}
+		};
 
 		return (Comparable<T>) value;
 	}
@@ -151,11 +153,21 @@ public class DictExportService
 
 		if (value instanceof Collection<?> collection && collection.iterator().hasNext())
 		{
-			return collection.iterator()
-					.next();
+			return new CollectionComparable<>(collection);
 		}
 
 		return value;
+	}
+
+	private static void validateDataFieldValue(Map<String, Object> data, String fieldName)
+	{
+		var keyExists = data.containsKey(fieldName);
+		var value = data.get(fieldName);
+
+		if (!keyExists || value instanceof Map<?, ?> || value instanceof GeoJsonObject)
+		{
+			throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Сортировка по полю %s невозможна.".formatted(fieldName));
+		}
 	}
 
 	private static Comparator<Comparable<Object>> getDirection(Sort.Order order)
@@ -164,5 +176,35 @@ public class DictExportService
 				.isAscending()
 				? Comparator.naturalOrder()
 				: Comparator.reverseOrder();
+	}
+
+	@SuppressWarnings("unchecked")
+	private record CollectionComparable<T>(Collection<T> collection) implements Comparable<CollectionComparable<T>>
+	{
+		@Override
+		public int compareTo(CollectionComparable<T> other)
+		{
+			if (other == null)
+			{
+				return 0;
+			}
+
+			var thisIterator = this.collection.iterator();
+			var otherIterator = other.collection.iterator();
+
+			while (thisIterator.hasNext() && otherIterator.hasNext())
+			{
+				var thisElement = thisIterator.next();
+				var otherElement = otherIterator.next();
+
+				int elementComparison = ((Comparable<T>) thisElement).compareTo(otherElement);
+				if (elementComparison != 0)
+				{
+					return elementComparison;
+				}
+			}
+
+			return 0;
+		}
 	}
 }

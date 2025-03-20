@@ -165,6 +165,16 @@ public class CommonTest
 
 		fields.add(
 				DictField.builder()
+						.id("dateField")
+						.name("Дата")
+						.type(DictFieldType.DATE)
+						.required(false)
+						.multivalued(false)
+						.build()
+		);
+
+		fields.add(
+				DictField.builder()
 						.id("booleanField")
 						.name("Булево")
 						.type(DictFieldType.BOOLEAN)
@@ -210,6 +220,7 @@ public class CommonTest
 						"integerField", 1L,
 						"doubleField", BigDecimal.valueOf(Double.parseDouble("2.776")),
 						"timestampField", "2021-08-15T06:00:00.000Z",
+						"dateField", "2021-08-15",
 						"booleanField", true)
 		);
 

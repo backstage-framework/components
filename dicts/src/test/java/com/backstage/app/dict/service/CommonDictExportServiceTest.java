@@ -21,6 +21,7 @@ import com.backstage.app.dict.common.CommonTest;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.export.DictExportService;
 import com.backstage.app.dict.service.imp.ImportCsvService;
+import com.backstage.app.exception.AppException;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -164,33 +165,36 @@ public abstract class CommonDictExportServiceTest extends CommonTest
 		var dataMap = new HashMap<String, Object>(
 				Map.of(
 						"stringField", "astring",
-						"integerField", 1L,
-						"doubleField", BigDecimal.valueOf(Double.parseDouble("2.776")),
+						"integerField", 2L,
+						"doubleField", BigDecimal.valueOf(Double.parseDouble("2.777")),
 						"timestampField", "2021-08-15T07:00:01.000Z",
+						"dateField", "2021-08-16",
 						"booleanField", false)
 		);
 
 		dictDataService.create(DictDataItem.of(TESTABLE_DICT_ID, dataMap));
 
-		var sort = Sort.by("timestampField", "stringField")
+		var timestampSort = Sort.by("timestampField")
 				.descending();
+		exportCsvWithSortMatch(timestampSort, "2021-08-15T06:00", "2021-08-15T07:00:01");
 
-		var exportedResource = dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, null, null, sort);
+		var stringSort = Sort.by("stringField");
+		exportCsvWithSortMatch(stringSort, "astring", "string");
 
-		assertTrue(exportedResource.getResource().exists());
-		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
+		var integerSort = Sort.by("integerField");
+		exportCsvWithSortMatch(integerSort, "astring,,2", "string,,1");
 
-		try (var inputStream = exportedResource.getResource().getInputStream())
-		{
-			var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+		var doubleSort = Sort.by("doubleField");
+		exportCsvWithSortMatch(doubleSort, "2.777", "2.776");
 
-			assertTrue(StringUtils.hasText(data));
+		var dateSort = Sort.by("dateField");
+		exportCsvWithSortMatch(dateSort, "2021-08-16", "2021-08-15");
 
-			int indexStart = data.indexOf("2021-08-15T06:00");
-			int indexEnd = data.indexOf("2021-08-15T07:00:01");
+		var boolSort = Sort.by("booleanField");
+		exportCsvWithSortMatch(boolSort, "true", "false");
 
-			assertTrue(indexStart != -1 && indexStart > indexEnd);
-		}
+		var nonExistentSort = Sort.by("nonExistentField");
+		exportCsvWithSortThrowEx(nonExistentSort);
 	}
 
 	@Test
@@ -237,5 +241,30 @@ public abstract class CommonDictExportServiceTest extends CommonTest
 		{
 			throw new RuntimeException(e);
 		}
+	}
+
+	private void exportCsvWithSortMatch(Sort sort, String firstValue, String secondValue) throws IOException
+	{
+		var exportedResource = dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, null, null, sort);
+
+		assertTrue(exportedResource.getResource().exists());
+		assertTrue(StringUtils.hasText(exportedResource.getFilename()));
+
+		try (var inputStream = exportedResource.getResource().getInputStream())
+		{
+			var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+			assertTrue(StringUtils.hasText(data));
+
+			int indexStart = data.indexOf(firstValue);
+			int indexEnd = data.indexOf(secondValue);
+
+			assertTrue(indexStart != -1 && indexStart > indexEnd);
+		}
+	}
+
+	private void exportCsvWithSortThrowEx(Sort sort)
+	{
+		assertThrows(AppException.class, () -> dictExportService.exportToResource(TESTABLE_DICT_ID, ExportedDictFormat.CSV, null, null, sort));
 	}
 }
