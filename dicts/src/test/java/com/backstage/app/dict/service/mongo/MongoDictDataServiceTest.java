@@ -216,6 +216,12 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void create_createCorrectContainsFieldsInHistoryMapForSkippedNullValue()
+	{
+		createCorrectContainsFieldsInHistoryMapForSkippedNullValue();
+	}
+
+	@Test
 	void create_withJson()
 	{
 		createDictItemWithJson();
@@ -322,7 +328,7 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	@Test
 	void getByFilter_withUnpagedSort()
 	{
-		getByFilterWithUnpagedSort(30);
+		getByFilterWithUnpagedSort(31);
 	}
 
 	@Test

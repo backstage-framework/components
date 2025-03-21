@@ -41,16 +41,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.TriFunction;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 @Service
@@ -378,11 +377,19 @@ public class DictDataService
 		var item = getById(dictId, itemId, userId);
 
 		var dict = dictService.getById(dictId);
+		var dictDataFields = dictService.getDataFieldsByDict(dict);
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, dictService.getDataFieldsByDict(dict));
+		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, dictDataFields);
 		mappedItem.setId(itemId);
+
+		var mappedData = mappedItem.getData();
+
+		dictDataFields.stream()
+				.map(DictField::getId)
+				.filter(Predicate.not(mappedData::containsKey))
+				.forEach(key -> mappedData.put(key, null));
 
 		for (var advice : serviceAdviceList)
 		{
@@ -390,12 +397,12 @@ public class DictDataService
 		}
 
 		// TODO: оптимизировать второй вызов
-		mappedItem = dictItemMappingService.mapDictItem(mappedItem, dict, dictService.getDataFieldsByDict(dict));
+		mappedItem = dictItemMappingService.mapDictItem(mappedItem, dict, dictDataFields);
 
 		dictDataValidationService.validateDictDataItem(dictId, mappedItem, userId);
 		dictDataValidationService.validateOptimisticLock(dictId, itemId, version, userId);
 
-		var dictItem = withUpdated(mappedItem, item);
+		var dictItem = applyChanges(mappedItem, item);
 
 		var result = backend(dict).update(dict, itemId, dictItem, version);
 
@@ -493,45 +500,38 @@ public class DictDataService
 		dictItem.setUpdated(LocalDateTime.now());
 		dictItem.setDeleted(null);
 		dictItem.setDeletionReason(null);
-
-		setupHistoryItemMap(dictItem);
 	}
 
-	private void setupHistoryItemMap(DictItem dictItem)
+	private DictItem applyChanges(DictItem updatedItem, DictItem sourceItem)
 	{
-		var historyItemMap = dictItem.getData()
+		var sourceData = sourceItem.getData();
+
+		Map<String, Object> updatedData = updatedItem.getData()
 				.entrySet()
 				.stream()
-				.filter(it -> !ServiceFieldConstants.ID.equals(it.getKey()))
-				.collect(DictItemHistoryMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), HashMap<String, Object>::putAll);
+				.filter(entry -> !sourceData.containsKey(entry.getKey())
+						|| !Objects.equals(sourceData.get(entry.getKey()), entry.getValue()))
+				.map(Map.Entry::getKey)
+				.map(key -> Pair.of(key, sourceData.get(key)))
+				.collect(HashMap::new,
+						(map, pair) -> map.put(pair.getKey(), pair.getValue()),
+						HashMap::putAll);
 
-		historyItemMap.put(ServiceFieldConstants.VERSION, dictItem.getVersion());
-		historyItemMap.put(ServiceFieldConstants.CREATED, dictItem.getCreated());
-		historyItemMap.put(ServiceFieldConstants.UPDATED, dictItem.getUpdated());
+		var historyMap = new DictItemHistoryMap(updatedData);
 
-		dictItem.setHistory(List.of(historyItemMap));
+		historyMap.put(ServiceFieldConstants.UPDATED, sourceItem.getUpdated());
+		historyMap.put(ServiceFieldConstants.VERSION, sourceItem.getVersion());
+
+		sourceItem.getHistory().add(historyMap);
+
+		sourceItem.setData(updatedItem.getData());
+		sourceItem.setUpdated(LocalDateTime.now());
+		sourceItem.setVersion(sourceItem.getVersion() + 1L);
+
+		return sourceItem;
 	}
 
-	/**
-	 * Id - устанавливается в target по кейсу: создание item с предопределенным id {@link ServiceFieldConstants#serviceInsertableFields}
-	 */
-	private DictItem withUpdated(DictItem source, DictItem target)
-	{
-		target.setId(source.getId() != null ? source.getId() : target.getId());
-		target.setData(source.getData());
-		target.setUpdated(LocalDateTime.now());
-		target.setVersion(target.getVersion() + 1L);
-
-		var historyMap = new DictItemHistoryMap(target.getData());
-
-		historyMap.put(ServiceFieldConstants.UPDATED, target.getUpdated());
-		historyMap.put(ServiceFieldConstants.VERSION, target.getVersion());
-
-		target.getHistory().add(historyMap);
-
-		return target;
-	}
-
+	@Deprecated(forRemoval = true)
 	private DictItem withDeleted(boolean deleted, String reason, DictItem dictItem)
 	{
 		dictItem.setUpdated(LocalDateTime.now());

@@ -207,6 +207,12 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void create_createCorrectContainsFieldsInHistoryMapForSkippedNullValue()
+	{
+		createCorrectContainsFieldsInHistoryMapForSkippedNullValue();
+	}
+
+	@Test
 	void create_withJson()
 	{
 		createDictItemWithJson();
@@ -300,7 +306,7 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	@Test
 	void getByFilter_withUnpagedSort()
 	{
-		getByFilterWithUnpagedSort(27);
+		getByFilterWithUnpagedSort(28);
 	}
 
 	@Test

@@ -53,10 +53,6 @@ public class DictItemMappingService
 				.peek(it -> it.setId(it.getId().equals(ServiceFieldConstants._ID) ? ServiceFieldConstants.ID : it.getId()))
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
-		var dictDataFieldIds = dictDataFields.stream()
-				.map(DictField::getId)
-				.collect(Collectors.toSet());
-
 		var result = new HashMap<>(dataItem.getDataItemMap())
 				.entrySet()
 				.stream()
@@ -70,6 +66,10 @@ public class DictItemMappingService
 				.filter(field -> !result.containsKey(field.getId()))
 				.filter(field -> field.getDefaultValue() != null)
 				.forEach(field -> result.put(field.getId(), mapField(field, field.getDefaultValue())));
+
+		var dictDataFieldIds = dictDataFields.stream()
+				.map(DictField::getId)
+				.collect(Collectors.toSet());
 
 		var dictData = result.entrySet()
 				.stream()
