@@ -877,16 +877,54 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void createCorrectContainsFieldsInHistoryMap()
 	{
+		var itemId = "item_id";
+
 		var dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put(ServiceFieldConstants.ID, "with_id");
+		dataMap.put(ServiceFieldConstants.ID, itemId);
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
 
-		var createdFieldResult = dictItem.getHistory().stream().findFirst().map(it -> it.get(ServiceFieldConstants.CREATED)).isPresent();
-		var idFieldResult = dictItem.getHistory().stream().findFirst().map(it -> it.get(ServiceFieldConstants.ID)).isPresent();
+		assertNotNull(dictItem.getHistory());
+		assertTrue(dictItem.getHistory().isEmpty());
 
-		assertTrue(createdFieldResult);
-		assertFalse(idFieldResult);
+		var targetFieldName = "doubleField";
+
+		dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put(targetFieldName, null);
+
+		dictItem = dictDataService.update(itemId, buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+
+		assertNull(dictItem.getData().get(targetFieldName));
+		assertNotNull(dictItem.getHistory());
+		assertFalse(dictItem.getHistory().isEmpty());
+
+		assertEquals(DATA_MAP.get(targetFieldName), dictItem.getHistory().get(0).get(targetFieldName));
+	}
+
+	protected void createCorrectContainsFieldsInHistoryMapForSkippedNullValue()
+	{
+		var itemId = "skipped_null_item_id";
+
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put(ServiceFieldConstants.ID, itemId);
+
+		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
+
+		assertNotNull(dictItem.getHistory());
+		assertTrue(dictItem.getHistory().isEmpty());
+
+		var targetFieldName = "doubleField";
+
+		dataMap = new HashMap<>(DATA_MAP);
+		dataMap.remove(targetFieldName);
+
+		dictItem = dictDataService.update(itemId, buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+
+		assertNull(dictItem.getData().get(targetFieldName));
+		assertNotNull(dictItem.getHistory());
+		assertFalse(dictItem.getHistory().isEmpty());
+
+		assertEquals(DATA_MAP.get(targetFieldName), dictItem.getHistory().get(0).get(targetFieldName));
 	}
 
 	//TODO: расширить тест когда Json указывается строкой
@@ -1034,19 +1072,19 @@ public class CommonDictDataServiceTest extends CommonTest
 		var dataMap = new HashMap<>(DATA_MAP);
 
 		dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put("jsonField", Map.of("lang", "Kotlin", "version", 1.8, "design", "Event Sourcing"));
+		dataMap.put("jsonField", Map.of("lang", "Kotlin", "version", "1.8", "design", "Event Sourcing"));
 		dataMap.put("jsonMultivaluedField", List.of(
-				Map.of("lang", ".Net", "version", 4, "design", "Ambassador"),
-				Map.of("lang", ".Net", "version", 4.8, "design", "Circuit Breaker")
+				Map.of("lang", ".Net", "version", "4", "design", "Ambassador"),
+				Map.of("lang", ".Net", "version", "4.8", "design", "Circuit Breaker")
 		));
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_JSON_DICT_ID, dataMap));
 
 		var updatableMap = new HashMap<>(dictItem.getData());
-		updatableMap.put("jsonField", Map.of("lang", "Kotlin", "version", 1.7, "design", "Event Sourcing"));
+		updatableMap.put("jsonField", Map.of("lang", "Kotlin", "version", "1.7", "design", "Event Sourcing"));
 		updatableMap.put("jsonMultivaluedField", List.of(
-				Map.of("lang", ".Net", "version", 4.1, "design", "Ambassador"),
-				Map.of("lang", "Java", "version", 8, "design", "2PC")
+				Map.of("lang", ".Net", "version", "4.1", "design", "Ambassador"),
+				Map.of("lang", "Java", "version", "8", "design", "2PC")
 		));
 
 		dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_JSON_DICT_ID, updatableMap), dictItem.getVersion());
@@ -1087,15 +1125,15 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertEquals(updatableGeo, actual.getData().get("geoJsonField"));
 		assertEquals(1, ((List<GeoJsonObject>) actual.getData().get("geoJsonMultivaluedField")).size());
 
-		assertNotNull(actual.getHistory().get(1));
+		assertNotNull(actual.getHistory().get(0));
 
-		var geoJsonHistoryFeature = (Map<String, Object>) actual.getHistory().get(1).get("geoJsonField");
+		var geoJsonHistoryFeature = (Map<String, Object>) actual.getHistory().get(0).get("geoJsonField");
 
 		assertNotNull(geoJsonHistoryFeature);
 		assertNotNull(geoJsonHistoryFeature.get("type"));
 		assertEquals("Feature", geoJsonHistoryFeature.get("type"));
 
-		geoJsonHistoryFeature = ((List<Map<String, Object>>) actual.getHistory().get(1).get("geoJsonMultivaluedField")).get(0);
+		geoJsonHistoryFeature = ((List<Map<String, Object>>) actual.getHistory().get(0).get("geoJsonMultivaluedField")).get(0);
 
 		assertNotNull(geoJsonHistoryFeature);
 		assertNotNull(geoJsonHistoryFeature.get("type"));
