@@ -14,50 +14,29 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.domain;
+package com.backstage.app.dict.domain.scheme;
 
-import lombok.AllArgsConstructor;
+import com.backstage.app.dict.domain.DictEngine;
 import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Data
+@Getter
 @Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class Dict
+@EqualsAndHashCode
+@ToString
+public class DictNativeScheme
 {
-	private String id;
+	private String dictId;
 
-	private String name;
-
-	@Builder.Default
-	private List<DictField> fields = new ArrayList<>();
-
-	@Builder.Default
-	private List<DictIndex> indexes = new ArrayList<>();
-
-	@Builder.Default
-	private List<DictConstraint> constraints = new ArrayList<>();
-
-	@Builder.Default
-	private List<DictEnum> enums = new ArrayList<>();
-
-	private String viewPermission;
-
-	private String editPermission;
+	private String tableId;
 
 	private DictEngine engine;
 
-	private Long version;
-
-	public List<String> getFieldIds()
-	{
-		return fields.stream()
-				.map(DictField::getId)
-				.toList();
-	}
+	@Builder.Default
+	private List<FieldNativeScheme> fields = new ArrayList<>();
 }

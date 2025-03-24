@@ -23,6 +23,8 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictIndex;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
+import com.backstage.app.dict.domain.scheme.FieldNativeScheme;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
@@ -177,6 +179,33 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		addTransactionData(dict, true);
 
 		mongoTemplate.indexOps(dict.getId()).dropIndex(id);
+	}
+
+	@Override
+	public DictNativeScheme getNativeScheme(Dict dict)
+	{
+		var fieldsNativeScheme = dict.getFields()
+				.stream()
+				.map(it -> getFieldNativeScheme(dict.getId(), it))
+				.toList();
+
+		return DictNativeScheme.builder()
+				.dictId(dict.getId())
+				.engine(dict.getEngine())
+				.tableId(dict.getId())
+				.fields(fieldsNativeScheme)
+				.build();
+	}
+
+	private static FieldNativeScheme getFieldNativeScheme(String tableId, DictField field)
+	{
+		return FieldNativeScheme.builder()
+				.fieldId(field.getId())
+				.columnId(field.getId())
+				.fullColumnId("%s.%s".formatted(tableId, field.getId()))
+//						FIXME: Заглушка. Необходимо определить, что считаем целевым типом - bson-тип, внутренние типы mongoDB или что-то третье
+				.nativeType(null)
+				.build();
 	}
 
 	private CollectionOptions buildCollectionOptions(Dict dict)

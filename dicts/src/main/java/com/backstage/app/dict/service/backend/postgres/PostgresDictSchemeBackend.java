@@ -24,6 +24,8 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictIndex;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
+import com.backstage.app.dict.domain.scheme.FieldNativeScheme;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.DictCreatedException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
@@ -52,7 +54,7 @@ import java.util.stream.Collectors;
 @ConditionalOnEngine(PostgresEngine.POSTGRES)
 public class PostgresDictSchemeBackend extends AbstractPostgresBackend implements DictSchemeBackend
 {
-	private static final Set<DictFieldType> COMPLEX_FIELD_TYPES = Set.of(DictFieldType.JSON, DictFieldType.GEO_JSON);
+	public static final Set<DictFieldType> COMPLEX_FIELD_TYPES = Set.of(DictFieldType.JSON, DictFieldType.GEO_JSON);
 
 	private final DictsProperties dictsProperties;
 
@@ -142,6 +144,25 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	public void deleteIndex(Dict dict, String id)
 	{
 		transactionWithoutResult(() -> deleteDictIndex(id), dict.getId(), id, IndexDeletedException::new);
+	}
+
+	@Override
+	public DictNativeScheme getNativeScheme(Dict dict)
+	{
+		var fieldIds = dict.getFieldIds();
+		var wordMap = wordMap(fieldIds, dict.getId());
+
+		var tableId = wordMap.get(dict.getId())
+				.getQuotedIfKeyword();
+
+		var fullTableId = "%s.%s".formatted(dictsProperties.getDdl().getScheme(), tableId);
+
+		return DictNativeScheme.builder()
+				.dictId(dict.getId())
+				.engine(dict.getEngine())
+				.tableId(fullTableId)
+				.fields(getFieldsNativeScheme(tableId, dict.getFields(), wordMap))
+				.build();
 	}
 
 	private Dict createdDictScheme(Dict dict)
@@ -397,6 +418,28 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		}
 
 		return singleType;
+	}
+
+	private List<FieldNativeScheme> getFieldsNativeScheme(String tableId, List<DictField> fields, Map<String, PostgresWord> wordMap)
+	{
+		return fields.stream()
+				.map(field -> getFieldNativeScheme(tableId, field, wordMap))
+				.toList();
+	}
+
+	private FieldNativeScheme getFieldNativeScheme(String tableId, DictField field, Map<String, PostgresWord> wordMap)
+	{
+		var fieldId = field.getId();
+
+		var columnId = wordMap.get(fieldId)
+				.getQuotedIfKeyword();
+
+		return FieldNativeScheme.builder()
+				.fieldId(fieldId)
+				.columnId(columnId)
+				.fullColumnId("%s.%s".formatted(tableId, columnId))
+				.nativeType(computeDefinitionType(field))
+				.build();
 	}
 
 	private List<String> getAlterFieldNullabilityOperations(Dict updatedDict, Dict actualDict, Map<String, PostgresWord> updatedWordMap)

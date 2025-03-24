@@ -20,6 +20,7 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictIndex;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
 
 public interface DictSchemeBackend extends Backend
 {
@@ -42,4 +43,6 @@ public interface DictSchemeBackend extends Backend
 	DictIndex createIndex(Dict dict, DictIndex index);
 
 	void deleteIndex(Dict dict, String id);
+
+	DictNativeScheme getNativeScheme(Dict dict);
 }
