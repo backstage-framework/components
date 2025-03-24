@@ -22,6 +22,7 @@ import com.backstage.app.dict.configuration.backend.provider.DictSchemeBackendPr
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.*;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintNotFoundException;
@@ -132,7 +133,10 @@ public class DictService
 	// сейчас обновляется схема только для DictField и DictEnum, последний только в монго.
 	@LockDictSchemaModifyOperation("#dictId")
 	@CachePut(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
-	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS, key = "#dictId")
+	@CacheEvict(
+			value = {DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS, DictsConfiguration.CACHE_NAME_DICT_SCHEMES},
+			key = "#dictId"
+	)
 	public Dict update(String dictId, Dict dict)
 	{
 		var actualDict = getById(dictId);
@@ -190,7 +194,13 @@ public class DictService
 	@Transactional
 	//	TODO: История изменений схемы, даты создания/обновления схемы?
 	@LockDictSchemaModifyOperation("#dictId")
-	@CacheEvict(value = {DictsConfiguration.CACHE_NAME_DICTS, DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS}, key = "#dictId")
+	@CacheEvict(
+			value = {
+					DictsConfiguration.CACHE_NAME_DICTS,
+					DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS,
+					DictsConfiguration.CACHE_NAME_DICT_SCHEMES},
+			key = "#dictId"
+	)
 	public void delete(String dictId)
 	{
 		var dict = getById(dictId);
@@ -205,7 +215,14 @@ public class DictService
 
 	@Transactional
 	@LockDictSchemaModifyOperation("#dictId")
-	@CacheEvict(value = {DictsConfiguration.CACHE_NAME_DICTS, DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS}, key = "#dictId")
+	@CacheEvict(
+			value = {
+					DictsConfiguration.CACHE_NAME_DICTS,
+					DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS,
+					DictsConfiguration.CACHE_NAME_DICT_SCHEMES
+			},
+			key = "#dictId"
+	)
 	public DictField renameField(String dictId, String fieldId, String newFieldId, String newFieldName)
 	{
 		var dict = getById(dictId);
@@ -468,6 +485,14 @@ public class DictService
 				.stream()
 				.filter(it -> !ServiceFieldConstants.getServiceSchemeFields().contains(it.getId()))
 				.toList();
+	}
+
+	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICT_SCHEMES, sync = true)
+	public DictNativeScheme getNativeScheme(String dictId)
+	{
+		var dict = getById(dictId);
+
+		return schemeBackend(dict).getNativeScheme(dict);
 	}
 
 	// TODO: кэш
