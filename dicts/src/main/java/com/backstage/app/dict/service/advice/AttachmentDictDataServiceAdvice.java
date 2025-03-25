@@ -18,6 +18,7 @@ package com.backstage.app.dict.service.advice;
 
 import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
 import com.backstage.app.attachment.service.AttachmentService;
+import com.backstage.app.attachment.utils.AttachmentBindingUtils;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
@@ -81,6 +82,14 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 		}
 	}
 
+	@Override
+	public void handleDeleteAll(Dict dict, boolean deleted)
+	{
+		var attachmentService = attachmentServiceSupplier.get();
+
+		attachmentService.releaseAttachments(DICT_ITEM_ATTACHMENT_TYPE, AttachmentBindingUtils.buildObjectIdPattern(dict.getId()));
+	}
+
 	private void bindAttachments(AttachmentService attachmentService, Dict dict, DictItem item)
 	{
 		bindAttachments(attachmentService, dict, item, getAttachmentIds(dict, item));
@@ -114,7 +123,7 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 
 	public static String getAttachmentOwnerId(String dictId, DictItem item)
 	{
-		return dictId + "_" + item.getId();
+		return AttachmentBindingUtils.buildComplexObjectId(dictId, item.getId());
 	}
 
 	private Set<String> getAttachmentIds(Dict dict, DictItem item)
