@@ -17,6 +17,8 @@
 package com.backstage.app.attachment.service;
 
 import com.backstage.app.attachment.AbstractTests;
+import com.backstage.app.attachment.model.domain.Attachment;
+import com.backstage.app.attachment.utils.AttachmentBindingUtils;
 import com.backstage.app.model.other.user.UserInfo;
 import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.Test;
@@ -27,9 +29,9 @@ import org.springframework.http.MediaType;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Objects;
+import java.util.UUID;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class AttachmentServiceTests extends AbstractTests
 {
@@ -37,6 +39,40 @@ public class AttachmentServiceTests extends AbstractTests
 
 	@Value("classpath:attachment.png")
 	private Resource fileResource;
+
+	@Test
+	public void testComplexObjectIds() throws Exception
+	{
+		var attachment = createAttachment();
+		var userId = "userId";
+		var attachmentType = "TYPE_FOR_COMPLEX_OBJECT_ID";
+
+		var firstSegment = UUID.randomUUID().toString();
+		var secondSegment = UUID.randomUUID().toString();
+		var thirdSegment = UUID.randomUUID().toString();
+
+		attachmentService.bindAttachment(attachment.getId(), userId, attachmentType, AttachmentBindingUtils.buildComplexObjectId(firstSegment));
+		attachmentService.bindAttachment(attachment.getId(), userId, attachmentType, AttachmentBindingUtils.buildComplexObjectId(firstSegment, secondSegment));
+		attachmentService.bindAttachment(attachment.getId(), userId, attachmentType, AttachmentBindingUtils.buildComplexObjectId(firstSegment, secondSegment, thirdSegment));
+
+		assertTrue(attachmentService.isAttachmentBound(attachment.getId(), attachmentType));
+
+		assertEquals(attachment.getId(), attachmentService.getAttachments(attachmentType, AttachmentBindingUtils.buildObjectIdPattern(firstSegment)).get(0).getId());
+		assertEquals(attachment.getId(), attachmentService.getAttachments(attachmentType, AttachmentBindingUtils.buildObjectIdPattern(firstSegment, secondSegment)).get(0).getId());
+		assertEquals(attachment.getId(), attachmentService.getAttachments(attachmentType, AttachmentBindingUtils.buildObjectIdPattern(firstSegment, secondSegment, thirdSegment)).get(0).getId());
+
+		assertEquals(attachment.getId(), attachmentService.getAttachmentIds(attachmentType, AttachmentBindingUtils.buildObjectIdPattern(firstSegment)).get(0));
+		assertEquals(attachment.getId(), attachmentService.getAttachmentIds(attachmentType, AttachmentBindingUtils.buildObjectIdPattern(firstSegment, secondSegment)).get(0));
+		assertEquals(attachment.getId(), attachmentService.getAttachmentIds(attachmentType, AttachmentBindingUtils.buildObjectIdPattern(firstSegment, secondSegment, thirdSegment)).get(0));
+
+		attachmentService.releaseAttachments(attachmentType, AttachmentBindingUtils.buildComplexObjectId(firstSegment, secondSegment, thirdSegment));
+
+		assertTrue(attachmentService.isAttachmentBound(attachment.getId(), attachmentType));
+
+		attachmentService.releaseAttachments(attachmentType, AttachmentBindingUtils.buildObjectIdPattern(firstSegment));
+
+		assertFalse(attachmentService.isAttachmentBound(attachment.getId(), attachmentType));
+	}
 
 	@Test
 	@Transactional
@@ -53,9 +89,7 @@ public class AttachmentServiceTests extends AbstractTests
 
 	private void testBindings() throws Exception
 	{
-		var bytes = IOUtils.toByteArray(fileResource.getInputStream());
-		var attachment = attachmentService.addAttachment(Objects.requireNonNull(fileResource.getFilename()), MediaType.IMAGE_PNG_VALUE, UserInfo.SYSTEM_USER_ID, bytes);
-
+		var attachment = createAttachment();
 		var userId = "userId";
 		var attachmentType = "TEST_TYPE";
 		var objectId = "objectId";
@@ -73,5 +107,12 @@ public class AttachmentServiceTests extends AbstractTests
 		attachmentService.bindAttachment(attachment.getId(), userId, attachmentType, objectId);
 
 		assertTrue(attachmentService.isAttachmentBound(attachment.getId(), attachmentType));
+	}
+
+	private Attachment createAttachment() throws Exception
+	{
+		var bytes = IOUtils.toByteArray(fileResource.getInputStream());
+
+		return attachmentService.addAttachment(Objects.requireNonNull(fileResource.getFilename()), MediaType.IMAGE_PNG_VALUE, UserInfo.SYSTEM_USER_ID, bytes);
 	}
 }
