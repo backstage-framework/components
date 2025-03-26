@@ -18,6 +18,7 @@ package com.backstage.app.dict.service;
 
 import com.backstage.app.attachment.model.domain.Attachment;
 import com.backstage.app.attachment.service.AttachmentService;
+import com.backstage.app.attachment.utils.AttachmentBindingUtils;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
 import com.backstage.app.dict.common.TestPipeline;
@@ -780,7 +781,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
 
-		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + dictItem.getId());
+		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentBindingUtils.buildComplexObjectId(TESTABLE_ATTACH_DICT_ID, dictItem.getId()));
 
 		assertTrue(attachmentsAfterDelete.isEmpty());
 
@@ -788,7 +789,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), false, deletedDictItem.getVersion());
 
-		var attachmentsAfterRestore = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + deletedDictItem.getId());
+		var attachmentsAfterRestore = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentBindingUtils.buildComplexObjectId(TESTABLE_ATTACH_DICT_ID, dictItem.getId()));
 
 		assertEquals(attachmentsAfterRestore.size(), 1);
 	}
