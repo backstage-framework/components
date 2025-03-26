@@ -46,17 +46,21 @@ import org.apache.commons.collections4.bidimap.DualHashBidiMap;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.jdbc.core.ColumnMapRowMapper;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
 @ConditionalOnEngine(PostgresEngine.POSTGRES)
 public class PostgresDictDataBackend extends AbstractPostgresBackend implements DictDataBackend
 {
+	private static final ColumnMapRowMapper COLUMN_MAP_ROW_MAPPER = new ColumnMapRowMapper();
+
 	private final DictService dictService;
 
 	private final QueryParser queryParser;
@@ -181,6 +185,38 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		var count = Objects.requireNonNull(jdbc.queryForObject(countSql, query.getParameterSource(), Long.class));
 
 		return new PageImpl<>(dictItems, pageable, count);
+	}
+
+	@Override
+	public Stream<DictItem> streamByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression)
+	{
+		var dictId = dict.getId();
+
+		var dictAliasesRelation = new DualHashBidiMap<String, String>();
+		var selectClauses = new LinkedHashSet<String>();
+		var joinClauses = new LinkedHashSet<String>();
+		var whereClauses = new LinkedHashSet<String>();
+		var orderByClauses = new LinkedHashSet<String>();
+
+		var query = postgresTranslator.process(dict, queryExpression);
+
+		completeFilterClauses(dictAliasesRelation, selectClauses, joinClauses, whereClauses, orderByClauses, query,
+				fieldNameMapper.mapFrom(dictId, requiredFields), null, dict, dictService);
+
+		var wordDictId = wordMap(dictId).get(dictId).getQuotedIfKeyword();
+
+		//TODO: провести рефакторинг билда sql
+		var sqlQuery = "select " + (joinClauses.isEmpty() ? "" : "distinct ") + String.join(", ", selectClauses)
+				+ " from %s.".formatted(dictsProperties.getDdl().getScheme()) + wordDictId + (joinClauses.isEmpty() ? "" : " " + String.join(" ", joinClauses))
+				+ (whereClauses.isEmpty() ? "" : " where " + String.join(" and ", whereClauses))
+				+ (orderByClauses.isEmpty() ? "" : " order by " + String.join(", ", orderByClauses));
+
+		return jdbc.queryForStream(sqlQuery, query.getParameterSource(), (resultSet, rowNum) -> {
+			var map = COLUMN_MAP_ROW_MAPPER.mapRow(resultSet, rowNum);
+			var item = new PostgresDictItem(dictId, map, dictAliasesRelation.get(dictId.toLowerCase()));
+
+			return dataBackendMapper.mapFromUsingAliases(dictId, item, dictAliasesRelation);
+		});
 	}
 
 	@Override

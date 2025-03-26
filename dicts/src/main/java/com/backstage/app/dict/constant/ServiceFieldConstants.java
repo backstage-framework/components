@@ -20,9 +20,10 @@ import lombok.Getter;
 
 import java.util.Set;
 
-@Deprecated
 public class ServiceFieldConstants
 {
+	public static final String ALL_FIELDS = "*";
+
 	public static final String ID = "id";
 	public static final String _ID = "_id";
 	public static final String HISTORY = "history";

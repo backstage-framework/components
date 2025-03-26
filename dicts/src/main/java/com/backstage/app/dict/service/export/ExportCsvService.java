@@ -58,7 +58,7 @@ public class ExportCsvService implements ExportService
 		);
 
 		var dict = dictService.getById(dictId);
-		var dataFields = DictService.getDataFieldsByDict(dict)
+		var dataFields = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.toList();
 

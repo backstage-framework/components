@@ -159,27 +159,40 @@ public class PostgresDictDataQueryClause
 
 	public void addOrderByClauses(BidiMap<String, String> dictAliasesRelation, LinkedHashSet<String> orderByClauses, PostgresPageable postgresPageable, Dict dict)
 	{
-		if (postgresPageable != null && postgresPageable.isPaged())
+		var isUnsorted = postgresPageable == null || postgresPageable.getPostgresSort()
+				.getPostgresOrders()
+				.isEmpty();
+
+		if (isUnsorted)
 		{
-			var ordersIncludeId = postgresPageable.getPostgresSort()
-					.getPostgresOrders()
-					.stream()
-					.anyMatch(it -> ServiceFieldConstants.ID.equals(it.getPostgresDictFieldName().getWordJoint()));
-
-			//TODO: провалидировать field's указанные в sort на наличие в dict/refDict
-			var orders = postgresPageable.getPostgresSort()
-					.getPostgresOrders()
-					.stream()
-					.map(it -> String.join(" ", selectClauseRef(dictAliasesRelation, it.getPostgresDictFieldName()), it.getDirection().name()))
-					.toList();
-
-			orderByClauses.addAll(orders);
-
-			if (!ordersIncludeId)
-			{
-				orderByClauses.add(ASCENDING_ID_ORDER_CLAUSE.formatted(dictFieldNameMapper.mapFrom(dict.getId(), ServiceFieldConstants.ID).getWordJoint()));
-			}
+			return;
 		}
+
+		var ordersIncludeId = postgresPageable.getPostgresSort()
+				.getPostgresOrders()
+				.stream()
+				.map(PostgresOrder::getPostgresDictFieldName)
+				.map(PostgresDictFieldName::getWordJoint)
+				.anyMatch(ServiceFieldConstants.ID::equals);
+
+		//TODO: провалидировать field's указанные в sort на наличие в dict/refDict
+		postgresPageable.getPostgresSort()
+				.getPostgresOrders()
+				.stream()
+				.map(it -> String.join(" ", selectClauseRef(dictAliasesRelation, it.getPostgresDictFieldName()), it.getDirection().name()))
+				.forEach(orderByClauses::add);
+
+		if (ordersIncludeId)
+		{
+			return;
+		}
+
+		var wordJoint = dictFieldNameMapper.mapFrom(dict.getId(), ServiceFieldConstants.ID)
+				.getWordJoint();
+
+		var orderClause = ASCENDING_ID_ORDER_CLAUSE.formatted(wordJoint);
+
+		orderByClauses.add(orderClause);
 	}
 
 	private void addSelectIdClause(BidiMap<String, String> dictAliasesRelation, HashSet<String> selectClauses, List<PostgresDictFieldName> requiredFields,
@@ -203,13 +216,16 @@ public class PostgresDictDataQueryClause
 				.map(it -> selectClause(dictAliasesRelation, it.getQuotedIfKeyword(), it.getOriginalWord(), "id"))
 				.forEach(selectClauses::add);
 
-		postgresPageable.getPostgresSort()
-				.getPostgresOrders()
-				.stream()
-				.map(PostgresOrder::getPostgresDictFieldName)
-				.filter(it -> !dictId.equals(it.getWordDictId().getOriginalWord()))
-				.map(it -> selectClause(dictAliasesRelation, it, "id"))
-				.forEach(selectClauses::add);
+		if (postgresPageable != null && postgresPageable.isPaged())
+		{
+			postgresPageable.getPostgresSort()
+					.getPostgresOrders()
+					.stream()
+					.map(PostgresOrder::getPostgresDictFieldName)
+					.filter(it -> !dictId.equals(it.getWordDictId().getOriginalWord()))
+					.map(it -> selectClause(dictAliasesRelation, it, "id"))
+					.forEach(selectClauses::add);
+		}
 	}
 
 	private String selectClause(BidiMap<String, String> tableAliasesRelation, PostgresDictFieldName fieldName)

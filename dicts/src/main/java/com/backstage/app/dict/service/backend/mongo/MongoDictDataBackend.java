@@ -134,6 +134,21 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	}
 
 	@Override
+	public Stream<DictItem> streamByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression)
+	{
+		var dictId = dict.getId();
+
+		var queryContext = mongoTranslator.process(dict, queryExpression);
+
+		var mongoClause = completedMongoClauses(requiredFields, new HashSet<>(), new Query(),
+				queryContext, new LinkedList<>(), Pageable.unpaged(), dictId);
+
+		// TODO: разобраться с формированием Query тут и в getByFilter.
+		return mongoTemplate.stream(mongoClause.getQuery().addCriteria(queryContext.getCriteria()), Document.class, dictId)
+				.map(document -> backendMapper.mapFrom(dictId, document));
+	}
+
+	@Override
 	public boolean existsById(Dict dict, String itemId)
 	{
 		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));
@@ -224,7 +239,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		queryClause.addSelectFields(requiredFields, query);
 		queryClause.addJoin(requiredFields, joinFields, queryContext, operations, pageable, dictId);
 
-		var mongoPageable = pageable.isUnpaged() ? pageable : buildMongoPageable(pageable);
+		var mongoPageable = pageable.isUnpaged() && !pageable.getSort().isSorted() ? pageable : buildMongoPageable(pageable);
 
 		if (mongoPageable.isPaged())
 		{
@@ -236,6 +251,14 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 			queryClause.addPageable(operations, mongoPageable);
 
 			query.with(mongoPageable);
+		}
+		else if (mongoPageable.getSort().isSorted())
+		{
+			var sort = mongoPageable.getSort();
+			var orders = queryClause.buildSort(sort, joinFields);
+
+			operations.add(Aggregation.sort(sort));
+			query.with(orders);
 		}
 
 		return new MongoClause(query, mongoPageable, joinFields, operations);
@@ -404,7 +427,12 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 					.reduce(Sort::and)
 					.orElseThrow(() -> new PrepareMongoPageableException(pageable.getSort().toString()));
 
-			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), orders);
+			if (pageable.isPaged())
+			{
+				return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), orders);
+			}
+
+			return Pageable.unpaged(orders);
 		}
 
 		return pageable;

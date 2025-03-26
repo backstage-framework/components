@@ -41,6 +41,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostgresDictDataInsertClause
 {
+	private final DictService dictService;
+
 	public void addInsertClause(String column, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
 		columns.add(column);
@@ -64,7 +66,7 @@ public class PostgresDictDataInsertClause
 
 	public void addDictDataInsertClause(Dict dict, PostgresDictItem dictItem, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		var fieldMap = DictService.getDataFieldsByDict(dict)
+		var fieldMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 

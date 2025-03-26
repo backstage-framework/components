@@ -59,7 +59,7 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 	public Document mapTo(String dictId, DictItem dictItem)
 	{
 		var dict = dictService.getById(dictId);
-		var dataFieldsMap = DictService.getDataFieldsByDict(dict)
+		var dataFieldsMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
@@ -100,7 +100,7 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 		}
 
 		var dict = dictService.getById(dictId);
-		var dataFieldMap = DictService.getDataFieldsByDict(dict)
+		var dataFieldMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 

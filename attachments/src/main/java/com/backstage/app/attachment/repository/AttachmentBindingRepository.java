@@ -54,8 +54,14 @@ public interface AttachmentBindingRepository extends CustomJpaRepository<Attachm
 	@Query("select a from AttachmentBinding b left join b.attachment a where b.type = :type and b.objectId = :objectId")
 	List<Attachment> findAttachmentsByTypeAndObjectId(@Param("type") String type, @Param("objectId") String objectId);
 
+	@Query("select distinct a from AttachmentBinding b left join b.attachment a where b.type = :type and b.objectId like :objectId")
+	List<Attachment> findAttachmentsByTypeAndObjectIdLike(@Param("type") String type, @Param("objectId") String objectId);
+
 	@Query("select a.id from AttachmentBinding b left join b.attachment a where b.type = :type and b.objectId = :objectId")
 	List<String> findAttachmentIdsByTypeAndObjectId(@Param("type") String type, @Param("objectId") String objectId);
+
+	@Query("select distinct a.id from AttachmentBinding b left join b.attachment a where b.type = :type and b.objectId like :objectId")
+	List<String> findAttachmentIdsByTypeAndObjectIdLike(@Param("type") String type, @Param("objectId") String objectId);
 
 	@Query("select b.objectId, a from AttachmentBinding b left join b.attachment a where b.type = :type and b.objectId in :objectIds")
 	List<Object[]> findAttachmentsByTypeAndObjectIdsRaw(@Param("type") String type, @Param("objectIds") Collection<String> objectIds);
@@ -92,5 +98,11 @@ public interface AttachmentBindingRepository extends CustomJpaRepository<Attachm
 	int deleteByAttachmentIdAndUserIdAndTypeAndObjectId(String attachmentId, String userId, String type, String objectId);
 
 	@Modifying
+	int deleteByAttachmentIdAndUserIdAndTypeAndObjectIdLike(String attachmentId, String userId, String type, String objectId);
+
+	@Modifying
 	int deleteByTypeAndObjectId(String type, String objectId);
+
+	@Modifying
+	int deleteByTypeAndObjectIdLike(String type, String objectId);
 }
