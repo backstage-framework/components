@@ -48,9 +48,10 @@ public class AttachmentContentValidator implements AttachmentServiceAdvice
 				return;
 			}
 
-			log.error("При файла с id = {} ожидается mimeTYpe = {}, а обнаружен {}.", id, mimeType, detectedMimeType);
+			var errorMessage = ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT.getMessage()
+					.formatted(id, mimeType, detectedMimeType);
 
-			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT);
+			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT, errorMessage);
 		}
 		catch (IOException e)
 		{

@@ -35,7 +35,7 @@ public enum ApiStatusCodeImpl implements ApiStatusCode
 	ATTACHMENT_ADD_ERROR(100, "Невозможно сохранить вложение."),
 	ATTACHMENT_DELETE_ERROR(101, "Невозможно удалить вложение."),
 	ATTACHMENT_TYPE_NOT_SUPPORTED(102, "Данный тип вложения не поддерживается."),
-	ATTACHMENT_INVALID_CONTENT(103, "Содержимое вложения не соответствует типу."),
+	ATTACHMENT_INVALID_CONTENT(103, "Для файла с id = %s ожидается mimeTYpe = %s, а обнаружен %s."),
 	ATTACHMENT_NOT_FOUND(104, "Вложение не найдено.", ApiStatusCategory.NOT_FOUND),
 	ATTACHMENT_DATA_NOT_AVAILABLE(105, "Данные вложения не доступны.", ApiStatusCategory.NOT_FOUND),
 	ATTACHMENT_STORE_INIT_FAILED(106, "Ошибка при инициализации хранилища вложений."),
