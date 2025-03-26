@@ -27,6 +27,7 @@ import com.backstage.app.utils.SecurityUtils;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.HttpHeaders;
@@ -76,11 +77,11 @@ public class AttachmentEndpoint
 	}
 
 	@PostMapping(value = "/upload", consumes = MediaType.ALL_VALUE)
-	public ApiResponse<String> upload(@RequestHeader(HttpHeaders.CONTENT_TYPE) String contentType,
-	                                  @RequestParam String fileName,
-	                                  InputStream stream)
+	public ApiResponse<String> upload(@RequestParam String fileName,
+	                                  InputStream stream,
+	                                  HttpServletRequest request)
 	{
-		var attachment = attachmentService.addAttachment(fileName, contentType, SecurityUtils.getCurrentUserId(), stream);
+		var attachment = attachmentService.addAttachment(fileName, request.getContentType(), SecurityUtils.getCurrentUserId(), stream);
 
 		return ApiResponse.of(attachment.getId());
 	}

@@ -16,20 +16,47 @@
 
 package com.backstage.app.attachment.service;
 
+import com.backstage.app.exception.AppException;
+import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.tika.Tika;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Component;
 
+import java.io.IOException;
+
 @Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @ConditionalOnProperty(name = "app.attachments.verify-content")
+@Slf4j
 public class AttachmentContentValidator implements AttachmentServiceAdvice
 {
 	@Override
 	public void handleAddAttachment(String id, String fileName, String mimeType, String userId, Resource resource)
 	{
-		// TODO: implement
+		var tika = new Tika();
+
+		try (var inputStream = resource.getInputStream())
+		{
+			var detectedMimeType = tika.detect(inputStream);
+
+			if (detectedMimeType.equals(mimeType))
+			{
+				return;
+			}
+
+			log.error("При файла с id = {} ожидается mimeTYpe = {}, а обнаружен {}.", id, mimeType, detectedMimeType);
+
+			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_INVALID_CONTENT);
+		}
+		catch (IOException e)
+		{
+			log.error("При проверке mimeType файла с id = {} произошла ошибка.", id, e);
+
+			throw new AppException(ApiStatusCodeImpl.ATTACHMENT_READ_ERROR);
+		}
 	}
 }

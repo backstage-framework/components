@@ -41,6 +41,7 @@ public enum ApiStatusCodeImpl implements ApiStatusCode
 	ATTACHMENT_STORE_INIT_FAILED(106, "Ошибка при инициализации хранилища вложений."),
 	ATTACHMENT_STORE_ERROR(107, "При обращении к хранилищу вложений произошла ошибка."),
 	ATTACHMENT_STORE_SYNC_ERROR(108, "Ошибка при синхронизации вложений между хранилищами."),
+	ATTACHMENT_READ_ERROR(109, "Ошибка чтения файла."),
 
 	// TODO: потеряли логику присвоения кодов ниже.
 	DOCUMENT_TEMPLATE_GENERATE_ERROR(109, "Ошибка при создании печатной формы по шаблону."),

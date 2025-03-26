@@ -30,6 +30,7 @@ dependencies {
 	api project(":database")
 
 	api "io.minio:minio:$minioVersion"
+	api "org.apache.tika:tika-core:$tikaVersion"
 
 	compileOnly "org.apache.httpcomponents.client5:httpclient5"
 
