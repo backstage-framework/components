@@ -20,6 +20,7 @@ import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.tika.Tika;
+import org.apache.tika.io.TikaInputStream;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -34,13 +35,17 @@ import java.io.IOException;
 @Slf4j
 public class AttachmentContentValidator implements AttachmentServiceAdvice
 {
+	private static final Integer FILE_LENGTH_READ = 16 * 1024;
+
 	@Override
 	public void handleAddAttachment(String id, String fileName, String mimeType, String userId, Resource resource)
 	{
 		var tika = new Tika();
 
-		try (var inputStream = resource.getInputStream())
+		try (var inputStream = TikaInputStream.get(resource.getInputStream()))
 		{
+			tika.setMaxStringLength(FILE_LENGTH_READ);
+
 			var detectedMimeType = tika.detect(inputStream);
 
 			if (detectedMimeType.equals(mimeType))
