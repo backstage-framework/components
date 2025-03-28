@@ -72,15 +72,12 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 
 		var created = dictItem.getCreated() == null ? null : serviceDateTime(dictItem.getCreated());
 		var updated = dictItem.getUpdated() == null ? null : serviceDateTime(dictItem.getUpdated());
-		var deleted = dictItem.getDeleted() == null ? null : serviceDateTime(dictItem.getDeleted());
 
 		document.append(ServiceFieldConstants._ID, dictItem.getId());
 		document.append(ServiceFieldConstants.VERSION, dictItem.getVersion());
 		document.append(ServiceFieldConstants.HISTORY, dictItem.getHistory().stream().map(JsonUtils::toJson).map(Document::parse).toList());
 		document.append(ServiceFieldConstants.CREATED, created);
 		document.append(ServiceFieldConstants.UPDATED, updated);
-		document.append(ServiceFieldConstants.DELETED, deleted);
-		document.append(ServiceFieldConstants.DELETION_REASON, dictItem.getDeletionReason());
 
 		return document;
 	}
@@ -119,8 +116,6 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 
 		var created = (Date) source.get(ServiceFieldConstants.CREATED);
 		var updated = (Date) source.get(ServiceFieldConstants.UPDATED);
-		var deleted = (Date) source.get(ServiceFieldConstants.DELETED);
-		var deletionReason = (String) source.get(ServiceFieldConstants.DELETION_REASON);
 
 		return DictItem.builder()
 				.id(source.get(ServiceFieldConstants._ID) instanceof String s ? s : ((ObjectId) source.get(ServiceFieldConstants._ID)).toString())
@@ -129,8 +124,6 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 				.history((List<Map<String, Object>>) source.get(ServiceFieldConstants.HISTORY))
 				.created(DateUtils.toLocalDateTime(created))
 				.updated(DateUtils.toLocalDateTime(updated))
-				.deleted(DateUtils.toLocalDateTime(deleted))
-				.deletionReason(deleted == null ? null : deletionReason)
 				.build();
 	}
 

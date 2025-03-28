@@ -69,8 +69,6 @@ public class DictItemConverter extends AbstractConfigurableConverter<DictItem, D
 		target.setVersion(source.getVersion());
 		target.setCreated(source.getCreated());
 		target.setUpdated(source.getUpdated());
-		target.setDeleted(source.getDeleted());
-		target.setDeletionReason(source.getDeletionReason());
 
 		return target;
 	}

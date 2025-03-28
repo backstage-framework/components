@@ -260,15 +260,15 @@ public class Interpreter
 	{
 		if (delete.getColumn() == null)
 		{
-			dictDataService.deleteAll(delete.getTable().getName(), true);
+			dictDataService.deleteAll(delete.getTable().getName());
 
 			return;
 		}
 
 		var filtersQuery = buildFilterQuery(delete.getColumn());
 
-		dictDataService.getByFilter(delete.getTable().getName(), List.of("*"), filtersQuery, Pageable.unpaged())
-				.forEach(item -> dictDataService.delete(delete.getTable().getName(), item.getId(), true, item.getVersion()));
+		dictDataService.streamByFilter(delete.getTable().getName(), List.of(ID), filtersQuery)
+				.forEach(dictItem -> dictDataService.delete(delete.getTable().getName(), dictItem.getId()));
 	}
 
 	private void execute(Drop drop)

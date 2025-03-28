@@ -39,7 +39,6 @@ import com.backstage.app.utils.ListUtils;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
@@ -51,6 +50,8 @@ import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
+
+import static com.backstage.app.dict.constant.ServiceFieldConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -90,7 +91,7 @@ public class DictDataService
 
 	public List<DictItem> getByIds(String dictId, List<String> ids, String userId)
 	{
-		return getByIds(dictId, ids, List.of(ServiceFieldConstants.ALL_FIELDS), userId);
+		return getByIds(dictId, ids, List.of(ALL_FIELDS), userId);
 	}
 
 	public List<DictItem> getByIds(String dictId, List<String> ids, List<String> selectFields, String userId)
@@ -200,10 +201,10 @@ public class DictDataService
 
 		if (selectedFieldNames != null && !selectedFieldNames.isEmpty())
 		{
-			if (selectedFieldNames.contains(ServiceFieldConstants.ALL_FIELDS))
+			if (selectedFieldNames.contains(ALL_FIELDS))
 			{
 				result = ListUtils.copyAndAdd(selectedFieldNames, dict.getFields().stream().map(DictField::getId).toList());
-				result.remove(ServiceFieldConstants.ALL_FIELDS);
+				result.remove(ALL_FIELDS);
 			}
 			else
 			{
@@ -215,14 +216,14 @@ public class DictDataService
 			result.addAll(dict.getFields().stream().map(DictField::getId).toList());
 		}
 
-		if (!result.contains(ServiceFieldConstants.ID))
+		if (!result.contains(ID))
 		{
-			result.add(ServiceFieldConstants.ID);
+			result.add(ID);
 		}
 
-		if (!result.contains(ServiceFieldConstants.VERSION))
+		if (!result.contains(VERSION))
 		{
-			result.add(ServiceFieldConstants.VERSION);
+			result.add(VERSION);
 		}
 
 		return result;
@@ -235,7 +236,7 @@ public class DictDataService
 
 	public Page<String> getIdsByFilter(String dictId, String filtersQuery, String userId)
 	{
-		return getByFilter(dictId, List.of(ServiceFieldConstants.ID), filtersQuery, Pageable.unpaged(), userId)
+		return getByFilter(dictId, List.of(ID), filtersQuery, Pageable.unpaged(), userId)
 				.map(Identity::getId);
 	}
 
@@ -414,7 +415,7 @@ public class DictDataService
 	@Transactional
 	public void updateByFilter(String dictId, String filtersQuery, Map<String, Object> updatedParams)
 	{
-		getByFilter(dictId, List.of(ServiceFieldConstants.ALL_FIELDS), filtersQuery, Pageable.unpaged()).stream()
+		getByFilter(dictId, List.of(ALL_FIELDS), filtersQuery, Pageable.unpaged()).stream()
 				.forEach(dictItem -> {
 					dictItem.getData().putAll(updatedParams);
 
@@ -423,59 +424,44 @@ public class DictDataService
 	}
 
 	@Transactional
-	public void delete(String dictId, String itemId, boolean deleted, long version)
+	public void delete(String dictId, String itemId)
 	{
-		delete(dictId, itemId, deleted, null, SecurityUtils.getCurrentUserId(), version);
+		delete(dictId, itemId, SecurityUtils.getCurrentUserId());
 	}
 
 	@Transactional
-	public void delete(String dictId, String itemId, boolean deleted, String reason, long version)
-	{
-		delete(dictId, itemId, deleted, reason, SecurityUtils.getCurrentUserId(), version);
-	}
-
-	@Transactional
-	public void delete(String dictId, String itemId, boolean deleted, String reason, String userId, long version)
+	public void delete(String dictId, String itemId, String userId)
 	{
 		var item = getById(dictId, itemId, userId);
-
 		var dict = dictService.getById(dictId);
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		serviceAdviceList.forEach(it -> it.handleDelete(dict, item, deleted));
+		dictDataValidationService.validateDelete(dict, itemId);
 
-		dictDataValidationService.validateOptimisticLock(dictId, itemId, version, userId);
+		serviceAdviceList.forEach(it -> it.handleDelete(dict, item));
 
-		var dictItem = withDeleted(deleted, reason, item);
-
-		backend(dict).delete(dict, dictItem);
+		backend(dict).delete(dict, item.getId());
 	}
 
 	@Transactional
-	public void deleteAll(String dictId, boolean deleted)
+	public void deleteAll(String dictId)
 	{
-		deleteAll(dictId, deleted, SecurityUtils.getCurrentUserId());
+		deleteAll(dictId, SecurityUtils.getCurrentUserId());
 	}
 
 	@Transactional
-	public void deleteAll(String dictId, boolean deleted, String userId)
+	public void deleteAll(String dictId, String userId)
 	{
 		var dict = dictService.getById(dictId);
 
 		dictPermissionService.checkEditPermission(dict, userId);
-		serviceAdviceList.forEach(it -> it.handleDeleteAll(dict, deleted));
 
-		var backend = backend(dictId);
+		dictDataValidationService.validateDeleteAll(dict);
 
-		var dictItems = backend.getByFilter(dict, List.of(new DictFieldName(null, ServiceFieldConstants.ALL_FIELDS)), queryParser.parse("deleted = null"), Pageable.unpaged())
-				.getContent()
-				.stream()
-				.peek(it -> dictDataValidationService.validateOptimisticLock(dictId, it.getId(), it.getVersion(), userId))
-				.map(it -> withDeleted(deleted, null, it))
-				.toList();
+		serviceAdviceList.forEach(it -> it.handleDeleteAll(dict));
 
-		backend.deleteAll(dict, dictItems);
+		backend(dictId).deleteAll(dict);
 	}
 
 	private DictDataBackend backend(String dictId)
@@ -498,8 +484,6 @@ public class DictDataService
 		dictItem.setVersion(1L);
 		dictItem.setCreated(LocalDateTime.now());
 		dictItem.setUpdated(LocalDateTime.now());
-		dictItem.setDeleted(null);
-		dictItem.setDeletionReason(null);
 	}
 
 	private DictItem applyChanges(DictItem updatedItem, DictItem sourceItem)
@@ -529,34 +513,5 @@ public class DictDataService
 		sourceItem.setVersion(sourceItem.getVersion() + 1L);
 
 		return sourceItem;
-	}
-
-	@Deprecated(forRemoval = true)
-	private DictItem withDeleted(boolean deleted, String reason, DictItem dictItem)
-	{
-		dictItem.setUpdated(LocalDateTime.now());
-		dictItem.setVersion(dictItem.getVersion() + 1L);
-
-		if (deleted)
-		{
-			dictItem.setDeleted(LocalDateTime.now());
-			dictItem.setDeletionReason(StringUtils.isBlank(reason) ? null : reason);
-		}
-		else
-		{
-			dictItem.setDeleted(null);
-			dictItem.setDeletionReason(null);
-		}
-
-		var historyMap = new HashMap<String, Object>();
-
-		historyMap.put(ServiceFieldConstants.UPDATED, dictItem.getUpdated());
-		historyMap.put(ServiceFieldConstants.VERSION, dictItem.getVersion());
-		historyMap.put(ServiceFieldConstants.DELETED, dictItem.getDeleted());
-		historyMap.put(ServiceFieldConstants.DELETION_REASON, dictItem.getDeletionReason());
-
-		dictItem.getHistory().add(historyMap);
-
-		return dictItem;
 	}
 }

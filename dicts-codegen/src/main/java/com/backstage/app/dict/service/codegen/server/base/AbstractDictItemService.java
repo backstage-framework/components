@@ -104,12 +104,7 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 
 	public void delete(T item)
 	{
-		delete(item, null);
-	}
-
-	public void delete(T item, String reason)
-	{
-		dictDataService.delete(item.getId(), reason, true, item.getVersion());
+		dictDataService.delete(getDictId(), item.getId());
 	}
 
 	protected abstract String getDictId();

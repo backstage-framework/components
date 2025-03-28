@@ -21,8 +21,6 @@ import com.backstage.app.dict.service.CommonDictDataServiceTest;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 
 @Order(TestPipeline.POSTGRES_DICT_DATA)
 @PostgresStorage
@@ -177,12 +175,6 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
-	void check_attachmentBindingDeleteDictItem()
-	{
-		checkAttachmentBindingWithDeleteDictItem();
-	}
-
-	@Test
 	void create()
 	{
 		createDictItem();
@@ -260,17 +252,16 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 		deleteDictItem();
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = {"Test reason", "1234"})
-	void delete_withReason(String reason)
+	@Test
+	void deleteAll()
 	{
-		deleteWithReason(reason);
+		deleteAllDictItems();
 	}
 
 	@Test
-	void delete_withEmptyReason()
+	void deleteWithReferenceBlocked()
 	{
-		deleteWithEmptyReason();
+		deleteRefDictItemBlocked();
 	}
 
 	@Test

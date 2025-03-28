@@ -22,7 +22,6 @@ import com.backstage.app.dict.api.configuration.properties.DictsRemoteEndpointPr
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.model.dto.data.request.CreateDictItemRequest;
-import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
@@ -121,9 +120,9 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Удаление записи в справочнике (soft delete).")
 	@PostMapping("/{dictId}/delete")
 	public ApiResponse<?> delete(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                             @RequestBody @Valid DeleteDictItemRequest request)
+	                             @Parameter(description = "Идентификатор записи справочника") @RequestParam String itemId)
 	{
-		return externalDictDataService.delete(dictId, request);
+		return externalDictDataService.delete(dictId, itemId);
 	}
 
 	@Override

@@ -48,9 +48,9 @@ public interface DictDataBackend extends Backend
 
 	DictItem update(Dict dict, String itemId, DictItem dictItem, long version);
 
-	void delete(Dict dict, DictItem dictItem);
+	void delete(Dict dict, String itemId);
 
-	void deleteAll(Dict dict, List<DictItem> dictItems);
+	void deleteAll(Dict dict);
 
 	long countByFilter(Dict dict, QueryExpression queryExpression);
 }

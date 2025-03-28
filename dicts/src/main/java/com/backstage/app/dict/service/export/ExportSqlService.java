@@ -74,7 +74,6 @@ public class ExportSqlService implements ExportService
 			case ServiceFieldConstants.ID -> item.getId();
 			case ServiceFieldConstants.CREATED -> item.getCreated();
 			case ServiceFieldConstants.UPDATED -> item.getUpdated();
-			case ServiceFieldConstants.DELETED -> item.getDeleted();
 			case ServiceFieldConstants.HISTORY -> item.getHistory();
 			case ServiceFieldConstants.VERSION -> item.getVersion();
 

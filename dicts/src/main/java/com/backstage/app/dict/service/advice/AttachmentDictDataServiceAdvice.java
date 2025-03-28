@@ -70,20 +70,13 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 	}
 
 	@Override
-	public void handleDelete(Dict dict, DictItem item, boolean deleted)
+	public void handleDelete(Dict dict, DictItem item)
 	{
-		if (deleted)
-		{
-			releaseAttachments(attachmentServiceSupplier.get(), dict, item);
-		}
-		else
-		{
-			bindAttachments(attachmentServiceSupplier.get(), dict, item);
-		}
+		releaseAttachments(attachmentServiceSupplier.get(), dict, item);
 	}
 
 	@Override
-	public void handleDeleteAll(Dict dict, boolean deleted)
+	public void handleDeleteAll(Dict dict)
 	{
 		var attachmentService = attachmentServiceSupplier.get();
 

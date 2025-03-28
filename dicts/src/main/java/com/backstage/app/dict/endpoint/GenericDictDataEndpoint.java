@@ -21,7 +21,6 @@ import com.backstage.app.api.model.OkResponse;
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.model.dto.data.request.CreateDictItemRequest;
-import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
@@ -143,11 +142,11 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 		return ApiResponse.of((T) dictItemConverter.convert(result, getDictItemConverterConfig()));
 	}
 
-	@Operation(summary = "Удаление записи в справочнике (soft delete).")
+	@Operation(summary = "Удаление записи в справочнике.")
 	@PostMapping("/{dictId}/delete")
-	public ApiResponse<?> delete(@PathVariable String dictId, @RequestBody @Valid DeleteDictItemRequest request)
+	public ApiResponse<?> delete(@PathVariable String dictId, @RequestParam String itemId)
 	{
-		dictDataService.delete(dictId, request.getItemId(), request.isDeleted(), request.getReason(), request.getVersion());
+		dictDataService.delete(dictId, itemId);
 
 		return ApiResponse.ok();
 	}

@@ -19,11 +19,12 @@ package com.backstage.app.dict.service.backend.postgres;
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.Dict;
+import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
-import com.backstage.app.dict.exception.dictitem.DictItemCreatedException;
-import com.backstage.app.dict.exception.dictitem.DictItemDeletedException;
-import com.backstage.app.dict.exception.dictitem.DictItemUpdatedException;
+import com.backstage.app.dict.exception.dictitem.DictItemCreateException;
+import com.backstage.app.dict.exception.dictitem.DictItemDeleteException;
+import com.backstage.app.dict.exception.dictitem.DictItemUpdateException;
 import com.backstage.app.dict.model.dictitem.DictItemColumnName;
 import com.backstage.app.dict.model.postgres.backend.PostgresDictFieldName;
 import com.backstage.app.dict.model.postgres.backend.PostgresDictItem;
@@ -248,7 +249,7 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	@Override
 	public DictItem create(Dict dict, DictItem dictItem)
 	{
-		return transactionWithResult(() -> createItem(dict, dictItem), dict.getId(), DictItemCreatedException::new);
+		return transactionWithResult(() -> createItem(dict, dictItem), dict.getId(), DictItemCreateException::new);
 	}
 
 	@Override
@@ -256,7 +257,7 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	{
 		var dictId = dict.getId();
 
-		return transactionWithResult(() -> createItems(dict, dictItems), dictId, DictItemCreatedException::new);
+		return transactionWithResult(() -> createItems(dict, dictItems), dictId, DictItemCreateException::new);
 	}
 
 	@Override
@@ -264,19 +265,19 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	{
 		var dictId = dict.getId();
 
-		return transactionWithResult(() -> updateItem(dict, itemId, dictItem), dictId, itemId, DictItemUpdatedException::new);
+		return transactionWithResult(() -> updateItem(dict, itemId, dictItem), dictId, itemId, DictItemUpdateException::new);
 	}
 
 	@Override
-	public void delete(Dict dict, DictItem dictItem)
+	public void delete(Dict dict, String itemId)
 	{
-		transactionWithoutResult(() -> deleteItem(dict, dictItem), dict.getId(), dictItem.getId(), DictItemDeletedException::new);
+		transactionWithoutResult(() -> deleteItem(dict, itemId), dict.getId(), itemId, DictItemDeleteException::new);
 	}
 
 	@Override
-	public void deleteAll(Dict dict, List<DictItem> dictItems)
+	public void deleteAll(Dict dict)
 	{
-		transactionWithoutResult(() -> deleteItems(dict, dictItems), dict.getId(), String.join(", ", dictItems.stream().map(DictItem::getId).toList()), DictItemDeletedException::new);
+		transactionWithoutResult(() -> deleteAll(dict.getId()), dict.getId(), DictItemDeleteException::new);
 	}
 
 	@Override
@@ -303,6 +304,8 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 				"columns", String.join(", ", columns),
 				"values", Arrays.stream(sqlParameterSource.getParameterNames()).collect(Collectors.joining(", :", ":", ""))
 		);
+
+		lockRelatedItems(dict, dictItem);
 
 		var sql = sqlWithParameters("insert into ${scheme}.${dictId} (${columns}) values (${values})", parameterMap);
 
@@ -334,6 +337,8 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 				"itemId", itemId
 		);
 
+		lockRelatedItems(dict, dictItem);
+
 		var sql = sqlWithParameters("update ${scheme}.${dictId} set ${updateClauses} where id = '${itemId}'", parameterMap);
 
 		jdbc.update(sql, sqlParameterSource);
@@ -341,30 +346,36 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		return getById(dict, itemId, List.of(new DictFieldName(null, "*")));
 	}
 
-	private void deleteItem(Dict dict, DictItem dictItem)
+	private void deleteItem(Dict dict, String id)
 	{
-		var updateClauses = new LinkedHashSet<String>();
-
 		var dictId = dict.getId();
 		var sqlParameterSource = new MapSqlParameterSource();
 
-		completeUpdateClause(updateClauses, dict, dictItem.getId(), dataBackendMapper.mapTo(dictId, dictItem), sqlParameterSource);
+		var scheme = dictsProperties.getDdl().getScheme();
+		var quotedDictId = wordMap(dictId).get(dictId).getQuotedIfKeyword();
 
-		var parameterMap = Map.of(
-				"scheme", dictsProperties.getDdl().getScheme(),
-				"dictId", wordMap(dictId).get(dictId).getQuotedIfKeyword(),
-				"updateClauses", String.join(", ", updateClauses),
-				"itemId", dictItem.getId()
-		);
+		sqlParameterSource.addValue("id", id);
 
-		var sql = sqlWithParameters("update ${scheme}.${dictId} set ${updateClauses} where id = '${itemId}'", parameterMap);
+		lockItems(dictId, List.of(id));
+
+		var sql = "delete from %s.%s where id = :id"
+				.formatted(scheme, quotedDictId);
 
 		jdbc.update(sql, sqlParameterSource);
 	}
 
-	private void deleteItems(Dict dict, List<DictItem> dictItems)
+	private void deleteAll(String dictId)
 	{
-		dictItems.forEach(dictItem -> deleteItem(dict, dictItem));
+		var sqlParameterSource = new MapSqlParameterSource();
+
+		var scheme = dictsProperties.getDdl().getScheme();
+		var quotedDictId = wordMap(dictId).get(dictId).getQuotedIfKeyword();
+
+		lockDict(dictId);
+
+		var sql = "truncate %s.%s".formatted(scheme, quotedDictId);
+
+		jdbc.update(sql, sqlParameterSource);
 	}
 
 	private void completeInsertClauses(LinkedHashSet<String> columns, Dict dict, PostgresDictItem postgresDictItem, MapSqlParameterSource sqlParameterSource)
@@ -385,8 +396,6 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		updateClause.addUpdateClause(DictItemColumnName.VERSION.getName(), oldItem.getVersion(), postgresDictItem.getVersion(), updateClauses, sqlParameterSource);
 		updateClause.addUpdateJsonClause(DictItemColumnName.HISTORY.getName(), oldItem.getHistory(), postgresDictItem.getHistory(), updateClauses, sqlParameterSource);
 		updateClause.addUpdateClause(DictItemColumnName.UPDATED.getName(), oldItem.getUpdated(), postgresDictItem.getUpdated(), updateClauses, sqlParameterSource);
-		updateClause.addUpdateClause(DictItemColumnName.DELETED.getName(), oldItem.getDeleted(), postgresDictItem.getDeleted(), updateClauses, sqlParameterSource);
-		updateClause.addUpdateClause(DictItemColumnName.DELETION_REASON.getName(), oldItem.getDeletionReason(), postgresDictItem.getDeletionReason(), updateClauses, sqlParameterSource);
 	}
 
 	private void completeFilterClauses(BidiMap<String, String> dictAliasesRelation,
@@ -399,5 +408,78 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		filterClause.addJoinClauses(joinClauses, requiredFields, queryContext, postgresPageable, dict);
 		filterClause.addWhereClauses(whereClauses, queryContext);
 		filterClause.addOrderByClauses(dictAliasesRelation, orderByClauses, postgresPageable, dict);
+	}
+
+	private void lockRelatedItems(Dict dict, DictItem dictItem)
+	{
+		var dictItemIdsMap = getRelatedDictItemIdsMap(dict, dictItem);
+
+		dictItemIdsMap.forEach(this::lockItems);
+	}
+
+	private void lockDict(String dictId)
+	{
+		var scheme = dictsProperties.getDdl().getScheme();
+		var quotedDictId = wordMap(dictId).get(dictId)
+				.getQuotedIfKeyword();
+
+		var lockSql = "select id from %s.%s for update nowait"
+				.formatted(scheme, quotedDictId);
+
+		jdbc.query(lockSql, Map.of(), rs -> { });
+	}
+
+	private void lockItems(String dictId, List<String> ids)
+	{
+		var sqlParameterSource = new MapSqlParameterSource();
+		var scheme = dictsProperties.getDdl().getScheme();
+		var quotedDictId = wordMap(dictId).get(dictId)
+				.getQuotedIfKeyword();
+
+		sqlParameterSource.addValue("ids", ids);
+
+		var lockSql = "select id from %s.%s where id in (:ids) for update nowait"
+					.formatted(scheme, quotedDictId);
+
+		jdbc.query(lockSql, sqlParameterSource, rs -> { });
+	}
+
+	private Map<String, List<String>> getRelatedDictItemIdsMap(Dict dict, DictItem item)
+	{
+		var dictIdItemIdsMap = dict.getFields()
+				.stream()
+				.filter(dictField -> dictField.getDictRef() != null)
+				.collect(Collectors.groupingBy(
+						dictField -> dictField.getDictRef().getDictId(),
+						Collectors.flatMapping(
+								dictField -> getIds(item, dictField)
+										.stream()
+										.filter(Objects::nonNull),
+								Collectors.toList())));
+
+		dictIdItemIdsMap.entrySet()
+				.removeIf(entry -> entry.getValue().isEmpty());
+
+		return dictIdItemIdsMap;
+	}
+
+	private List<String> getIds(DictItem item, DictField field)
+	{
+		var value = item.getData().get(field.getId());
+
+		if (value == null)
+		{
+			return List.of();
+		}
+
+		if (field.isMultivalued() && value instanceof List<?> list)
+		{
+			return list.stream()
+					.filter(String.class::isInstance)
+					.map(String.class::cast)
+					.toList();
+		}
+
+		return List.of((String) value);
 	}
 }

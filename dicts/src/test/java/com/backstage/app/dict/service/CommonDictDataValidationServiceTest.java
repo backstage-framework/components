@@ -20,6 +20,7 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
+import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.UnavailableDictRefException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
@@ -187,6 +188,46 @@ public class CommonDictDataValidationServiceTest extends CommonTest
 				"timestampField", "2021-08-15T06:00:00.000Z");
 
 		//assertThrows(ForbiddenFieldNameException.class, () -> dictDataValidationService.validateDictDataItem(buildDictDataItem(TESTABLE_DICT_ID, map), USER_ID));
+	}
+
+	protected void deleteRefDictItemForbidden()
+	{
+		Map<String, Object> map = Map.of(
+				"stringField", "string",
+				"created", "2021-08-15T06:00:00.000Z",
+				"integerField", 1,
+				"booleanField", false,
+				"timestampField", "2021-08-15T06:00:00.000Z");
+
+		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, map));
+		var refItemId = refDictItem.getId();
+
+		var refDataMap = new HashMap<>(map);
+		refDataMap.put(TESTABLE_DICT_ID, refItemId);
+
+		dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+
+		assertThrows(DictException.class, () -> dictDataValidationService.validateDelete(dictService.getById(TESTABLE_DICT_ID), refItemId));
+	}
+
+	protected void deleteAllRefDictItemsForbidden()
+	{
+		Map<String, Object> map = Map.of(
+				"stringField", "string",
+				"created", "2021-08-15T06:00:00.000Z",
+				"integerField", 1,
+				"booleanField", false,
+				"timestampField", "2021-08-15T06:00:00.000Z");
+
+		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, map));
+		var refItemId = refDictItem.getId();
+
+		var refDataMap = new HashMap<>(map);
+		refDataMap.put(TESTABLE_DICT_ID, refItemId);
+
+		dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+
+		assertThrows(DictException.class, () -> dictDataValidationService.validateDeleteAll(dictService.getById(TESTABLE_DICT_ID)));
 	}
 
 	private DictDataItem buildDictDataItem(String dictId, Map<String, Object> dataMap)

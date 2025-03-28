@@ -97,4 +97,16 @@ public class PostgresDictDataValidationServiceTest extends CommonDictDataValidat
 	{
 		validateDictDataForbiddenField();
 	}
+
+	@Test
+	void validate_DeleteRefDictItemForbidden()
+	{
+		deleteRefDictItemForbidden();
+	}
+
+	@Test
+	void validate_DeleteAllRefDictItemForbidden()
+	{
+		deleteAllRefDictItemsForbidden();
+	}
 }

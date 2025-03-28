@@ -18,15 +18,15 @@ package com.backstage.app.dict.exception.dictitem;
 
 import com.backstage.app.dict.exception.dict.DictException;
 
-public class DictItemUpdatedException extends DictException
+public class DictItemDeleteException extends DictException
 {
-	public DictItemUpdatedException(String dictId, String itemId)
+	public DictItemDeleteException(String dictId, Throwable throwable)
 	{
-		super("При обновлении dictItem '%s' для справочника '%s' произошла ошибка.".formatted(dictId, itemId));
+		super("При удалении всех элементов справочника '%s' произошла ошибка.".formatted(dictId), throwable);
 	}
 
-	public DictItemUpdatedException(String dictId, String itemId, Throwable throwable)
+	public DictItemDeleteException(String dictId, String dictItemId, Throwable throwable)
 	{
-		super("При обновлении dictItem '%s' для справочника '%s' произошла ошибка.".formatted(dictId, itemId), throwable);
+		super("При удалении элементы '%s' справочника '%s' произошла ошибка.".formatted(dictItemId, dictId), throwable);
 	}
 }

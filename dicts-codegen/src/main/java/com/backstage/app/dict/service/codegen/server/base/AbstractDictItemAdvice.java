@@ -182,28 +182,28 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	}
 
 	@Override
-	public final void handleDelete(Dict dict, DictItem item, boolean deleted)
+	public final void handleDelete(Dict dict, DictItem item)
 	{
 		if (getDictItemService().getDictId().equals(dict.getId()))
 		{
-			handleDelete(getDictItemService().buildItem(item), deleted);
+			handleDelete(getDictItemService().buildItem(item));
 		}
 	}
 
-	public void handleDelete(T item, boolean deleted)
+	public void handleDelete(T item)
 	{
 	}
 
 	@Override
-	public final void handleDeleteAll(Dict dict, boolean deleted)
+	public final void handleDeleteAll(Dict dict)
 	{
 		if (getDictItemService().getDictId().equals(dict.getId()))
 		{
-			handleDeleteAll(deleted);
+			handleDeleteAll();
 		}
 	}
 
-	public void handleDeleteAll(boolean deleted)
+	public void handleDeleteAll()
 	{
 	}
 

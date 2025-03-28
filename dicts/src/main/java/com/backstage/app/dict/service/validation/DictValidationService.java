@@ -39,8 +39,6 @@ public class DictValidationService
 {
 	private static final int DICT_FIELD_ID_MAX_LENGTH = 32;
 
-	private final DictDataValidationService dictDataValidationService;
-
 	private final DictSchemeBackendProvider schemeBackendProvider;
 
 	private final Supplier<DictService> dictServiceSupplier = SpringContextUtils.createBeanSupplier(DictService.class);

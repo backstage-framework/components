@@ -21,7 +21,6 @@ import com.backstage.app.api.model.OkResponse;
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.model.dto.data.request.CreateDictItemRequest;
-import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
@@ -78,7 +77,7 @@ public interface GenericDictDataService<T extends DictItemDto>
 
 	@Schema(description = "Удаление записи в справочнике (soft delete).")
 	@PostMapping("/{dictId}/delete")
-	ApiResponse<?> delete(@PathVariable String dictId, @RequestBody DeleteDictItemRequest request);
+	ApiResponse<?> delete(@PathVariable String dictId, @RequestParam String itemId);
 
 	@Schema(description = "Проверка существования записи в справочнике по идентификатору.")
 	@PostMapping("/{dictId}/existsById")

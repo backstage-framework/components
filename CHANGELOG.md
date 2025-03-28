@@ -1,3 +1,7 @@
+## 5.1.43 - 2025-03-26
+### Dicts
+- Переход на полное удаление элементов справочников вместо soft-delete.
+
 ## 5.1.42 - 2025-03-26
 ### Dependency Upgrades
 - Spring Boot 3.3.10
@@ -8,7 +12,6 @@
 - Guava 33.4.5-jre
 - Commons-codec 1.18.0
 - Commons-CSV 1.14.0
-
 ### Attachments
 - Добавили поддержку иерархических objectId в AttachmentService.
 

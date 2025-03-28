@@ -53,7 +53,6 @@ public class ExportCsvService implements ExportService
 				ServiceFieldConstants.ID,
 				ServiceFieldConstants.CREATED,
 				ServiceFieldConstants.UPDATED,
-				ServiceFieldConstants.DELETED,
 				ServiceFieldConstants.VERSION
 		);
 
@@ -80,7 +79,6 @@ public class ExportCsvService implements ExportService
 				.add(item.getId())
 				.add(item.getCreated())
 				.add(item.getUpdated())
-				.add(item.getDeleted() != null)
 				.add(item.getVersion());
 
 		dictFields.stream()

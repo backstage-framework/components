@@ -80,6 +80,7 @@ public class DictService
 		return dictBackend.getDictById(id);
 	}
 
+	// TODO: кэш
 	public List<Dict> getAll()
 	{
 		serviceAdviceList.forEach(DictServiceAdvice::handleGetAll);
@@ -134,7 +135,10 @@ public class DictService
 	@LockDictSchemaModifyOperation("#dictId")
 	@CachePut(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	@CacheEvict(
-			value = {DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS, DictsConfiguration.CACHE_NAME_DICT_SCHEMES},
+			value = {
+					DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS,
+					DictsConfiguration.CACHE_NAME_DICT_SCHEMES
+			},
 			key = "#dictId"
 	)
 	public Dict update(String dictId, Dict dict)
@@ -478,7 +482,7 @@ public class DictService
 		dictBackend.deleteEnum(dict, enumId);
 	}
 
-	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS)
+	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS, key = "#dict.id")
 	public List<DictField> getDataFieldsByDict(Dict dict)
 	{
 		return dict.getFields()
@@ -546,24 +550,6 @@ public class DictService
 						.name("Дата обновления")
 						.type(DictFieldType.TIMESTAMP)
 						.required(true)
-						.multivalued(false)
-						.build());
-
-		dictFields.add(
-				DictField.builder()
-						.id(DELETED)
-						.name("Дата удаления")
-						.type(DictFieldType.TIMESTAMP)
-						.required(false)
-						.multivalued(false)
-						.build());
-
-		dictFields.add(
-				DictField.builder()
-						.id(DELETION_REASON)
-						.name("Причина удаления")
-						.type(DictFieldType.STRING)
-						.required(false)
 						.multivalued(false)
 						.build());
 
