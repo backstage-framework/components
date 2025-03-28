@@ -143,8 +143,13 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		var mongoClause = completedMongoClauses(requiredFields, new HashSet<>(), new Query(),
 				queryContext, new LinkedList<>(), Pageable.unpaged(), dictId);
 
+		if (queryContext.getCriteria() != null)
+		{
+			mongoClause.getQuery().addCriteria(queryContext.getCriteria());
+		}
+
 		// TODO: разобраться с формированием Query тут и в getByFilter.
-		return mongoTemplate.stream(mongoClause.getQuery().addCriteria(queryContext.getCriteria()), Document.class, dictId)
+		return mongoTemplate.stream(mongoClause.getQuery(), Document.class, dictId)
 				.map(document -> backendMapper.mapFrom(dictId, document));
 	}
 
@@ -207,21 +212,21 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	}
 
 	@Override
-	public void delete(Dict dict, DictItem dictItem)
+	public void delete(Dict dict, String itemId)
 	{
 		addTransactionData(dict, false);
 
-		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(dictItem.getId()));
+		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));
 
-		update(dict, dictItem, query);
+		mongoTemplate.remove(query, dict.getId());
 	}
 
 	@Override
-	public void deleteAll(Dict dict, List<DictItem> dictItems)
+	public void deleteAll(Dict dict)
 	{
 		addTransactionData(dict, false);
 
-		dictItems.forEach(it -> update(dict, it, Query.query(Criteria.where(ServiceFieldConstants._ID).is(it.getId()))));
+		mongoTemplate.remove(new Query(), dict.getId());
 	}
 
 	@Override
@@ -311,6 +316,11 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		{
 			mongoTemplate.upsert(query, buildUpdateClauses(changes), dictId);
 		}
+	}
+
+	private void delete(String dictId, Query query)
+	{
+		mongoTemplate.remove(query, dictId);
 	}
 
 	private Document getChanges(String dictId, DictItem dictItem, DictItem oldItem)

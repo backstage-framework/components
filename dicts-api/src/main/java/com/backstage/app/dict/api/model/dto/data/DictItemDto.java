@@ -59,11 +59,4 @@ public class DictItemDto
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private LocalDateTime updated;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private LocalDateTime deleted;
-
-	@Schema(description = "Причина удаления")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String deletionReason;
 }

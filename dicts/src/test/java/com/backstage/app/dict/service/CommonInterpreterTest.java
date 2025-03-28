@@ -146,16 +146,28 @@ public class CommonInterpreterTest extends CommonTest
 				where first_name !='Bender';
 				""".formatted(TESTABLE_DICT_ID)));
 
-		long actual = dictDataService.countByFilter(TESTABLE_DICT_ID, "first_name !='Bender' and deleted != null");
+		long actual = dictDataService.countByFilter(TESTABLE_DICT_ID, "first_name !='Bender'");
 
-		assertEquals(1, actual);
+		assertEquals(0, actual);
 	}
 
-	protected void parseDeleteWithoutCondition()
+	protected void parseDeleteWithoutCondition(String storageDictId)
 	{
-		interpreter.execute(sqlParser.parse("delete from %s;".formatted(TESTABLE_DICT_ID)));
+		var dictId = storageDictId + "customer";
 
-		long actual = dictDataService.countByFilter(TESTABLE_DICT_ID, "deleted = null");
+		var query = """
+				create table %s['Клиенты']
+				("city"['Город'] text, last_name['Фамилия'] text);
+
+				insert into %s values('Moscow', 'Bruce');
+				insert into %s values('Kaluga', 'Jay Jay');
+				""".formatted(dictId, dictId, dictId);
+
+		interpreter.execute(sqlParser.parse(query));
+
+		interpreter.execute(sqlParser.parse("delete from %s;".formatted(dictId)));
+
+		long actual = dictDataService.countByFilter(dictId, "");
 
 		assertEquals(0, actual);
 	}

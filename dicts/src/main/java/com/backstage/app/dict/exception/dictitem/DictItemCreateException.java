@@ -18,14 +18,14 @@ package com.backstage.app.dict.exception.dictitem;
 
 import com.backstage.app.dict.exception.dict.DictException;
 
-public class DictItemCreatedException extends DictException
+public class DictItemCreateException extends DictException
 {
-	public DictItemCreatedException(String dictId)
+	public DictItemCreateException(String dictId)
 	{
 		super("При создании DictItem для справочника '%s', произошла ошибка".formatted(dictId));
 	}
 
-	public DictItemCreatedException(String dictId, Throwable throwable)
+	public DictItemCreateException(String dictId, Throwable throwable)
 	{
 		super("При создании DictItem для справочника '%s', произошла ошибка".formatted(dictId), throwable);
 	}

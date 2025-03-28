@@ -19,7 +19,6 @@ insert into users values('Иван', 20, 'MANAGER', '2020-08-20', ARRAY['11', '2
 
 update roles set name = 'Супер-Менеджер' where id = 'MANAGER';
 
-delete from roles where id = 'MANAGER';
 delete from roles where name = 'Менеджер2';
 
 alter table users rename column age to age['Только обновили описание'];

@@ -75,9 +75,7 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 				dictItem.getHistory(),
 				dictItem.getVersion(),
 				timestamp(dictItem.getCreated()),
-				timestamp(dictItem.getUpdated()),
-				timestamp(dictItem.getDeleted()),
-				dictItem.getDeletionReason()
+				timestamp(dictItem.getUpdated())
 		);
 	}
 
@@ -122,8 +120,6 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 					.history(source.getHistory())
 					.created(DateUtils.toLocalDateTime(source.getCreated()))
 					.updated(DateUtils.toLocalDateTime(source.getUpdated()))
-					.deleted(DateUtils.toLocalDateTime(source.getDeleted()))
-					.deletionReason(source.getDeletionReason())
 					.build();
 		}
 		catch (Exception e)

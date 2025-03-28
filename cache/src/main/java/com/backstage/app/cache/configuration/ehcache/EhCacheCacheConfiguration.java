@@ -23,6 +23,7 @@ import com.backstage.app.cache.configuration.conditional.ConditionalOnCache;
 import com.backstage.app.cache.configuration.jcache.EnhancedJCacheCacheManager;
 import com.backstage.app.cache.configuration.properties.CacheProperties;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
@@ -39,6 +40,7 @@ import java.time.Duration;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Configuration
 @ConditionalOnCache
 @ConditionalOnClass(name = "org.ehcache.CacheManager")
@@ -68,7 +70,14 @@ public class EhCacheCacheConfiguration
 									.build()
 							);
 
-					jCacheManager.createCache(item.getName(), Eh107Configuration.fromEhcacheCacheConfiguration(config));
+					if (jCacheManager.getCache(item.getName()) == null)
+					{
+						jCacheManager.createCache(item.getName(), Eh107Configuration.fromEhcacheCacheConfiguration(config));
+					}
+					else
+					{
+						log.warn("Trying to initialize cache '{}' twice.", item.getName());
+					}
 				}
 		);
 

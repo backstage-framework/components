@@ -72,11 +72,11 @@ public interface DictDataServiceAdvice
 	{
 	}
 
-	default void handleDelete(Dict dict, DictItem item, boolean deleted)
+	default void handleDelete(Dict dict, DictItem item)
 	{
 	}
 
-	default void handleDeleteAll(Dict dict, boolean deleted)
+	default void handleDeleteAll(Dict dict)
 	{
 	}
 }

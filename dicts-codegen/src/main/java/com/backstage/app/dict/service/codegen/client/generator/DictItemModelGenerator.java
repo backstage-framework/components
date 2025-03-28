@@ -45,8 +45,6 @@ public class DictItemModelGenerator
 			"id",
 			"created",
 			"updated",
-			"deleted",
-			"deletionReason",
 			"history",
 			"version"
 	);

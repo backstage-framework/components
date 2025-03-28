@@ -23,8 +23,6 @@ import com.google.common.collect.Comparators;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Comparator;
@@ -186,12 +184,6 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
-	void check_attachmentBindingDeleteDictItem()
-	{
-		checkAttachmentBindingWithDeleteDictItem();
-	}
-
-	@Test
 	void create()
 	{
 		createDictItem();
@@ -269,17 +261,10 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 		deleteDictItem();
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = {"Test reason", "1234"})
-	void delete_withReason(String reason)
-	{
-		deleteWithReason(reason);
-	}
-
 	@Test
-	void delete_withEmptyReason()
+	void deleteAll()
 	{
-		deleteWithEmptyReason();
+		deleteAllDictItems();
 	}
 
 	@Test
@@ -328,7 +313,7 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	@Test
 	void getByFilter_withUnpagedSort()
 	{
-		getByFilterWithUnpagedSort(31);
+		getByFilterWithUnpagedSort(30);
 	}
 
 	@Test

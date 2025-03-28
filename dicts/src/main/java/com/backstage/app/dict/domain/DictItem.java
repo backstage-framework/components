@@ -47,8 +47,4 @@ public class DictItem implements Identity<String>
 	private LocalDateTime created;
 
 	private LocalDateTime updated;
-
-	private LocalDateTime deleted;
-
-	private String deletionReason;
 }

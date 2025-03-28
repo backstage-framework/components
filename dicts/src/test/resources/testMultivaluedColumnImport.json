@@ -70,28 +70,6 @@
 			"maxSize" : null,
 			"defaultValue" : null
 		}, {
-			"id" : "deleted",
-			"name" : "Дата удаления",
-			"type" : "TIMESTAMP",
-			"dictRef" : null,
-			"enumId" : null,
-			"multivalued" : false,
-			"required" : false,
-			"minSize" : null,
-			"maxSize" : null,
-			"defaultValue" : null
-		}, {
-			"id" : "deletionReason",
-			"name" : "Причина удаления",
-			"type" : "STRING",
-			"dictRef" : null,
-			"enumId" : null,
-			"multivalued" : false,
-			"required" : false,
-			"minSize" : null,
-			"maxSize" : null,
-			"defaultValue" : null
-		}, {
 			"id" : "history",
 			"name" : "История изменений",
 			"type" : "JSON",
@@ -137,9 +115,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.275",
-		"updated" : "2024-10-11T08:51:21.275",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.275"
 	}, {
 		"id" : "6708bcd903e63f718946e0d3",
 		"data" : {
@@ -157,9 +133,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.275",
-		"updated" : "2024-10-11T08:51:21.275",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.275"
 	}, {
 		"id" : "6708bcd903e63f718946e0d4",
 		"data" : {
@@ -177,9 +151,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.276",
-		"updated" : "2024-10-11T08:51:21.276",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.276"
 	}, {
 		"id" : "6708bcd903e63f718946e0d5",
 		"data" : {
@@ -197,9 +169,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.276",
-		"updated" : "2024-10-11T08:51:21.276",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.276"
 	}, {
 		"id" : "6708bcd903e63f718946e0d6",
 		"data" : {
@@ -217,9 +187,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.277",
-		"updated" : "2024-10-11T08:51:21.277",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.277"
 	}, {
 		"id" : "6708bcd903e63f718946e0d7",
 		"data" : {
@@ -237,9 +205,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.277",
-		"updated" : "2024-10-11T08:51:21.277",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.277"
 	}, {
 		"id" : "6708bcd903e63f718946e0d8",
 		"data" : {
@@ -257,9 +223,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.278",
-		"updated" : "2024-10-11T08:51:21.278",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.278"
 	}, {
 		"id" : "6708bcd903e63f718946e0d9",
 		"data" : {
@@ -277,9 +241,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.279",
-		"updated" : "2024-10-11T08:51:21.279",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.279"
 	}, {
 		"id" : "6708bcd903e63f718946e0da",
 		"data" : {
@@ -297,9 +259,7 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.279",
-		"updated" : "2024-10-11T08:51:21.279",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.279"
 	}, {
 		"id" : "6708bcd903e63f718946e0db",
 		"data" : {
@@ -317,8 +277,6 @@
 		} ],
 		"version" : 1,
 		"created" : "2024-10-11T08:51:21.28",
-		"updated" : "2024-10-11T08:51:21.28",
-		"deleted" : null,
-		"deletionReason" : null
+		"updated" : "2024-10-11T08:51:21.28"
 	} ]
 }

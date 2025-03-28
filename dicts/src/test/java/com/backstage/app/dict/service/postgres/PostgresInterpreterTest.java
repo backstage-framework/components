@@ -65,6 +65,6 @@ public class PostgresInterpreterTest extends CommonInterpreterTest
 	@Test
 	protected void parse_DeleteWithoutCondition()
 	{
-		parseDeleteWithoutCondition();
+		parseDeleteWithoutCondition(POSTGRES_DICT_ID);
 	}
 }
