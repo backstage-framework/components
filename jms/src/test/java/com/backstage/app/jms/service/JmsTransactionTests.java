@@ -18,6 +18,8 @@ package com.backstage.app.jms.service;
 
 import com.backstage.app.jms.AbstractTests;
 import com.backstage.app.utils.TimeUtils;
+import jakarta.jms.JMSException;
+import jakarta.jms.Session;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -29,60 +31,77 @@ import org.springframework.transaction.support.TransactionTemplate;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class JmsTransactionTests extends AbstractTests
 {
-	private final String JMS_TEST_CHANNEL = "testChannel";
+	public static final String JMS_TEST_CHANNEL_TX = "testChannelTx";
+	public static final String JMS_TEST_CHANNEL_NO_TX = "testChannelNoTx";
+
 	private final int JMS_TIMEOUT_SECONDS = 1;
 
 	@Autowired private TransactionTemplate transactionTemplate;
 	@Autowired private JmsTemplate jmsTemplate;
 
-	private String testValue;
+	static String testValueTx;
+	static String testValueNoTx;
 
 	@BeforeEach
 	public void beforeTest()
 	{
-		testValue = null;
+		testValueTx = null;
+		testValueNoTx = null;
 	}
 
 	@Test
 	public void sendInTransaction()
 	{
-		var value = UUID.randomUUID().toString();
+		var valueTx = UUID.randomUUID().toString();
+		var valueNoTx = UUID.randomUUID().toString();
 
 		transactionTemplate.executeWithoutResult((status) -> {
-			jmsTemplate.convertAndSend(JMS_TEST_CHANNEL, value);
+			jmsTemplate.convertAndSend(JMS_TEST_CHANNEL_TX, valueTx);
+			jmsTemplate.convertAndSend(JMS_TEST_CHANNEL_NO_TX, valueNoTx);
 
 			TimeUtils.sleepSeconds(JMS_TIMEOUT_SECONDS);
-
-			assertNull(testValue);
 		});
 
 		TimeUtils.sleepSeconds(JMS_TIMEOUT_SECONDS);
 
-		assertEquals(value, testValue);
+		assertEquals(valueTx, testValueTx);
+		assertEquals(valueNoTx, testValueNoTx);
 	}
 
 	@Test
 	public void sendNoTransaction()
 	{
-		assertNull(testValue);
+		var valueTx = UUID.randomUUID().toString();
+		var valueNoTx = UUID.randomUUID().toString();
 
-		var value = UUID.randomUUID().toString();
-
-		jmsTemplate.convertAndSend(JMS_TEST_CHANNEL, value);
+		jmsTemplate.convertAndSend(JMS_TEST_CHANNEL_TX, valueTx);
+		jmsTemplate.convertAndSend(JMS_TEST_CHANNEL_NO_TX, valueNoTx);
 
 		TimeUtils.sleepSeconds(JMS_TIMEOUT_SECONDS);
 
-		assertEquals(value, testValue);
+		assertEquals(valueTx, testValueTx);
+		assertEquals(valueNoTx, testValueNoTx);
 	}
 
-	@JmsListener(destination = JMS_TEST_CHANNEL)
-	public void handleJmsMessage(String value)
+	@JmsListener(destination = JMS_TEST_CHANNEL_TX)
+	public void handleJmsMessageTx(Session session, String value) throws JMSException
 	{
-		testValue = value;
+		if (session.getTransacted())
+		{
+			testValueTx = value;
+		}
+	}
+
+	@JmsListener(destination = JMS_TEST_CHANNEL_NO_TX, containerFactory = "nonTxJmsListenerContainerFactory")
+	public void handleJmsMessageNoTx(Session session, String value) throws JMSException
+	{
+		if (!session.getTransacted())
+		{
+			testValueNoTx = value;
+		}
 	}
 }

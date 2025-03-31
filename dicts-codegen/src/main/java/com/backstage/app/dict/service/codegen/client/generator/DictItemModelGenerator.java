@@ -139,6 +139,11 @@ public class DictItemModelGenerator
 				}
 				else
 				{
+					if (dictField.getType() == DictFieldType.JSON)
+					{
+						suppressWarnings.setTrue();
+					}
+
 					methodSpec.addStatement("this.$N = ($T) dictItem.getData().get($N)", fieldSpec, fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
 				}
 			}
