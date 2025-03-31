@@ -19,8 +19,8 @@ package com.backstage.app.jobs.endpoint;
 import com.backstage.app.api.model.ApiResponse;
 import com.backstage.app.jobs.model.dto.JobTrigger;
 import com.backstage.app.jobs.model.dto.RescheduleJobRequest;
-import com.backstage.app.jobs.model.dto.param.JobParams;
 import com.backstage.app.jobs.service.JobManager;
+import io.swagger.v3.core.converter.ResolvedSchema;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -92,8 +92,8 @@ public class ScheduledJobsEndpoint
 
 	@GetMapping("/{jobName}/params")
 	@Operation(summary = "Возвращает схему параметров для указанной задачи.")
-	public ApiResponse<JobParams> getParams(@PathVariable String jobName)
+	public ApiResponse<ResolvedSchema> getParams(@PathVariable String jobName)
 	{
-		return ApiResponse.of(jobManager.getParams(jobName));
+		return ApiResponse.of(jobManager.getParamsSchema(jobName));
 	}
 }

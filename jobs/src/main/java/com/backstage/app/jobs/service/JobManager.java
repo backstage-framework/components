@@ -21,6 +21,9 @@ import com.backstage.app.jobs.model.dto.JobTrigger;
 import com.backstage.app.jobs.model.dto.other.JobResult;
 import com.backstage.app.jobs.model.dto.param.JobParams;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.swagger.v3.core.converter.AnnotatedType;
+import io.swagger.v3.core.converter.ModelConverters;
+import io.swagger.v3.core.converter.ResolvedSchema;
 import jakarta.annotation.PostConstruct;
 import lombok.Getter;
 import lombok.NonNull;
@@ -132,17 +135,7 @@ public class JobManager
 
 	public JobParams cast(AbstractJob<JobParams> job, Map<String, Object> params)
 	{
-		var resolvableType = ResolvableType.forClass(job.getClass()).as(AbstractJob.class);
-		var genericType = resolvableType.getGeneric(0).resolve();
-
-		if (genericType == null)
-		{
-			throw new RuntimeException("Job '%s' has no generic type for params.".formatted(job.getClass().getSimpleName()));
-		}
-
-		var paramsType = genericType.asSubclass(JobParams.class);;
-
-		return mapper.convertValue(params, paramsType);
+		return mapper.convertValue(params, determineJobParamsType(job));
 	}
 
 	public JobTrigger getTrigger(@NonNull String jobName)
@@ -153,14 +146,31 @@ public class JobManager
 				.orElseThrow(() -> new ObjectNotFoundException(AbstractJob.class, jobName));
 	}
 
-	public JobParams getParams(@NonNull String jobName)
+	public ResolvedSchema getParamsSchema(@NonNull String jobName)
 	{
 		if (!jobs.containsKey(jobName))
 		{
 			throw new ObjectNotFoundException(AbstractJob.class, jobName);
 		}
 
-		return jobs.get(jobName).getDefaultParams();
+		var job = jobs.get(jobName);
+
+		var paramsType = determineJobParamsType(job);
+
+		return ModelConverters.getInstance().resolveAsResolvedSchema(new AnnotatedType(paramsType));
+	}
+
+	private Class<? extends JobParams> determineJobParamsType(AbstractJob<? extends JobParams> job)
+	{
+		var resolvableType = ResolvableType.forClass(job.getClass()).as(AbstractJob.class);
+		var genericType = resolvableType.getGeneric(0).resolve();
+
+		if (genericType == null)
+		{
+			throw new RuntimeException("Job '%s' has no generic type for params.".formatted(job.getClass().getSimpleName()));
+		}
+
+		return genericType.asSubclass(JobParams.class);
 	}
 
 	public void rescheduleJob(@NonNull String jobName, Trigger trigger)

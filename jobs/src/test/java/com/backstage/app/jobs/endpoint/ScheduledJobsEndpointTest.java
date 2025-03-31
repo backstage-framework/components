@@ -116,7 +116,7 @@ class ScheduledJobsEndpointTest
 	{
 		mvc.perform(get("/api/scheduledJobs/testJobs.TestFixedDelayRescheduling/params"))
 				.andExpect(status().isOk())
-				.andExpect(jsonPath("data").isEmpty());
+				.andExpect(jsonPath("data.referencedSchemas.EmptyJobParams").exists());
 	}
 
 	private <K, V> void executeJob(String jobName, Map<K, V> params) throws Exception
