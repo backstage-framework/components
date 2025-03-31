@@ -27,6 +27,7 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.DependsOn;
+import org.springframework.core.ResolvableType;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.scheduling.Trigger;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
@@ -131,7 +132,15 @@ public class JobManager
 
 	public JobParams cast(AbstractJob<JobParams> job, Map<String, Object> params)
 	{
-		var paramsType = job.getDefaultParams().getClass();
+		var resolvableType = ResolvableType.forClass(job.getClass()).as(AbstractJob.class);
+		var genericType = resolvableType.getGeneric(0).resolve();
+
+		if (genericType == null)
+		{
+			throw new RuntimeException("Job '%s' has no generic type for params.".formatted(job.getClass().getSimpleName()));
+		}
+
+		var paramsType = genericType.asSubclass(JobParams.class);;
 
 		return mapper.convertValue(params, paramsType);
 	}
