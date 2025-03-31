@@ -17,10 +17,15 @@
 package com.backstage.app.dict.configuration.ddl;
 
 import com.backstage.app.database.configuration.ddl.DDLConfiguration;
+import com.backstage.app.dict.constant.ServiceFieldConstants;
+import com.backstage.app.dict.domain.Dict;
+import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.VersionScheme;
 import com.backstage.app.dict.exception.migration.MigrationFileReadException;
 import com.backstage.app.dict.exception.migration.MigrationHasSameVersionException;
 import com.backstage.app.dict.exception.migration.MigrationProcessException;
+import com.backstage.app.dict.service.DictDataService;
+import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import com.backstage.app.dict.service.lock.DictLockInitializer;
 import com.backstage.app.dict.service.lock.DictLockService;
@@ -42,6 +47,7 @@ import java.io.IOException;
 import java.net.JarURLConnection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.function.Function;
@@ -65,6 +71,9 @@ public class DictsDDLProvider implements InitializingBean
 
 	private final DictLockInitializer dictLockInitializer;
 	private final ClasspathMigrationService classpathMigrationService;
+
+	private final DictService dictService;
+	private final DictDataService dictDataService;
 
 	private final VersionSchemeBackend versionSchemeBackend;
 
@@ -153,6 +162,8 @@ public class DictsDDLProvider implements InitializingBean
 
 				log.info("Миграций применено: {}, проверено: {}.", appliedMigrations.size(), migrationByName.size());
 			}
+
+			applySoftDeleteToHardDeleteMigration();
 		}
 		catch (Exception e)
 		{
@@ -186,5 +197,44 @@ public class DictsDDLProvider implements InitializingBean
 		return migrations.get(MIGRATIONS_PATH + SEPARATOR + migrationName)
 				.getChecksum()
 				.equals(MigrationUtils.getFileHash(script));
+	}
+
+	private void applySoftDeleteToHardDeleteMigration()
+	{
+		log.info("Применяем миграцию для удаления soft delete записей в справочниках после перехода на hard delete.");
+
+		dictService.getAll()
+				.stream()
+				.filter(this::irrelevantColumnsPresent)
+				.peek(this::deleteIrrelevantItems)
+				.forEach(this::updateDictSchema);
+	}
+
+	private boolean irrelevantColumnsPresent(Dict dict)
+	{
+		var fieldIds = dict.getFields()
+				.stream()
+				.map(DictField::getId)
+				.toList();
+
+		return fieldIds.contains("deleted") && fieldIds.contains("deletionReason");
+	}
+
+	private void deleteIrrelevantItems(Dict dict)
+	{
+		dictDataService.streamByFilter(dict.getId(), List.of("id"), "deleted != null")
+				.forEach(dictItem -> dictDataService.delete(dict.getId(), dictItem.getId()));
+	}
+
+	private void updateDictSchema(Dict dict)
+	{
+		var fields = dict.getFields()
+				.stream()
+				.filter(field -> !ServiceFieldConstants.getServiceSchemeFields().contains(field.getId()))
+				.filter(field -> !field.getId().equals("deleted") && !field.getId().equals("deletionReason"))
+				.collect(Collectors.toList());
+
+		dict.setFields(fields);
+		dictService.update(dict.getId(), dict);
 	}
 }
