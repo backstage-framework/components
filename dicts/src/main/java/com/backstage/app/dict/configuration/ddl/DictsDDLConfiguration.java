@@ -17,6 +17,8 @@
 package com.backstage.app.dict.configuration.ddl;
 
 import com.backstage.app.configuration.AppConfiguration;
+import com.backstage.app.dict.service.DictDataService;
+import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import com.backstage.app.dict.service.lock.DictLockInitializer;
 import com.backstage.app.dict.service.migration.ClasspathMigrationService;
@@ -31,8 +33,11 @@ public class DictsDDLConfiguration
 	@Bean
 	public DictsDDLProvider dictsDDLProvider(DictLockInitializer dictLockInitializer,
 	                                         ClasspathMigrationService classpathMigrationService,
-	                                         VersionSchemeBackend versionSchemeBackend)
+	                                         DictService dictService,
+	                                         DictDataService dictDataService,
+	                                         VersionSchemeBackend versionSchemeBackend
+	)
 	{
-		return new DictsDDLProvider(dictLockInitializer, classpathMigrationService, versionSchemeBackend);
+		return new DictsDDLProvider(dictLockInitializer, classpathMigrationService, dictService, dictDataService, versionSchemeBackend);
 	}
 }
