@@ -31,6 +31,7 @@ public enum DictColumnName
 	ENUMS("enums"),
 	VIEW_PERMISSION("view_permission"),
 	EDIT_PERMISSION("edit_permission"),
+	MAX_HISTORY("max_history"),
 	ENGINE("engine"),
 	VERSION("version");
 

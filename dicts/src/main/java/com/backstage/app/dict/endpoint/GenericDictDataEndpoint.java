@@ -144,7 +144,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 
 	@Operation(summary = "Удаление записи в справочнике.")
 	@PostMapping("/{dictId}/delete")
-	public ApiResponse<?> delete(@PathVariable String dictId, @RequestParam String itemId)
+	public OkResponse delete(@PathVariable String dictId, @RequestParam String itemId)
 	{
 		dictDataService.delete(dictId, itemId);
 

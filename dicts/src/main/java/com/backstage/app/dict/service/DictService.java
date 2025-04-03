@@ -517,6 +517,7 @@ public class DictService
 		target.setFields(source.getFields());
 		target.setViewPermission(source.getViewPermission());
 		target.setEditPermission(source.getEditPermission());
+		target.setMaxHistory(source.getMaxHistory());
 		target.setIndexes(source.getIndexes());
 		target.setConstraints(source.getConstraints());
 		target.setEngine(source.getEngine());

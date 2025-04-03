@@ -17,6 +17,7 @@
 package com.backstage.app.dict.configuration.properties;
 
 import com.backstage.app.database.configuration.properties.DDLProperties;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -48,6 +49,9 @@ public class DictsProperties
 	private DDLProperties ddl = new DDLProperties();
 
 	private boolean apiEnabled = true;
+
+	@Min(0)
+	public Integer maxHistory = 32;
 
 	@NotBlank
 	private String storage;

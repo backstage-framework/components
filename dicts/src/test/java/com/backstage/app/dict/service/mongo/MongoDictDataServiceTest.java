@@ -202,6 +202,12 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void check_historyMaxSize()
+	{
+		checkHistoryMaxSize();
+	}
+
+	@Test
 	void create_correctContainsFieldsInHistoryMap()
 	{
 		createCorrectContainsFieldsInHistoryMap();
@@ -313,7 +319,7 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	@Test
 	void getByFilter_withUnpagedSort()
 	{
-		getByFilterWithUnpagedSort(30);
+		getByFilterWithUnpagedSort(31);
 	}
 
 	@Test

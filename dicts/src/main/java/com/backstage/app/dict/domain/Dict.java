@@ -50,9 +50,21 @@ public class Dict
 
 	private String editPermission;
 
+	private Integer maxHistory;
+
 	private DictEngine engine;
 
 	private Long version;
+
+	public void setMaxHistory(Integer maxHistory)
+	{
+		if (maxHistory != null && maxHistory < 0)
+		{
+			throw new IllegalArgumentException("maxHistory must be >= 0");
+		}
+
+		this.maxHistory = maxHistory;
+	}
 
 	public List<String> getFieldIds()
 	{

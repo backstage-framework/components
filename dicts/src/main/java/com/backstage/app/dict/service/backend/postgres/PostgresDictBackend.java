@@ -135,7 +135,7 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		var sql = """
 				insert into %s.dict values
 				(:id, :name, :fields::jsonb, :indexes::jsonb, :constraints::jsonb, :enums::jsonb, :view_permission,
-				:edit_permission, :engine, :version)
+				:edit_permission, :max_history, :engine, :version)
 				""".formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
@@ -158,6 +158,7 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 					enums = :enums::jsonb,
 					view_permission = :view_permission,
 					edit_permission = :edit_permission,
+					max_history = :max_history,
 					engine = :engine,
 					version = :version
 				where id = :id
@@ -233,6 +234,7 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
 		addParameter(parameterMap, DictColumnName.VIEW_PERMISSION.getName(), dict.getViewPermission());
 		addParameter(parameterMap, DictColumnName.EDIT_PERMISSION.getName(), dict.getEditPermission());
+		addParameter(parameterMap, DictColumnName.MAX_HISTORY.getName(), dict.getMaxHistory());
 		addParameter(parameterMap, DictColumnName.ENGINE.getName(), dict.getEngine().getName());
 		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 	}

@@ -55,7 +55,7 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	@Test
 	void create_AlreadyExists()
 	{
-		createAlreadyExistsDict(MONGO_DICT_ID);
+		createAlreadyExistingDict(MONGO_DICT_ID);
 	}
 
 	@Test

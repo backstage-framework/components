@@ -38,6 +38,8 @@ alter table users drop constraint usersNameConstraint;
 alter table users set readPermission = 'DICT_READ';
 alter table users set writePermission = null;
 
+alter table users set maxHistory = 64;
+
 create enum sthEnum for users as ('value1', 'value2');
 alter table users alter enum sthEnum add value 'value3';
 alter table users drop enum sthEnum;

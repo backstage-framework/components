@@ -185,7 +185,7 @@ public class CommonDictServiceTest extends CommonTest
 		dictService.delete(actualDict.getId());
 	}
 
-	protected void createAlreadyExistsDict(String dictId)
+	protected void createAlreadyExistingDict(String dictId)
 	{
 		var d = createNewDict(dictId);
 

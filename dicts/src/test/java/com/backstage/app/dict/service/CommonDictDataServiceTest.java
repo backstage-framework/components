@@ -26,7 +26,6 @@ import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.exception.dict.DictConcurrentUpdateException;
-import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
@@ -860,6 +859,47 @@ public class CommonDictDataServiceTest extends CommonTest
 		var updatedDictItem = dictDataService.update(dictItem.getId(), updatedDictDataItem, dictItem.getVersion());
 
 		assertEquals(updatedDictItem.getData().get(fieldId), updatedDictDataItem.getDataItemMap().get(fieldId));
+	}
+
+	protected void checkHistoryMaxSize()
+	{
+		var dataMap = new HashMap<>(DATA_MAP);
+		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
+
+		assertNotNull(dictItem.getHistory());
+		assertTrue(dictItem.getHistory().isEmpty());
+
+		var dict = dictService.getById(TESTABLE_DICT_ID);
+		// TODO: что за жесть withoutServiceFields? рефакторинг update.
+		dict.setFields(new LinkedList<>(withoutServiceFields(dict.getFields())));
+		dict.setMaxHistory(10);
+
+		dict = dictService.update(TESTABLE_DICT_ID, dict);
+
+		var targetFieldName = "integerField";
+		var counter = 1000;
+
+		for (int i = 0; i < 15; i++)
+		{
+			dataMap = new HashMap<>(dictItem.getData());
+			dataMap.put(targetFieldName, counter++);
+
+			dictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+		}
+
+		assertEquals(10, dictItem.getHistory().size());
+
+		dict.setMaxHistory(null);
+
+		for (int i = 0; i < 15; i++)
+		{
+			dataMap = new HashMap<>(dictItem.getData());
+			dataMap.put(targetFieldName, counter++);
+
+			dictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+		}
+
+		assertEquals(25, dictItem.getHistory().size());
 	}
 
 	protected void createCorrectContainsFieldsInHistoryMap()

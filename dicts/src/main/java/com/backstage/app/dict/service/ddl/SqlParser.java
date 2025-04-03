@@ -161,7 +161,7 @@ public class SqlParser
 
 	final Parser<SetTableParameterOperation> ALTER_TABLE_PARAMETER_EXPR = Parsers.sequence(
 			term("set").next(TABLE_PARAMETER),
-			term("=").next(Parsers.or(STRING_VALUE, NULL_VALUE.map((v) -> new StringValue(null)))),
+			term("=").next(VALUE),
 			SetTableParameterOperation::new);
 
 	final Parser<ColumnParameter> COLUMN_PARAMETER = ID.map(id -> ColumnParameter.fromString(id.getName()));
