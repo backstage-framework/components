@@ -869,17 +869,19 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertNotNull(dictItem.getHistory());
 		assertTrue(dictItem.getHistory().isEmpty());
 
+		var historyLimit = 10;
+
 		var dict = dictService.getById(TESTABLE_DICT_ID);
 		// TODO: что за жесть withoutServiceFields? рефакторинг update.
 		dict.setFields(new LinkedList<>(withoutServiceFields(dict.getFields())));
-		dict.setMaxHistory(10);
+		dict.setMaxHistory(historyLimit);
 
 		dict = dictService.update(TESTABLE_DICT_ID, dict);
 
 		var targetFieldName = "integerField";
 		var counter = 1000;
 
-		for (int i = 0; i < 15; i++)
+		for (int i = 0; i < historyLimit + 5; i++)
 		{
 			dataMap = new HashMap<>(dictItem.getData());
 			dataMap.put(targetFieldName, counter++);
@@ -887,11 +889,12 @@ public class CommonDictDataServiceTest extends CommonTest
 			dictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
 		}
 
-		assertEquals(10, dictItem.getHistory().size());
+		assertEquals(historyLimit, dictItem.getHistory().size());
+		assertEquals((Long) dictItem.getData().get(targetFieldName) - 1, ((Integer) dictItem.getHistory().get(9).get(targetFieldName)).longValue());
 
 		dict.setMaxHistory(null);
 
-		for (int i = 0; i < 15; i++)
+		for (int i = 0; i < historyLimit + 5; i++)
 		{
 			dataMap = new HashMap<>(dictItem.getData());
 			dataMap.put(targetFieldName, counter++);
@@ -899,7 +902,7 @@ public class CommonDictDataServiceTest extends CommonTest
 			dictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
 		}
 
-		assertEquals(25, dictItem.getHistory().size());
+		assertEquals(2 * historyLimit + 5, dictItem.getHistory().size());
 	}
 
 	protected void createCorrectContainsFieldsInHistoryMap()
