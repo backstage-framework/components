@@ -85,7 +85,7 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Получение записей справочника по списку id.")
 	@PostMapping("/{dictId}/byIds")
 	public ApiResponse<List<DictItemDto>> getByIds(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                                                     @RequestBody List<String> ids)
+	                                               @RequestBody List<String> ids)
 	{
 		return externalDictDataService.getByIds(dictId, ids);
 	}
@@ -102,7 +102,7 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Добавление записи в справочник.")
 	@PostMapping("/{dictId}/create")
 	public ApiResponse<DictItemDto> create(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                                             @RequestBody @Valid CreateDictItemRequest request)
+	                                       @RequestBody @Valid CreateDictItemRequest request)
 	{
 		return externalDictDataService.create(dictId, request);
 	}
@@ -111,16 +111,16 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Обновление записи в справочнике.")
 	@PostMapping("/{dictId}/update")
 	public ApiResponse<DictItemDto> update(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                                             @RequestBody @Valid UpdateDictItemRequest request)
+	                                       @RequestBody @Valid UpdateDictItemRequest request)
 	{
 		return externalDictDataService.update(dictId, request);
 	}
 
 	@Override
-	@Operation(summary = "Удаление записи в справочнике (soft delete).")
+	@Operation(summary = "Удаление записи в справочнике.")
 	@PostMapping("/{dictId}/delete")
-	public ApiResponse<?> delete(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                             @Parameter(description = "Идентификатор записи справочника") @RequestParam String itemId)
+	public OkResponse delete(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
+	                         @Parameter(description = "Идентификатор записи справочника") @RequestParam String itemId)
 	{
 		return externalDictDataService.delete(dictId, itemId);
 	}

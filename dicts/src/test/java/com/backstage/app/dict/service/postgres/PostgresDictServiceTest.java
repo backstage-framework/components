@@ -55,7 +55,7 @@ public class PostgresDictServiceTest extends CommonDictServiceTest
 	@Test
 	void create_AlreadyExists()
 	{
-		createAlreadyExistsDict(POSTGRES_DICT_ID);
+		createAlreadyExistingDict(POSTGRES_DICT_ID);
 	}
 
 	@Test

@@ -426,8 +426,9 @@ public class Interpreter
 	{
 		switch (operation.getParameter())
 		{
-			case READ_PERMISSION -> dict.setViewPermission(operation.getParameterValue().getValue());
-			case WRITE_PERMISSION -> dict.setEditPermission(operation.getParameterValue().getValue());
+			case READ_PERMISSION -> dict.setViewPermission(operation.getParameterValue().asString());
+			case WRITE_PERMISSION -> dict.setEditPermission(operation.getParameterValue().asString());
+			case MAX_HISTORY -> dict.setMaxHistory(operation.getParameterValue().asInt());
 		}
 	}
 
@@ -448,8 +449,8 @@ public class Interpreter
 
 			switch (setParameterColumnOperation.getParameter())
 			{
-				case MIN_SIZE -> field.setMinSize(getFieldSizeValue(value));
-				case MAX_SIZE -> field.setMaxSize(getFieldSizeValue(value));
+				case MIN_SIZE -> field.setMinSize(value.asInt());
+				case MAX_SIZE -> field.setMaxSize(value.asInt());
 				case DEFAULT_VALUE -> field.setDefaultValue(value.getValue());
 
 				default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT,
@@ -478,11 +479,6 @@ public class Interpreter
 
 			field.setRequired(setNotNullColumnOperation.isNotNull());
 		}
-	}
-
-	private static Integer getFieldSizeValue(Value<?> value)
-	{
-		return ((Number) value.getValue()).intValue();
 	}
 
 	private Map<String, Object> buildDataItemMap(Value<?> value, String fieldId)

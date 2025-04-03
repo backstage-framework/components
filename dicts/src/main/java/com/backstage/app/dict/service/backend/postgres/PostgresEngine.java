@@ -65,6 +65,7 @@ public class PostgresEngine implements Engine
 					enums             jsonb                  default '[]'::jsonb,
 					view_permission   varchar(100),
 					edit_permission   varchar(100),
+					max_history       int,
 					engine            varchar(40)   not null,
 					version           bigint        not null default 1,
 					primary key (id))
@@ -81,6 +82,11 @@ public class PostgresEngine implements Engine
 				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbcTemplate.update(dropDeletedSql, Map.of());
+
+		var addMaxHistoryColumn = "alter table %s.dict add column if not exists max_history int"
+				.formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(addMaxHistoryColumn, Map.of());
 	}
 
 	@Override

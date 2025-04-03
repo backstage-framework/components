@@ -45,11 +45,7 @@ import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.JarURLConnection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.List;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -163,6 +159,7 @@ public class DictsDDLProvider implements InitializingBean
 				log.info("Миграций применено: {}, проверено: {}.", appliedMigrations.size(), migrationByName.size());
 			}
 
+			// TODO: убрать при переходе на следующую major версию.
 			applySoftDeleteToHardDeleteMigration();
 		}
 		catch (Exception e)

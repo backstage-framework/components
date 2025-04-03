@@ -77,7 +77,7 @@ public interface GenericDictDataService<T extends DictItemDto>
 
 	@Schema(description = "Удаление записи в справочнике (soft delete).")
 	@PostMapping("/{dictId}/delete")
-	ApiResponse<?> delete(@PathVariable String dictId, @RequestParam String itemId);
+	OkResponse delete(@PathVariable String dictId, @RequestParam String itemId);
 
 	@Schema(description = "Проверка существования записи в справочнике по идентификатору.")
 	@PostMapping("/{dictId}/existsById")

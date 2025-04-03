@@ -193,6 +193,12 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void check_historyMaxSize()
+	{
+		checkHistoryMaxSize();
+	}
+
+	@Test
 	void create_correctContainsFieldsInHistoryMap()
 	{
 		createCorrectContainsFieldsInHistoryMap();
@@ -297,7 +303,7 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	@Test
 	void getByFilter_withUnpagedSort()
 	{
-		getByFilterWithUnpagedSort(28);
+		getByFilterWithUnpagedSort(29);
 	}
 
 	@Test

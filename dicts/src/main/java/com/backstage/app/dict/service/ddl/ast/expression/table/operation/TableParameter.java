@@ -28,7 +28,8 @@ import java.util.stream.Collectors;
 public enum TableParameter
 {
 	READ_PERMISSION("readPermission"),
-	WRITE_PERMISSION("writePermission");
+	WRITE_PERMISSION("writePermission"),
+	MAX_HISTORY("maxHistory");
 
 	private final String alias;
 

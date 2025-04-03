@@ -24,6 +24,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.RowMapper;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 
 public class DictRowMapper implements RowMapper<Dict>
 {
@@ -42,6 +43,7 @@ public class DictRowMapper implements RowMapper<Dict>
 				.enums(mapper.readValue(rs.getString(DictColumnName.ENUMS.getName()), new TypeReference<>() { }))
 				.viewPermission(rs.getString(DictColumnName.VIEW_PERMISSION.getName()))
 				.editPermission(rs.getString(DictColumnName.EDIT_PERMISSION.getName()))
+				.maxHistory(readInteger(rs, DictColumnName.MAX_HISTORY.getName()))
 				.engine(new DictEngine(rs.getString(DictColumnName.ENGINE.getName())))
 				.version(rs.getLong(DictColumnName.VERSION.getName()))
 				.build();
@@ -50,5 +52,17 @@ public class DictRowMapper implements RowMapper<Dict>
 		{
 			throw new RuntimeException("ошибка при чтении объекта Dict", e);
 		}
+	}
+
+	private Integer readInteger(ResultSet rs, String column) throws SQLException
+	{
+		Integer result = rs.getInt(column);
+
+		if (rs.wasNull())
+		{
+			return null;
+		}
+
+		return result;
 	}
 }

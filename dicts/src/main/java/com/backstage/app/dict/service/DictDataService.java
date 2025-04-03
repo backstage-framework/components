@@ -20,6 +20,7 @@ import com.backstage.app.database.model.Identity;
 import com.backstage.app.database.utils.StreamUtils;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.configuration.backend.provider.DictDataBackendProvider;
+import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
@@ -70,6 +71,8 @@ public class DictDataService
 
 	@Getter
 	private final List<DictDataServiceAdvice> serviceAdviceList;
+
+	private final DictsProperties dictsProperties;
 
 	public DictItem getById(String dictId, String itemId)
 	{
@@ -403,7 +406,7 @@ public class DictDataService
 		dictDataValidationService.validateDictDataItem(dictId, mappedItem, userId);
 		dictDataValidationService.validateOptimisticLock(dictId, itemId, version, userId);
 
-		var dictItem = applyChanges(mappedItem, item);
+		var dictItem = applyChanges(dict, mappedItem, item);
 
 		var result = backend(dict).update(dict, itemId, dictItem, version);
 
@@ -486,7 +489,7 @@ public class DictDataService
 		dictItem.setUpdated(LocalDateTime.now());
 	}
 
-	private DictItem applyChanges(DictItem updatedItem, DictItem sourceItem)
+	private DictItem applyChanges(Dict dict, DictItem updatedItem, DictItem sourceItem)
 	{
 		var sourceData = sourceItem.getData();
 
@@ -508,10 +511,27 @@ public class DictDataService
 
 		sourceItem.getHistory().add(historyMap);
 
+		rotateHistory(dict, sourceItem);
+
 		sourceItem.setData(updatedItem.getData());
 		sourceItem.setUpdated(LocalDateTime.now());
 		sourceItem.setVersion(sourceItem.getVersion() + 1L);
 
 		return sourceItem;
+	}
+
+	private void rotateHistory(Dict dict, DictItem dictItem)
+	{
+		var historyLimit = dictsProperties.getMaxHistory();
+
+		if (dict.getMaxHistory() != null)
+		{
+			historyLimit = dict.getMaxHistory();
+		}
+
+		if (historyLimit != null && historyLimit > 0 && historyLimit < dictItem.getHistory().size())
+		{
+			dictItem.setHistory(dictItem.getHistory().subList(dictItem.getHistory().size() - historyLimit, dictItem.getHistory().size()));
+		}
 	}
 }
