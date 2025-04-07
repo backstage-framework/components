@@ -26,6 +26,8 @@ import org.junit.jupiter.api.Test;
 @PostgresStorage
 public class PostgresDictDataValidationServiceTest extends CommonDictDataValidationServiceTest
 {
+	protected String DICT_ID = POSTGRES_DICT_ID;
+
 	@BeforeAll
 	public void buildTestableDictHierarchy()
 	{

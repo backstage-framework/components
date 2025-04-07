@@ -291,6 +291,12 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 
 	private DictField renamedField(Dict dict, String oldFieldId, DictField field)
 	{
+		//todo вернуть и подумать, действительно ли нужен этот фикс или баг тестовой среды
+		if (oldFieldId.equals(field.getId()))
+		{
+			return field;
+		}
+
 		var wordMap = wordMap(dict.getId(), oldFieldId, field.getId());
 
 		var parameterMap = Map.of(

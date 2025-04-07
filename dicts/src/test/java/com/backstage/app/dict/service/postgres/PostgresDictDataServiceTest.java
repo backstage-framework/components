@@ -26,12 +26,6 @@ import org.junit.jupiter.api.Test;
 @PostgresStorage
 public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 {
-	@BeforeAll
-	public void createPostgresTestableHierarchy()
-	{
-		initDictDataTestableHierarchy(POSTGRES_DICT_ID);
-	}
-
 	@Test
 	void getByIdsCorrect()
 	{
@@ -39,17 +33,15 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
 	protected void test_getDistinctValuesByFilterWithEmptyFilter()
 	{
-		getDistinctValuesByFilterWithEmptyFilter();
+		getDistinctValuesByFilterWithoutFilter();
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
 	protected void test_getDistinctValuesByFilterWithFilter()
 	{
-		getDistinctValuesByFilterWithFilter();
+		getDistinctValuesByFilter();
 	}
 
 	@Test
@@ -59,49 +51,42 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterCorrect()
 	{
 		getByFilter();
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterWithPrefixLikeExpressionCorrect()
 	{
 		getByFilterWithPrefixLikeExpression();
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterWithInnerLikeExpressionCorrect()
 	{
 		getByFilterWithInnerLikeExpression();
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterWithPostfixLikeExpressionCorrect()
 	{
 		getByFilterWithPostfixLikeExpression();
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterWithUnderscoreLikeExpressionCorrect()
 	{
 		getByFilterWithUnderscoreLikeExpression();
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterWithEscapeLikeSpecialSymbolsCorrect()
 	{
 		getByFilterWithEscapeLikeSpecialSymbols();
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_WITH_LOGICAL_EXPRESSION_TEST)
 	void getByFilterWithLogicalExpressionCorrect()
 	{
 		getByFilterWithLogicalExpression();
@@ -330,6 +315,7 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 		getByFilterWithDifferentDateCorrect();
 	}
 
+	//todo: отвязать тесты от testDict2 т.к. он создается в миграции
 	@Test
 	void createDictItemWithDefaultFields()
 	{

@@ -51,7 +51,9 @@ public class PostgresReservedKeyword
 		return Arrays.stream(words)
 				.collect(Collectors.toMap(
 						Function.identity(),
-						it -> new PostgresWord(it, keywordCondition(it))
+						it -> new PostgresWord(it, keywordCondition(it)),
+						//todo вернуться и подумать, действительно ли нужен этот фикс или баг тестовой среды
+						(existing, replacement) -> existing
 				));
 	}
 

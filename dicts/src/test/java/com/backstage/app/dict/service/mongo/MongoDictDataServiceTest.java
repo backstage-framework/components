@@ -38,7 +38,7 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	@BeforeAll
 	public void createMongoTestableHierarchy()
 	{
-		initDictDataTestableHierarchy(MONGO_DICT_ID);
+//		initDictDataTestableHierarchy(MONGO_DICT_ID);
 	}
 
 	@Test
@@ -51,14 +51,14 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
 	protected void test_getDistinctValuesByFilterWithEmptyFilter()
 	{
-		assertThrows(UnsupportedOperationException.class, this::getDistinctValuesByFilterWithEmptyFilter);
+		assertThrows(UnsupportedOperationException.class, this::getDistinctValuesByFilterWithoutFilter);
 	}
 
 	@Test
 	@Order(TestPipeline.DICT_DATA_GET_DISTINCT_VALUES_BY_FILTER_TEST)
 	protected void test_getDistinctValuesByFilterWithFilter()
 	{
-		assertThrows(UnsupportedOperationException.class, this::getDistinctValuesByFilterWithFilter);
+		assertThrows(UnsupportedOperationException.class, this::getDistinctValuesByFilter);
 	}
 
 	@Test
