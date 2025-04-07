@@ -45,9 +45,9 @@ public class TestDictFactory
 		return createNewDict(dictId, new DictEngine(DictsProperties.DEFAULT_ENGINE));
 	}
 
-	public Dict createReferenceDict(String refDictId, String dictId)
+	public Dict createReferenceDict(String dictId)
 	{
-		var refDict = buildDict(refDictId + "dataRef", new DictEngine(DictsProperties.DEFAULT_ENGINE));
+		var refDict = buildDict(dictId + "dataRef", new DictEngine(DictsProperties.DEFAULT_ENGINE));
 
 		addReferenceField(refDict, dictId);
 

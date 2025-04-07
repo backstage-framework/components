@@ -31,16 +31,13 @@ import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.advice.AttachmentDictDataServiceAdvice;
 import com.backstage.app.exception.ObjectNotFoundException;
-import com.backstage.app.model.other.date.DateConstants;
 import com.backstage.app.model.other.user.UserInfo;
 import com.backstage.app.utils.StreamCollectors;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Comparators;
-import com.google.common.collect.ImmutableMap;
 import lombok.SneakyThrows;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.assertj.core.api.ThrowingConsumer;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
@@ -61,13 +58,9 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
-import java.util.function.Function;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -91,10 +84,10 @@ public class CommonDictDataServiceTest extends CommonTest
 	private TransactionTemplate transactionTemplate;
 
 	@Autowired
-	private TestDictFactory testDictFactory;
+	protected TestDictFactory testDictFactory;
 
 	@Autowired
-	private TestDictDataFactory testDictDataFactory;
+	protected TestDictDataFactory testDictDataFactory;
 
 	//todo возможно стоит весь блок attachment вынесити в отдельные тесты\фабрики
 	@Value("classpath:attachment.png")
@@ -211,7 +204,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var dictId = testDictFactory.createNewDict(getDictId())
 				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId() + "Ref", dictId)
+		var refDictId = testDictFactory.createReferenceDict(getDictId())
 				.getId();
 		var createdItemId = testDictDataFactory.createDefaultItemWithCustomField(refDictId, Map.of("stringField", "nullableDictRefField"))
 				.getId();
@@ -405,7 +398,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var dictId = testDictFactory.createNewDict(getDictId())
 				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId() + "Ref", dictId)
+		var refDictId = testDictFactory.createReferenceDict(getDictId())
 				.getId();
 		testDictDataFactory.createDictHierarchy(dictId, refDictId, 10);
 
@@ -429,7 +422,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var dictId = testDictFactory.createNewDict(getDictId())
 				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId() + "Ref", dictId)
+		var refDictId = testDictFactory.createReferenceDict(getDictId())
 				.getId();
 		testDictDataFactory.createDictHierarchy(dictId, refDictId, 10);
 
@@ -623,7 +616,7 @@ public class CommonDictDataServiceTest extends CommonTest
 				.getId();
 		var dictItemId = testDictDataFactory.createDefaultItem(dictId)
 				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId() + "Ref", dictId)
+		var refDictId = testDictFactory.createReferenceDict(getDictId())
 				.getId();
 		testDictDataFactory.createDefaultItemWithCustomField(refDictId, Map.of(dictId, dictItemId));
 
@@ -642,7 +635,7 @@ public class CommonDictDataServiceTest extends CommonTest
 				.getId();
 		var dictItemId = testDictDataFactory.createDefaultItem(dictId)
 				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId() + "Ref", dictId)
+		var refDictId = testDictFactory.createReferenceDict(getDictId())
 				.getId();
 		var refItemId = testDictDataFactory.createDefaultItemWithCustomField(refDictId, Map.of(dictId, dictItemId))
 				.getId();
@@ -666,7 +659,7 @@ public class CommonDictDataServiceTest extends CommonTest
 		Map<String, Object> refDictDataMap = Map.of("stringField", "queryReferenceDict");
 		var dictItemId = testDictDataFactory.createDefaultItemWithCustomField(dictId, refDictDataMap)
 				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId() + "Ref", dictId)
+		var refDictId = testDictFactory.createReferenceDict(getDictId())
 				.getId();
 		testDictDataFactory.createDefaultItemWithCustomField(refDictId, Map.of(dictId, dictItemId));
 
@@ -1311,7 +1304,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var dictId = testDictFactory.createNewDict(getDictId())
 				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId() + "Ref", dictId)
+		var refDictId = testDictFactory.createReferenceDict(getDictId())
 				.getId();
 
 		var item = testDictDataFactory.createDefaultItem(dictId);

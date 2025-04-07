@@ -104,6 +104,7 @@ public class TestDictDataFactory
 		return dictDataService.create(buildDictDataItem(dictId, dataMap));
 	}
 
+	//todo декомпозировать
 	public List<DictItem> createDictHierarchy(String dictId, String refDictId, int count)
 	{
 		Supplier<Map<String, Object>> testDataMapFactory = () -> RANDOM_DATA_MAP;

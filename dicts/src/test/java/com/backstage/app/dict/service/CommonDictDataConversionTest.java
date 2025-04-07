@@ -18,6 +18,7 @@ package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.api.model.dto.data.DictItemRemoteDto;
 import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
+import com.backstage.app.dict.data.TestDictDataFactory;
 import com.backstage.app.dict.domain.DictItem;
 import lombok.SneakyThrows;
 import org.geojson.FeatureCollection;
@@ -29,6 +30,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Collections;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -39,76 +41,85 @@ public class CommonDictDataConversionTest extends CommonDictDataServiceTest
 
 	protected void convertItemsWithNullData()
 	{
-		var dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put("doubleField", null);
+		var dictId =  testDictFactory.createNewDict(getDictId()).getId();
+		var dataMap = Collections.singletonMap(TestDictDataFactory.DOUBLE_FIELD, null);
+		testDictDataFactory.createDefaultItemWithCustomField(dictId, dataMap);
 
-		dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
-
-		var actualDto = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), "doubleField = null", Pageable.unpaged())
+		var actualDto = dictDataService.getByFilter(dictId, List.of("*"), "doubleField = null", Pageable.unpaged())
 				.getContent()
 				.stream()
 				.map(this::mappedDto)
 				.toList();
 
-		actualDto.forEach(it -> assertNull(it.getData().get("doubleField")));
+		actualDto.forEach(it -> assertNull(it.getData().get(TestDictDataFactory.DOUBLE_FIELD)));
+
+		testDictFactory.eraseDict(dictId);
 	}
 
 	protected void convertItemsWithEmptyArray()
 	{
-		var dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put("timestampField", null);
+		var dictId =  testDictFactory.createNewDict(getDictId()).getId();
+		var dataMap = Collections.singletonMap(TestDictDataFactory.TIMESTAMP_FIELD, null);
+		testDictDataFactory.createDefaultItemWithCustomField(dictId, dataMap);
 
-		dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
-
-		var actualDto = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), null, Pageable.unpaged())
+		var actualDto = dictDataService.getByFilter(dictId, List.of("*"), null, Pageable.unpaged())
 				.getContent()
 				.stream()
-				.filter(it -> ((Collection<?>) it.getData().get("timestampField")).isEmpty())
+				.filter(it -> ((Collection<?>) it.getData().get(TestDictDataFactory.TIMESTAMP_FIELD)).isEmpty())
 				.map(this::mappedDto)
 				.toList();
 
-		actualDto.forEach(it -> assertTrue(((Collection<?>) it.getData().get("timestampField")).isEmpty()));
+		actualDto.forEach(it -> assertTrue(((Collection<?>) it.getData().get(TestDictDataFactory.TIMESTAMP_FIELD)).isEmpty()));
+
+		testDictFactory.eraseDict(dictId);
 	}
 
 	protected void convertItemsWithReferenceDict()
 	{
-		var refId = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP)).getId();
+		var dictId =  testDictFactory.createNewDict(getDictId()).getId();
+		var refDictId =  testDictFactory.createReferenceDict(dictId).getId();
+		var dictItemId = testDictDataFactory.createDefaultItem(dictId).getId();
+		var refDataMap = new HashMap<String, Object>() {{
+			put(dictId, dictItemId);
+		}};
+		testDictDataFactory.createItemWithCustomFields(refDictId, refDataMap);
 
-		var refDataMap = new HashMap<>(DATA_MAP);
-		refDataMap.put(TESTABLE_DICT_ID, refId);
-
-		dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
-
-		var actualDto = dictDataService.getByFilter(TESTABLE_REF_DICT_ID, List.of("*", TESTABLE_DICT_ID + ".timestampField"), null, PageRequest.of(0, 10))
+		var actualDto = dictDataService.getByFilter(refDictId, List.of("*", dictId + ".timestampField"), null, PageRequest.of(0, 10))
 				.getContent()
 				.stream()
 				.map(this::mappedDto)
 				.toList();
 
-		assertEquals(DictItemRemoteDto.class, actualDto.get(0).getData().get(TESTABLE_DICT_ID).getClass());
+		assertEquals(DictItemRemoteDto.class, actualDto.get(0).getData().get(dictId).getClass());
+
+		testDictFactory.eraseDictAndRefDict(dictId, refDictId);
 	}
 
 	@SneakyThrows
 	protected void convertItemsWithGeoJsonObject()
 	{
+		var dictId = testDictFactory.createGeoJsonDict(getDictId()).getId();
+
 		var geo = objectMapper.readValue("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[37.412284,55.603515]}},{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[37.413423,55.604283],[37.41255,55.60361],[37.413995,55.602974],[37.414842,55.603629],[37.413423,55.604283]]]}},{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[37.411999,55.603159],[37.413568,55.602384],[37.41522,55.603516]]}}]}",
 				GeoJsonObject.class);
 		var geoJson = objectMapper.writeValueAsString(geo);
+		var dataMap = new HashMap<String, Object>() {{
+			put("geoJsonField", geoJson);
+			put("geoJsonMultivaluedField", List.of(geoJson, geoJson));
+			put("stringField", "geoJsonTest");
+		}};
 
-		var dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put("geoJsonField", geoJson);
-		dataMap.put("geoJsonMultivaluedField", List.of(geoJson, geoJson));
-		dataMap.put("stringField", "geoJsonTest");
+		dictDataService.create(buildDictDataItem(dictId, dataMap));
 
-		dictDataService.create(buildDictDataItem(TESTABLE_GEO_JSON_DICT_ID, dataMap));
-
-		var actualDto = dictDataService.getByFilter(TESTABLE_GEO_JSON_DICT_ID, List.of("*"), "stringField = 'geoJsonTest'", Pageable.unpaged())
+		var actualDto = dictDataService.getByFilter(dictId, List.of("*"), "stringField = 'geoJsonTest'", Pageable.unpaged())
 				.getContent()
 				.stream()
 				.map(this::mappedDto)
 				.toList();
 
 		assertEquals(FeatureCollection.class, actualDto.get(0).getData().get("geoJsonField").getClass());
+
+		testDictFactory.eraseDict(dictId);
 	}
 
 	@SneakyThrows
