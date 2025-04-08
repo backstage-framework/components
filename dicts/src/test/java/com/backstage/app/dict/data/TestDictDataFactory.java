@@ -46,6 +46,7 @@ public class TestDictDataFactory
 	public static final String DOUBLE_FIELD = "doubleField";
 	public static final String TIMESTAMP_FIELD = "timestampField";
 	public static final String BOOLEAN_FIELD = "booleanField";
+	public static final String STRING_MULTIVALUED_FIELD = "stringFieldMultivalued";
 
 	private final DictDataService dictDataService;
 
@@ -57,12 +58,12 @@ public class TestDictDataFactory
 			BOOLEAN_FIELD, RandomUtils.nextBoolean());
 
 	protected static final Map<String, Object> DATA_MAP = Map.of(
-			"stringField", STRING_FIELD_VALUE,
-			"integerField", 1,
-			"doubleField", 2.558,
-			"timestampField", List.of("2021-08-15T06:00:00.000Z", "2021-08-15T08:00:00.000Z"),
-			"stringFieldMultivalued", List.of("one", "two", "three"),
-			"booleanField", true);
+			STRING_FIELD, STRING_FIELD_VALUE,
+			INTEGER_FIELD, 1,
+			DOUBLE_FIELD, 2.558,
+			TIMESTAMP_FIELD, List.of("2021-08-15T06:00:00.000Z", "2021-08-15T08:00:00.000Z"),
+			STRING_MULTIVALUED_FIELD, List.of("one", "two", "three"),
+			BOOLEAN_FIELD, true);
 
 	public List<DictItem> createManyWithDefaultValues(String dictId, int count)
 	{

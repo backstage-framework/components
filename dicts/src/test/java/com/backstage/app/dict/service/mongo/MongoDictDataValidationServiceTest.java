@@ -26,12 +26,6 @@ import org.junit.jupiter.api.Test;
 @MongoStorage
 public class MongoDictDataValidationServiceTest extends CommonDictDataValidationServiceTest
 {
-	@BeforeAll
-	public void buildTestableDictHierarchy()
-	{
-		buildDictDataTestableHierarchy(MONGO_DICT_ID);
-	}
-
 	@Test
 	void validate_SelectFieldsCorrect()
 	{

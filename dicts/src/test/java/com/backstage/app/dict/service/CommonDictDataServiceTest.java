@@ -152,7 +152,12 @@ public class CommonDictDataServiceTest extends CommonTest
 				.map(DictItem::getId)
 				.toList();
 
-		assertArrayEquals(ids.toArray(String[]::new), dictDataService.getByIds(dictId, ids).stream().map(DictItem::getId).toArray(String[]::new));
+		var result = dictDataService.getByIds(dictId, ids)
+				.stream()
+				.map(DictItem::getId)
+				.toArray(String[]::new);
+
+		assertArrayEquals(ids.toArray(String[]::new), result);
 	}
 
 	protected void getDistinctValuesByFilterWithoutFilter()
@@ -411,7 +416,13 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		objectWriter.accept(result);
 
-		boolean actual = Comparators.isInOrder(result, Comparator.comparing((Map<String, Object> data) -> (Long) ((DictItem) data.get(dictId)).getData().get(TestDictDataFactory.INTEGER_FIELD)).reversed());
+		var comparator = Comparator.comparing((Map<String, Object> data) -> {
+			var dictItem = (DictItem) data.get(dictId);
+			return (Long) dictItem.getData().get(TestDictDataFactory.INTEGER_FIELD);
+		}
+		).reversed();
+
+		boolean actual = Comparators.isInOrder(result, comparator);
 
 		assertTrue(actual);
 
@@ -420,22 +431,21 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void getByFilterInnerDictSortWrongFiledName()
 	{
-		var dictId = testDictFactory.createNewDict(getDictId())
-				.getId();
-		var refDictId = testDictFactory.createReferenceDict(getDictId())
-				.getId();
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
+		var refDictId = testDictFactory.createReferenceDict(getDictId()).getId();
 		testDictDataFactory.createDictHierarchy(dictId, refDictId, 10);
 
-		assertThrows(FieldNotFoundException.class, () -> dictDataService.getByFilter(refDictId, List.of("*", dictId + ".*"), null,
-				PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, dictId + "." + "wrongFiled"))));
+		var pageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, dictId + "." + "wrongFiled"));
+		Executable testAction = () -> dictDataService.getByFilter(refDictId, List.of("*", dictId + ".*"), null, pageable);
+
+		assertThrows(FieldNotFoundException.class, testAction);
 
 		testDictFactory.eraseDictAndRefDict(dictId, refDictId);
 	}
 
 	protected void getByFilterDictSortServiceField()
 	{
-		var dictId = testDictFactory.createNewDict(getDictId())
-				.getId();
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
 		testDictDataFactory.createManyWithDefaultValues(dictId, 10);
 
 		var sortedIdFields = dictDataService.getByFilter(dictId, List.of("*"), null,
@@ -743,12 +753,10 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void existsByFilter()
 	{
-		var dictId = testDictFactory.createNewDict(getDictId())
-				.getId();
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
 		testDictDataFactory.createDefaultItem(dictId);
 
 		assertTrue(dictDataService.existsByFilter(dictId, "integerField = 1"));
-
 		assertFalse(dictDataService.existsByFilter(dictId, "integerField = 13"));
 
 		testDictFactory.eraseDict(dictId);
@@ -756,8 +764,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void attachmentBindingWithCreateDictItem()
 	{
-		var dictId = testDictFactory.createAttachmentDict(getDictId())
-				.getId();
+		var dictId = testDictFactory.createAttachmentDict(getDictId()).getId();
 		var attachmentDataMap = Map.of(
 				"stringField", "string",
 				"integerField", 1L,

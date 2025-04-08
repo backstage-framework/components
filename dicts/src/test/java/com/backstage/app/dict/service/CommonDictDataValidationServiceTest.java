@@ -16,19 +16,19 @@
 
 package com.backstage.app.dict.service;
 
-import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
-import com.backstage.app.dict.domain.DictField;
+import com.backstage.app.dict.data.TestDictDataFactory;
+import com.backstage.app.dict.data.TestDictFactory;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.UnavailableDictRefException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
-import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.validation.DictDataValidationService;
-import com.backstage.app.utils.SecurityUtils;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.bson.types.Decimal128;
 import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
@@ -37,66 +37,72 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.backstage.app.dict.constant.ServiceFieldConstants.ID;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class CommonDictDataValidationServiceTest extends CommonTest
 {
-	protected static final String USER_ID = SecurityUtils.getCurrentUserId();
-
-	protected static String TESTABLE_DICT_ID;
-	protected static String TESTABLE_REF_DICT_ID;
-
 	@Autowired
 	protected DictDataValidationService dictDataValidationService;
 
-	protected void buildDictDataTestableHierarchy(String storageDictId)
+	@Autowired
+	protected TestDictFactory testDictFactory;
+
+	@Autowired
+	protected TestDictDataFactory testDictDataFactory;
+
+	protected String getDictId()
 	{
-		TESTABLE_DICT_ID = createNewDict(storageDictId + "dataValidate").getId();
-
-		var refDict = buildDict(storageDictId + "dataValidateRef");
-
-		var refDictFields = refDict.getFields();
-
-		refDictFields.add(DictField.builder()
-				.id(TESTABLE_DICT_ID)
-				.name("Ссылка")
-				.type(DictFieldType.DICT)
-				.required(false)
-				.multivalued(false)
-				.dictRef(new DictFieldName(TESTABLE_DICT_ID, ID))
-				.build()
-		);
-
-		TESTABLE_REF_DICT_ID = dictService.create(refDict).getId();
-
-		addDictData(TESTABLE_DICT_ID);
-		addDictData(TESTABLE_REF_DICT_ID);
+		return "%s%s".formatted(dictsProperties.getStorage(), RandomStringUtils.random(3, true, false));
 	}
 
 	protected void validateSelectFields()
 	{
-		dictDataValidationService.validateSelectFields(dictService.getById(TESTABLE_REF_DICT_ID), List.of(new DictFieldName(TESTABLE_DICT_ID, "integerField"),
-				new DictFieldName(TESTABLE_DICT_ID, "created"), new DictFieldName(TESTABLE_DICT_ID, "stringField")));
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
+		var refDictId = testDictFactory.createReferenceDict(dictId).getId();
+
+		dictDataValidationService.validateSelectFields(
+				dictService.getById(refDictId),
+				List.of(new DictFieldName(dictId, "integerField"),
+						new DictFieldName(dictId, "created"),
+						new DictFieldName(dictId, "stringField")));
+
+		testDictFactory.eraseDictAndRefDict(dictId, refDictId);
 	}
 
 	protected void validateSelectFieldsFieldNotExisted()
 	{
-		assertThrows(FieldNotFoundException.class,
-				() -> dictDataValidationService.validateSelectFields(dictService.getById(TESTABLE_REF_DICT_ID), List.of(new DictFieldName(TESTABLE_DICT_ID, "stringField"),
-						new DictFieldName(TESTABLE_DICT_ID, "incorrect"))));
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
+		var refDictId = testDictFactory.createReferenceDict(dictId).getId();
+
+		Executable result = () -> dictDataValidationService.validateSelectFields(
+				dictService.getById(refDictId),
+				List.of(new DictFieldName(dictId, "stringField"),
+						new DictFieldName(dictId, "incorrect")));
+
+		assertThrows(FieldNotFoundException.class, result);
+
+		testDictFactory.eraseDictAndRefDict(dictId, refDictId);
 	}
 
 	protected void validateSelectFieldsIncorrect()
 	{
-		assertThrows(UnavailableDictRefException.class, () ->
-				dictDataValidationService.validateSelectFields(dictService.getById(TESTABLE_DICT_ID), List.of(new DictFieldName(TESTABLE_DICT_ID, "integerField"))));
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
+
+		Executable result = () -> dictDataValidationService.validateSelectFields(
+				dictService.getById(dictId),
+				List.of(new DictFieldName(dictId, "integerField")));
+
+		assertThrows(UnavailableDictRefException.class, result);
+
+		testDictFactory.eraseDict(dictId);
 	}
 
 	protected void validateSelectFieldsDictNotExisted()
 	{
-		assertThrows(DictNotFoundException.class, () -> dictDataValidationService.validateSelectFields(dictService.getById("incorrect"), List.of()));
+		Executable result = () -> dictDataValidationService.validateSelectFields(dictService.getById("incorrect"), List.of());
+
+		assertThrows(DictNotFoundException.class, result);
 	}
 
 	protected void validateDictData()
@@ -192,46 +198,25 @@ public class CommonDictDataValidationServiceTest extends CommonTest
 
 	protected void deleteRefDictItemForbidden()
 	{
-		Map<String, Object> map = Map.of(
-				"stringField", "string",
-				"created", "2021-08-15T06:00:00.000Z",
-				"integerField", 1,
-				"booleanField", false,
-				"timestampField", "2021-08-15T06:00:00.000Z");
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
+		var refDictId = testDictFactory.createReferenceDict(dictId).getId();
+		var dictItemId = testDictDataFactory.createDefaultItem(dictId).getId();
+		testDictDataFactory.createDefaultItemWithCustomField(refDictId, Map.of(dictId, dictItemId));
 
-		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, map));
-		var refItemId = refDictItem.getId();
+		Executable result = () -> dictDataValidationService.validateDelete(dictService.getById(dictId), dictItemId);
 
-		var refDataMap = new HashMap<>(map);
-		refDataMap.put(TESTABLE_DICT_ID, refItemId);
-
-		dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
-
-		assertThrows(DictException.class, () -> dictDataValidationService.validateDelete(dictService.getById(TESTABLE_DICT_ID), refItemId));
+		assertThrows(DictException.class, result);
 	}
 
 	protected void deleteAllRefDictItemsForbidden()
 	{
-		Map<String, Object> map = Map.of(
-				"stringField", "string",
-				"created", "2021-08-15T06:00:00.000Z",
-				"integerField", 1,
-				"booleanField", false,
-				"timestampField", "2021-08-15T06:00:00.000Z");
+		var dictId = testDictFactory.createNewDict(getDictId()).getId();
+		var refDictId = testDictFactory.createReferenceDict(dictId).getId();
+		var dictItemId = testDictDataFactory.createDefaultItem(dictId).getId();
+		testDictDataFactory.createDefaultItemWithCustomField(refDictId, Map.of(dictId, dictItemId));
 
-		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, map));
-		var refItemId = refDictItem.getId();
+		Executable result = () -> dictDataValidationService.validateDeleteAll(dictService.getById(dictId));
 
-		var refDataMap = new HashMap<>(map);
-		refDataMap.put(TESTABLE_DICT_ID, refItemId);
-
-		dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
-
-		assertThrows(DictException.class, () -> dictDataValidationService.validateDeleteAll(dictService.getById(TESTABLE_DICT_ID)));
-	}
-
-	private DictDataItem buildDictDataItem(String dictId, Map<String, Object> dataMap)
-	{
-		return DictDataItem.of(dictId, dataMap);
+		assertThrows(DictException.class, result);
 	}
 }

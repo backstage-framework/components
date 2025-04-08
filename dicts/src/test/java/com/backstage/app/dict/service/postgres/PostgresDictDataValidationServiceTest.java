@@ -18,7 +18,6 @@ package com.backstage.app.dict.service.postgres;
 
 import com.backstage.app.dict.common.TestPipeline;
 import com.backstage.app.dict.service.CommonDictDataValidationServiceTest;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 
@@ -26,14 +25,6 @@ import org.junit.jupiter.api.Test;
 @PostgresStorage
 public class PostgresDictDataValidationServiceTest extends CommonDictDataValidationServiceTest
 {
-	protected String DICT_ID = POSTGRES_DICT_ID;
-
-	@BeforeAll
-	public void buildTestableDictHierarchy()
-	{
-		buildDictDataTestableHierarchy(POSTGRES_DICT_ID);
-	}
-
 	@Test
 	void validate_SelectFieldsCorrect()
 	{
