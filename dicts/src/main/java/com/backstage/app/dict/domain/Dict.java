@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Data
-@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

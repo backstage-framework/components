@@ -20,7 +20,6 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import lombok.*;
 
 @Data
-@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
