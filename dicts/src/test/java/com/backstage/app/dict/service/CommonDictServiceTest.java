@@ -18,6 +18,7 @@ package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
+import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.*;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.DictException;
@@ -31,8 +32,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.backstage.app.dict.constant.ServiceFieldConstants.ID;
-import static com.backstage.app.dict.constant.ServiceFieldConstants._ID;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CommonDictServiceTest extends CommonTest
@@ -64,12 +63,13 @@ public class CommonDictServiceTest extends CommonTest
 		var existsCorrectedServiceFields = actual.getFields()
 				.stream()
 				.map(DictField::getId)
-				.anyMatch(it -> it.equals(ID));
+				.anyMatch(it -> it.equals(ServiceFieldConstants.ID));
 
+		// На уровне домена не должно быть ключей, специфичных для конкретного хранилища
 		var existsUncorrectedServiceFields = actual.getFields()
 				.stream()
 				.map(DictField::getId)
-				.anyMatch(it -> it.equals(_ID));
+				.anyMatch(it -> it.equals(ServiceFieldConstants._ID));
 
 		var stringField = actual.getFields()
 				.stream()

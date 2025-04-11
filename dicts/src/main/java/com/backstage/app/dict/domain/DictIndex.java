@@ -40,10 +40,10 @@ public class DictIndex
 
 	public DictIndex copy()
 	{
-		var result = this.withId(this.id);
-
-		result.setFields(new ArrayList<>(result.getFields()));
-
-		return result;
+		return DictIndex.builder()
+				.id(id)
+				.direction(direction)
+				.fields(new ArrayList<>(fields))
+				.build();
 	}
 }

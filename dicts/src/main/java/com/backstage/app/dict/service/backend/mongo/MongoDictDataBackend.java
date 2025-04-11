@@ -83,7 +83,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	@Override
 	public DictItem getById(Dict dict, String id, List<DictFieldName> requiredFields)
 	{
-		var query = "%s = '%s'".formatted(ServiceFieldConstants._ID, id);
+		var query = "%s = '%s'".formatted(ServiceFieldConstants.ID, id);
 
 		return getByFilter(dict, requiredFields, queryParser.parse(query), Pageable.unpaged())
 				.getContent()
@@ -99,7 +99,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				.map(it -> "'" + it + "'")
 				.collect(Collectors.joining(", "));
 
-		var filtersQuery = "%s in (%s)".formatted(ServiceFieldConstants._ID, itemIds);
+		var filtersQuery = "%s in (%s)".formatted(ServiceFieldConstants.ID, itemIds);
 
 		return getByFilter(dict, requiredFields, queryParser.parse(filtersQuery), Pageable.unpaged()).getContent();
 	}
@@ -379,12 +379,13 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 
 			var refItems = mongoTemplate.find(refQuery, Document.class, dictField.getDictRef().getDictId())
 					.stream()
-					.collect(Collectors.toMap(document -> document.get(ServiceFieldConstants._ID) instanceof String s ? s : document.get(ServiceFieldConstants._ID).toString(), Function.identity()));
+					.collect(Collectors.toMap(document -> document.get(ServiceFieldConstants._ID).toString(), Function.identity()));
 
 			matchRefsDocument(itemList, dictField.getId(), refItems);
 		}));
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<String> getRefIds(String fieldId, Page<Document> items)
 	{
 		return items.stream()
@@ -395,6 +396,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				.toList();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void matchRefsDocument(Page<Document> itemList, String fieldId, Map<String, Document> refDocument)
 	{
 		itemList.stream()

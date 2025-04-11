@@ -45,21 +45,14 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 	{
 		Objects.requireNonNull(id, "dictId не может быть null.");
 
-		var dict = getDict(id);
-
-		convertMongoServiceFields(dict);
-
-		return dict;
+		return mongoDictRepository.findById(id)
+				.orElseThrow(() -> new DictNotFoundException(id));
 	}
 
 	@Override
 	public List<Dict> getAllDicts()
 	{
-		var result = mongoDictRepository.findAll();
-
-		result.forEach(this::convertMongoServiceFields);
-
-		return result;
+		return mongoDictRepository.findAll();
 	}
 
 	@Override
@@ -121,12 +114,6 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 		addTransactionData(null, true);
 
 		save(dict);
-	}
-
-	private Dict getDict(String id)
-	{
-		return mongoDictRepository.findById(id)
-				.orElseThrow(() -> new DictNotFoundException(id));
 	}
 
 	private Dict save(Dict dict)

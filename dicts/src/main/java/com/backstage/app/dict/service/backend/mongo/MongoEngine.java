@@ -17,7 +17,6 @@
 package com.backstage.app.dict.service.backend.mongo;
 
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
-import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.domain.VersionScheme;
@@ -50,13 +49,6 @@ public class MongoEngine implements Engine
 		{
 			mongoTemplate.createCollection(Dict.class);
 		}
-
-		mongoDictRepository.findAll()
-				.stream()
-				.filter(dict -> dict.getVersion() == 0L)
-				.peek(this::convertMongoServiceFields)
-				.peek(dict -> dict.setVersion(1L))
-				.forEach(mongoTemplate::save);
 	}
 
 	@Override
@@ -90,13 +82,5 @@ public class MongoEngine implements Engine
 	public void dropVersionScheme()
 	{
 		mongoTemplate.dropCollection(VersionScheme.class);
-	}
-
-	private void convertMongoServiceFields(Dict dict)
-	{
-		dict.getFields()
-				.stream()
-				.filter(it -> it.getId().equals(ServiceFieldConstants._ID))
-				.forEach(it -> it.setId(ServiceFieldConstants.ID));
 	}
 }

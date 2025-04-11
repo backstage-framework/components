@@ -78,14 +78,18 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 		context.getDict()
 				.getFields()
 				.stream()
-				.filter(it -> it.getId().equalsIgnoreCase(field.name) || Set.of(ServiceFieldConstants.ID, ServiceFieldConstants._ID).contains(field.name))
+				.filter(it -> it.getId().equalsIgnoreCase(field.name) || ServiceFieldConstants.ID.equals(field.name))
 				.findFirst()
 				.orElseThrow(() -> new FieldNotFoundException(context.getDict().getId(), field.name));
 
 		var fieldName = field.name.equals(ServiceFieldConstants.ID) ? ServiceFieldConstants._ID : field.name;
 
+		var dictId = field.dictId == null
+				? context.getDict().getId()
+				: field.dictId;
+
 		return MongoQuery.builder()
-				.field(new MongoQueryField(field.dictId == null ? context.getDict().getId() : field.dictId, fieldName))
+				.field(new MongoQueryField(dictId, fieldName))
 				.build();
 	}
 

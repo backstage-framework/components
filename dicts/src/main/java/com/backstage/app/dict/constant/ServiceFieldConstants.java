@@ -25,18 +25,22 @@ public class ServiceFieldConstants
 	public static final String ALL_FIELDS = "*";
 
 	public static final String ID = "id";
-	public static final String _ID = "_id";
 	public static final String HISTORY = "history";
 	public static final String CREATED = "created";
 	public static final String UPDATED = "updated";
 	public static final String VERSION = "version";
 
+	/**
+	 * Ключ, специфичный для MongoDB
+	 */
+	public static final String _ID = "_id";
+
 	//	TODO: определиться с допустимостью использования поля id в рамках импортов и создания записей с предопределенным id
 	@Getter
-	private static final Set<String> serviceInsertableFields = Set.of(_ID, /*ID,*/ HISTORY, CREATED, UPDATED, VERSION);
+	private static final Set<String> serviceInsertableFields = Set.of(HISTORY, CREATED, UPDATED, VERSION);
 
 	@Getter
-	private static final Set<String> serviceSchemeFields = Set.of(_ID, ID, HISTORY, CREATED, UPDATED, VERSION);
+	private static final Set<String> serviceSchemeFields = Set.of(ID, HISTORY, CREATED, UPDATED, VERSION);
 
 	@Getter
 	private static final Set<String> serviceSchemaFieldsWithoutIds = Set.of(HISTORY, CREATED, UPDATED, VERSION);

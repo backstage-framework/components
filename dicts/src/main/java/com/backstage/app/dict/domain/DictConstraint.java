@@ -37,10 +37,9 @@ public class DictConstraint
 
 	public DictConstraint copy()
 	{
-		var result = this.withId(this.id);
-
-		result.setFields(new ArrayList<>(result.getFields()));
-
-		return result;
+		return DictConstraint.builder()
+				.id(id)
+				.fields(new ArrayList<>(fields))
+				.build();
 	}
 }

@@ -79,32 +79,38 @@ public class Dict
 
 	public Dict copy()
 	{
-		var result = this.withId(this.id);
-
-		List<DictField> fields = result.getFields()
+		List<DictField> fields = this.fields
 				.stream()
-				.map(field -> field.withId(field.getId()))
+				.map(DictField::copy)
 				.collect(Collectors.toList());
-		result.setFields(fields);
 
-		List<DictIndex> indexes = result.getIndexes()
+		List<DictIndex> indexes = this.indexes
 				.stream()
 				.map(DictIndex::copy)
 				.collect(Collectors.toList());
-		result.setIndexes(indexes);
 
-		List<DictConstraint> constraints = result.getConstraints()
+		List<DictConstraint> constraints = this.constraints
 				.stream()
 				.map(DictConstraint::copy)
 				.collect(Collectors.toList());
-		result.setConstraints(constraints);
 
-		List<DictEnum> enums = result.getEnums()
+		List<DictEnum> enums = this.enums
 				.stream()
 				.map(DictEnum::copy)
 				.collect(Collectors.toList());
-		result.setEnums(enums);
 
-		return result;
+		return Dict.builder()
+				.id(id)
+				.name(name)
+				.fields(fields)
+				.indexes(indexes)
+				.constraints(constraints)
+				.enums(enums)
+				.viewPermission(viewPermission)
+				.editPermission(editPermission)
+				.version(version)
+				.engine(engine == null ? null : new DictEngine(engine.getName()))
+				.maxHistory(maxHistory)
+				.build();
 	}
 }
