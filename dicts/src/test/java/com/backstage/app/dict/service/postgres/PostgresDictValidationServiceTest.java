@@ -32,12 +32,6 @@ public class PostgresDictValidationServiceTest extends CommonDictValidationServi
 	}
 
 	@Test
-	void validate_SchemeForbiddenField()
-	{
-		validateSchemeForbiddenField();
-	}
-
-	@Test
 	void validate_SchemeIncorrectFieldsIdMaxLength()
 	{
 		validateSchemaIncorrectFieldsIdMaxLength();

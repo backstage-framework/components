@@ -77,6 +77,12 @@ public class ReadOnlyObjectProxyFactory
 		}
 	}
 
+	@SuppressWarnings("unchecked")
+	public static <T> T createProxy(T source)
+	{
+		return createProxy(source, (Class<T>) source.getClass());
+	}
+
 	public static <T> T createProxy(Object source, Class<T> targetClass)
 	{
 		String canonicalName = targetClass.getCanonicalName();

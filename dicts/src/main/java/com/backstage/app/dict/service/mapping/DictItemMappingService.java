@@ -48,6 +48,9 @@ public class DictItemMappingService
 
 	public DictItem mapDictItem(DictDataItem dataItem, Dict dict, List<DictField> dictDataFields)
 	{
+		// TODO: убрать, после локализации логики ID <-> _ID внутри бэкэнда Мongo.
+		dict = dict.copy();
+
 		var requiredFields = dict.getFields()
 				.stream()
 				.peek(it -> it.setId(it.getId().equals(ServiceFieldConstants._ID) ? ServiceFieldConstants.ID : it.getId()))
@@ -85,6 +88,9 @@ public class DictItemMappingService
 	// TODO: рефакторинг
 	public DictItem mapDictItem(DictItem dictItem, Dict dict, List<DictField> dictDataFields)
 	{
+		// TODO: убрать, после локализации логики ID <-> _ID внутри бэкэнда Мongo.
+		dict = dict.copy();
+
 		var requiredFields = dict.getFields()
 				.stream()
 				.peek(it -> it.setId(it.getId().equals(ServiceFieldConstants._ID) ? ServiceFieldConstants.ID : it.getId()))

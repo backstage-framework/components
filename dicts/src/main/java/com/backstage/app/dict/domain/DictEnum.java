@@ -16,15 +16,14 @@
 
 package com.backstage.app.dict.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.backstage.app.cache.utils.proxy.ForceProxy;
+import lombok.*;
 
 import java.util.HashSet;
 import java.util.Set;
 
 @Data
+@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,6 +33,16 @@ public class DictEnum
 
 	private String name;
 
+	@ForceProxy
 	@Builder.Default
 	private Set<String> values = new HashSet<>();
+
+	public DictEnum copy()
+	{
+		var result = this.withId(this.id);
+
+		result.setValues(new HashSet<>(result.getValues()));
+
+		return result;
+	}
 }

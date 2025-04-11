@@ -18,14 +18,12 @@ package com.backstage.app.dict.service.validation;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.configuration.backend.provider.DictSchemeBackendProvider;
-import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.exception.EngineException;
 import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
-import com.backstage.app.dict.exception.dict.field.ForbiddenFieldNameException;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.utils.SpringContextUtils;
 import lombok.RequiredArgsConstructor;
@@ -65,8 +63,6 @@ public class DictValidationService
 	{
 		validateDictEngine(dict);
 
-		validateServiceFields(dict);
-
 		validateFields(dict, dictService);
 	}
 
@@ -78,17 +74,6 @@ public class DictValidationService
 		}
 
 		schemeBackendProvider.getBackendByEngineName(dict.getEngine().getName());
-	}
-
-	private void validateServiceFields(Dict dict)
-	{
-		dict.getFields()
-				.stream()
-				.filter(field -> ServiceFieldConstants.getServiceSchemeFields().contains(field.getId()))
-				.findAny()
-				.ifPresent(it -> {
-					throw new ForbiddenFieldNameException(it.getId());
-				});
 	}
 
 	private void validateFields(Dict dict, DictService dictService)

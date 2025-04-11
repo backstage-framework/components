@@ -24,7 +24,6 @@ import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.exception.EngineException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
-import com.backstage.app.dict.exception.dict.field.ForbiddenFieldNameException;
 import com.backstage.app.dict.service.validation.DictValidationService;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -108,13 +107,6 @@ public class CommonDictValidationServiceTest extends CommonTest
 		DICT_SCHEME.setFields(FIELDS);
 
 		dictValidationService.validateDictScheme(DICT_SCHEME, dictService);
-	}
-
-	protected void validateSchemeForbiddenField()
-	{
-		DICT_SCHEME.setFields(FORBIDDEN_FIELDS);
-
-		assertThrows(ForbiddenFieldNameException.class, () -> dictValidationService.validateDictScheme(DICT_SCHEME, dictService));
 	}
 
 	protected void validateSchemaIncorrectFieldsIdMaxLength()

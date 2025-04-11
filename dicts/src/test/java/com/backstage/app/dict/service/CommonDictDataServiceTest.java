@@ -871,9 +871,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		var historyLimit = 10;
 
-		var dict = dictService.getById(TESTABLE_DICT_ID);
-		// TODO: что за жесть withoutServiceFields? рефакторинг update.
-		dict.setFields(new LinkedList<>(withoutServiceFields(dict.getFields())));
+		var dict = dictService.getById(TESTABLE_DICT_ID).copy();
 		dict.setMaxHistory(historyLimit);
 
 		dict = dictService.update(TESTABLE_DICT_ID, dict);
