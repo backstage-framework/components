@@ -74,7 +74,7 @@ public class CommonDictTargetSchemeServiceTest extends CommonTest
 	{
 		var refDict = createRefDict(dictEngine.getName());
 
-		var dict = dictService.create(buildTestDict(dictId, dictEngine, refDict.getId()));
+		var dict = dictService.create(buildTestDict(dictId, dictEngine, refDict.getId())).copy();
 
 		var testEnum = buildTestEnum("enumId");
 		dict.getEnums().add(testEnum);

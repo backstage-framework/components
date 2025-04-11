@@ -17,12 +17,10 @@
 package com.backstage.app.dict.domain;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Data
+@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor

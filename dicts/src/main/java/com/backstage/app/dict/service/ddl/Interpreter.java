@@ -154,7 +154,7 @@ public class Interpreter
 
 	private void execute(AlterTable alterTable)
 	{
-		var dict = dictService.getById(alterTable.getTable().getName());
+		var dict = dictService.getById(alterTable.getTable().getName()).copy();
 		var dictId = dict.getId();
 
 		List<DictField> fields = new ArrayList<>(dictService.getDataFieldsByDict(dict));
@@ -201,7 +201,7 @@ public class Interpreter
 		}
 		else if (alterTable.getOperation() instanceof AddEnumValueOperation addEnumValueOperation)
 		{
-			var savedEnum = dictService.getById(alterTable.getTable().getName())
+			var savedEnum = dict
 					.getEnums()
 					.stream()
 					.filter(it -> it.getId().equals(addEnumValueOperation.getId().getName()))

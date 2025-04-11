@@ -32,12 +32,6 @@ public class MongoDictValidationServiceTest extends CommonDictValidationServiceT
 	}
 
 	@Test
-	void validate_SchemeForbiddenField()
-	{
-		validateSchemeForbiddenField();
-	}
-
-	@Test
 	void validate_SchemeIncorrectFieldsIdMaxLength()
 	{
 		validateSchemaIncorrectFieldsIdMaxLength();

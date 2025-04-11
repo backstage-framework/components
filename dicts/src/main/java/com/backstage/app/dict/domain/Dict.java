@@ -16,15 +16,15 @@
 
 package com.backstage.app.dict.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.backstage.app.cache.utils.proxy.ForceProxy;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
+@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -34,15 +34,19 @@ public class Dict
 
 	private String name;
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictField> fields = new ArrayList<>();
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictIndex> indexes = new ArrayList<>();
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictConstraint> constraints = new ArrayList<>();
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictEnum> enums = new ArrayList<>();
 
@@ -71,5 +75,36 @@ public class Dict
 		return fields.stream()
 				.map(DictField::getId)
 				.toList();
+	}
+
+	public Dict copy()
+	{
+		var result = this.withId(this.id);
+
+		List<DictField> fields = result.getFields()
+				.stream()
+				.map(field -> field.withId(field.getId()))
+				.collect(Collectors.toList());
+		result.setFields(fields);
+
+		List<DictIndex> indexes = result.getIndexes()
+				.stream()
+				.map(DictIndex::copy)
+				.collect(Collectors.toList());
+		result.setIndexes(indexes);
+
+		List<DictConstraint> constraints = result.getConstraints()
+				.stream()
+				.map(DictConstraint::copy)
+				.collect(Collectors.toList());
+		result.setConstraints(constraints);
+
+		List<DictEnum> enums = result.getEnums()
+				.stream()
+				.map(DictEnum::copy)
+				.collect(Collectors.toList());
+		result.setEnums(enums);
+
+		return result;
 	}
 }

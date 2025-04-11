@@ -16,15 +16,14 @@
 
 package com.backstage.app.dict.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import com.backstage.app.cache.utils.proxy.ForceProxy;
+import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
+@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -32,6 +31,16 @@ public class DictConstraint
 {
 	private String id;
 
+	@ForceProxy
 	@Builder.Default
 	private List<String> fields = new ArrayList<>();
+
+	public DictConstraint copy()
+	{
+		var result = this.withId(this.id);
+
+		result.setFields(new ArrayList<>(result.getFields()));
+
+		return result;
+	}
 }

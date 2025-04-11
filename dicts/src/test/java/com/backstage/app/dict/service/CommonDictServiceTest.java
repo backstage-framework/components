@@ -86,13 +86,11 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void updateDict(String dictId)
 	{
-		var updateDict = createNewDict(dictId);
+		var updateDict = createNewDict(dictId).copy();
 
 		updateDict.setName("updated_" + updateDict.getId());
 
 		updateDict.setIndexes(List.of(buildIndex(dictId, "stringField", "integerField"), buildIndex(dictId, "doubleField")));
-
-		var fields = new ArrayList<>(withoutServiceFields(updateDict.getFields()));
 
 		var newFieldId = "field_" + updateDict.getId();
 
@@ -107,11 +105,8 @@ public class CommonDictServiceTest extends CommonTest
 				.defaultValue(STRING_DEFAULT_VALUE)
 				.build();
 
-		fields.add(field);
-
-		fields.removeIf(it -> StringUtils.equals(it.getId(), "integerField"));
-
-		updateDict.setFields(fields);
+		updateDict.getFields().add(field);
+		updateDict.getFields().removeIf(it -> StringUtils.equals(it.getId(), "integerField"));
 
 		var expected = dictService.update(updateDict.getId(), updateDict);
 
@@ -231,7 +226,7 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void createDictIndex(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getIndexes().size() + 1;
 
@@ -254,7 +249,7 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void deleteDictIndex(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var index = dictService.createIndex(expectedDict.getId(), buildIndex(expectedDict.getId(), "doubleField"));
 
@@ -274,7 +269,7 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void createDictConstraint(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getConstraints().size() + 1;
 
@@ -296,7 +291,7 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void deleteDictConstraint(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var constraint = dictService.createConstraint(expectedDict.getId(), buildConstraint(expectedDict.getId(), "integerField"));
 
@@ -317,7 +312,7 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void createDictEnum(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getEnums().size() + 1;
 
@@ -339,10 +334,10 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void updateDictEnum(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var enums = new ArrayList<>(expectedDict.getEnums());
-		var dictEnum = dictService.createEnum(expectedDict.getId(), buildEnum(expectedDict.getId()));
+		var dictEnum = dictService.createEnum(expectedDict.getId(), buildEnum(expectedDict.getId())).copy();
 		enums.add(dictEnum);
 
 		expectedDict.setEnums(enums);
@@ -362,7 +357,7 @@ public class CommonDictServiceTest extends CommonTest
 
 	protected void deleteDictEnum(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var dictEnum = dictService.createEnum(expectedDict.getId(), buildEnum(expectedDict.getId()));
 
