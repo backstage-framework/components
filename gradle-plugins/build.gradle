@@ -1,0 +1,124 @@
+buildscript {
+	Properties properties = new Properties()
+	file('../gradle.properties').withInputStream {
+		properties.load(it)
+	}
+
+	properties.forEach { key, val ->
+		project.ext[key as String] = val
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+apply plugin: "groovy"
+apply plugin: "maven-publish"
+apply plugin: "java-gradle-plugin"
+
+group = 'com.backstage'
+version = appVersion
+
+dependencies {
+	implementation gradleApi()
+
+	implementation "com.google.guava:guava:$guavaVersion"
+	implementation "org.eclipse.persistence:eclipselink:$eclipseLinkVersion"
+}
+
+tasks.register('writeProperties', WriteProperties) {
+	destinationFile = layout.buildDirectory.file('resources/main/backstage.properties')
+	encoding = 'UTF-8'
+
+	property("backstageVersion", appVersion)
+}
+
+compileGroovy.dependsOn(writeProperties)
+
+gradlePlugin {
+	automatedPublishing = false
+
+	plugins {
+		persistenceXml {
+			id = "backstage-jpa-persistence-xml"
+			implementationClass = "com.backstage.gradle.JpaPersistenceXmlPlugin"
+		}
+
+		weaving {
+			id = "backstage-jpa-weaving"
+			implementationClass = "com.backstage.gradle.JpaWeavingPlugin"
+		}
+
+		jpaModelGen {
+			id = "backstage-jpa-modelgen"
+			implementationClass = "com.backstage.gradle.JpaModelGenPlugin"
+		}
+
+		appVersion {
+			id = "backstage-app-version"
+			implementationClass = "com.backstage.gradle.AppVersionPlugin"
+		}
+
+		bpmnpack {
+			id = "backstage-bpmn-pack"
+			implementationClass = "com.backstage.gradle.BpmnPackPlugin"
+		}
+
+		checkstyle {
+			id = "backstage-checkstyle"
+			implementationClass = "com.backstage.gradle.CheckstylePlugin"
+		}
+
+		dictsCodegen {
+			id = "backstage-dicts-codegen"
+			implementationClass = "com.backstage.gradle.DictsCodegenPlugin"
+		}
+	}
+}
+
+tasks.register('sourceJar', Jar) {
+	archiveClassifier = 'sources'
+	from sourceSets.main.allSource
+}
+
+publishing {
+	publications {
+		maven(MavenPublication) {
+			groupId = project.group
+			artifactId = 'gradle-plugins'
+			version = project.version
+
+			from components.java
+			artifact sourceJar
+
+			pom {
+				licenses {
+					license {
+						name = "The Apache License, Version 2.0"
+						url = "https://www.apache.org/licenses/LICENSE-2.0.txt"
+					}
+				}
+			}
+		}
+	}
+
+	repositories {
+		maven {
+			url = backstageNexusUrl
+			credentials(HttpHeaderCredentials) {
+				name = "Deploy-Token"
+				value = backstageNexusDeployToken
+			}
+			authentication {
+				header(HttpHeaderAuthentication)
+			}
+		}
+	}
+}
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(sourceJavaVersion)
+	}
+}
