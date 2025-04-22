@@ -5,8 +5,17 @@
 	<include resource="logback/rolling-file-appender.xml"/>
 
 	<root level="INFO">
-		<appender-ref ref="CONSOLE" />
-		<appender-ref ref="FILE" />
+		<if condition='!p("consoleOutputEnabled").equals("false")'>
+			<then>
+				<appender-ref ref="CONSOLE" />
+			</then>
+		</if>
+
+		<if condition='!p("fileOutputEnabled").equals("false")'>
+			<then>
+				<appender-ref ref="FILE" />
+			</then>
+		</if>
 	</root>
 
 	<logger name="ch.qos.logback" level="ERROR"/>

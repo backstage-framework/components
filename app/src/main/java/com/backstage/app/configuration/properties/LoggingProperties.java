@@ -38,8 +38,23 @@ public class LoggingProperties
 
 	@Getter
 	@Setter
+	public static class ConsoleProperties
+	{
+		/**
+		 * Флаг позволяет отключить логирование в консоль.
+		 */
+		private boolean enabled = true;
+	}
+
+	@Getter
+	@Setter
 	public static class FileProperties
 	{
+		/**
+		 * Флаг позволяет отключить логирование в файл.
+		 */
+		private boolean enabled = true;
+
 		/**
 		 * Максимальное количество архивов с лог-файлами в режиме ротации.
 		 */
@@ -62,6 +77,8 @@ public class LoggingProperties
 	private boolean jsonOutput;
 
 	private LogbackProperties logback = new LogbackProperties();
+
+	private ConsoleProperties console = new ConsoleProperties();
 
 	private FileProperties file = new FileProperties();
 }
