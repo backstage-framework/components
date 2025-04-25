@@ -1,3 +1,9 @@
+## 5.1.53 - 2025-04-25
+### Dependency Upgrades
+- Spring Boot 3.4.5
+- Spring Cloud 4.2.1
+- Spring Doc 2.8.6
+
 ## 5.1.52 - 2025-04-22
 ### App
 - Добавили параметры конфигурации `app.logging.console.enabled` и `app.logging.file.enabled` для включения и отключения логирования в stdout и файл.
