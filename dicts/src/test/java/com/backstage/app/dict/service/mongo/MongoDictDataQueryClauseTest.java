@@ -17,7 +17,7 @@
 package com.backstage.app.dict.service.mongo;
 
 import com.backstage.app.dict.common.CommonTest;
-import com.backstage.app.dict.constant.ServiceFieldConstants;
+import com.backstage.app.dict.service.backend.mongo.MongoDictBackend;
 import com.backstage.app.dict.service.backend.mongo.clause.MongoDictDataQueryClause;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +47,7 @@ public class MongoDictDataQueryClauseTest extends CommonTest
 				.collect(Collectors.toSet());
 
 		var expectedOrders = new ArrayList<>(requestOrders);
-		expectedOrders.add(Sort.Order.asc(ServiceFieldConstants._ID));
+		expectedOrders.add(Sort.Order.asc(MongoDictBackend._ID));
 
 		assertEquals(orders.size(), 3);
 		assertTrue(orders.containsAll(expectedOrders));
@@ -56,7 +56,7 @@ public class MongoDictDataQueryClauseTest extends CommonTest
 	@Test
 	void buildSortWithIdDescendingOrders()
 	{
-		var requestOrders = List.of(Sort.Order.desc(ServiceFieldConstants._ID));
+		var requestOrders = List.of(Sort.Order.desc(MongoDictBackend._ID));
 
 		var sort = mongoDictDataQueryClause.buildSort(Sort.by(requestOrders), Set.of());
 
@@ -76,6 +76,6 @@ public class MongoDictDataQueryClauseTest extends CommonTest
 				.collect(Collectors.toSet());
 
 		assertEquals(orders.size(), 1);
-		assertTrue(orders.contains(Sort.Order.asc(ServiceFieldConstants._ID)));
+		assertTrue(orders.contains(Sort.Order.asc(MongoDictBackend._ID)));
 	}
 }

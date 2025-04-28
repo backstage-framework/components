@@ -16,7 +16,6 @@
 
 package com.backstage.app.dict.service.mapping;
 
-import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictFieldName;
 import org.springframework.stereotype.Service;
 
@@ -27,13 +26,6 @@ public class DictFieldNameMappingService
 {
 	public DictFieldName mapDictFieldName(String selectField)
 	{
-		var dictFieldName = buildDictFieldName(selectField);
-
-		return withCorrectFieldId(dictFieldName);
-	}
-
-	private DictFieldName buildDictFieldName(String selectField)
-	{
 		Function<String, DictFieldName> withDict = field -> {
 			var fieldArray = field.split("\\.");
 
@@ -43,15 +35,5 @@ public class DictFieldNameMappingService
 		Function<String, DictFieldName> withoutDict = field -> new DictFieldName(null, field);
 
 		return selectField.contains(".") ? withDict.apply(selectField) : withoutDict.apply(selectField);
-	}
-
-	//TODO: Временно (для сохранения обратной совместимости).
-	// Переместить в валидацию переданных клиентом сервисных для адаптера полей с оформлением соответствующей ошибкой.
-	@Deprecated(forRemoval = true)
-	private DictFieldName withCorrectFieldId(DictFieldName dictFieldName)
-	{
-		var replacedFieldId = dictFieldName.getFieldId().replaceAll(ServiceFieldConstants._ID, ServiceFieldConstants.ID);
-
-		return new DictFieldName(dictFieldName.getDictId(), replacedFieldId);
 	}
 }

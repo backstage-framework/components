@@ -20,7 +20,6 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import lombok.*;
 
 @Data
-@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -45,4 +44,20 @@ public class DictField
 	private Number maxSize;
 
 	private Object defaultValue;
+
+	public DictField copy()
+	{
+		return DictField.builder()
+				.id(this.id)
+				.name(this.name)
+				.type(this.type)
+				.dictRef(this.dictRef)
+				.enumId(this.enumId)
+				.multivalued(this.multivalued)
+				.required(this.required)
+				.minSize(this.minSize)
+				.maxSize(this.maxSize)
+				.defaultValue(this.defaultValue)
+				.build();
+	}
 }

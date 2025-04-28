@@ -83,7 +83,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	@Override
 	public DictItem getById(Dict dict, String id, List<DictFieldName> requiredFields)
 	{
-		var query = "%s = '%s'".formatted(ServiceFieldConstants._ID, id);
+		var query = "%s = '%s'".formatted(ServiceFieldConstants.ID, id);
 
 		return getByFilter(dict, requiredFields, queryParser.parse(query), Pageable.unpaged())
 				.getContent()
@@ -99,7 +99,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				.map(it -> "'" + it + "'")
 				.collect(Collectors.joining(", "));
 
-		var filtersQuery = "%s in (%s)".formatted(ServiceFieldConstants._ID, itemIds);
+		var filtersQuery = "%s in (%s)".formatted(ServiceFieldConstants.ID, itemIds);
 
 		return getByFilter(dict, requiredFields, queryParser.parse(filtersQuery), Pageable.unpaged()).getContent();
 	}
@@ -156,7 +156,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	@Override
 	public boolean existsById(Dict dict, String itemId)
 	{
-		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));
+		var query = Query.query(Criteria.where(MongoDictBackend._ID).is(itemId));
 
 		return mongoTemplate.exists(query, dict.getId());
 	}
@@ -204,7 +204,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 
 		var dictId = dict.getId();
 
-		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));
+		var query = Query.query(Criteria.where(MongoDictBackend._ID).is(itemId));
 
 		update(dict, dictItem, query);
 
@@ -216,7 +216,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	{
 		addTransactionData(dict, false);
 
-		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));
+		var query = Query.query(Criteria.where(MongoDictBackend._ID).is(itemId));
 
 		mongoTemplate.remove(query, dict.getId());
 	}
@@ -330,7 +330,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 
 		return document.entrySet()
 				.stream()
-				.filter(it -> !it.getKey().equals(ServiceFieldConstants._ID))
+				.filter(it -> !it.getKey().equals(MongoDictBackend._ID))
 				.filter(it -> (it.getValue() == null && oldDocument.get(it.getKey()) != null) || (it.getValue() != null && !it.getValue().equals(oldDocument.get(it.getKey()))))
 				.collect(Document::new, (doc, entry) -> doc.append(entry.getKey(), entry.getValue()), Document::putAll);
 	}
@@ -375,16 +375,17 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				requiredFieldIds.forEach(refFields::include);
 			}
 
-			refQuery.addCriteria(Criteria.where(ServiceFieldConstants._ID).in(refIds));
+			refQuery.addCriteria(Criteria.where(MongoDictBackend._ID).in(refIds));
 
 			var refItems = mongoTemplate.find(refQuery, Document.class, dictField.getDictRef().getDictId())
 					.stream()
-					.collect(Collectors.toMap(document -> document.get(ServiceFieldConstants._ID) instanceof String s ? s : document.get(ServiceFieldConstants._ID).toString(), Function.identity()));
+					.collect(Collectors.toMap(document -> document.get(MongoDictBackend._ID).toString(), Function.identity()));
 
 			matchRefsDocument(itemList, dictField.getId(), refItems);
 		}));
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<String> getRefIds(String fieldId, Page<Document> items)
 	{
 		return items.stream()
@@ -395,6 +396,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				.toList();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void matchRefsDocument(Page<Document> itemList, String fieldId, Map<String, Document> refDocument)
 	{
 		itemList.stream()
@@ -420,7 +422,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		Predicate<String> idMatches = property -> ID_PATTERN.matcher(property).matches();
 		Predicate<String> joinedIdMatches = property -> JOINED_ID_PATTERN.matcher(property).matches();
 
-		Function<String, String> replaceAllId = property -> property.replaceAll(ID_PATTERN.pattern() + "|" + JOINED_ID_PATTERN.pattern(), ServiceFieldConstants._ID);
+		Function<String, String> replaceAllId = property -> property.replaceAll(ID_PATTERN.pattern() + "|" + JOINED_ID_PATTERN.pattern(), MongoDictBackend._ID);
 
 		var isReplaceId = pageable.getSort()
 				.stream()

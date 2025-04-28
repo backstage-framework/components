@@ -65,12 +65,16 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 		context.getDict()
 				.getFields()
 				.stream()
-				.filter(it -> it.getId().equalsIgnoreCase(field.name) || Set.of(ServiceFieldConstants.ID, ServiceFieldConstants._ID).contains(field.name))
+				.filter(it -> it.getId().equalsIgnoreCase(field.name) || ServiceFieldConstants.ID.equals(field.name))
 				.findFirst()
 				.orElseThrow(() -> new FieldNotFoundException(context.getDict().getId(), field.name));
 
+		var dictId = field.dictId == null
+				? context.getDict().getId()
+				: field.dictId;
+
 		return PostgresQuery.builder()
-				.field(new PostgresQueryField(field.dictId == null ? context.getDict().getId() : field.dictId, field.name, reservedKeyword))
+				.field(new PostgresQueryField(dictId, field.name, reservedKeyword))
 				.build();
 	}
 
