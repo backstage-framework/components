@@ -84,6 +84,7 @@ public class AttachmentReportStore implements ReportStore
 	{
 		return SimpleReport.builder()
 				.id(attachment.getId())
+				.fileName(attachment.getFileName())
 				.size(attachment.getSize())
 				.build();
 	}
