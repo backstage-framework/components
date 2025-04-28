@@ -23,6 +23,7 @@ import com.backstage.app.dict.domain.*;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
+import com.backstage.app.dict.service.backend.mongo.MongoDictBackend;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -69,7 +70,7 @@ public class CommonDictServiceTest extends CommonTest
 		var existsUncorrectedServiceFields = actual.getFields()
 				.stream()
 				.map(DictField::getId)
-				.anyMatch(it -> it.equals(ServiceFieldConstants._ID));
+				.anyMatch(it -> it.equals(MongoDictBackend._ID));
 
 		var stringField = actual.getFields()
 				.stream()

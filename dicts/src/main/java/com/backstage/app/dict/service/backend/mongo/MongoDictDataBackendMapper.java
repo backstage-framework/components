@@ -72,7 +72,7 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 		var created = dictItem.getCreated() == null ? null : serviceDateTime(dictItem.getCreated());
 		var updated = dictItem.getUpdated() == null ? null : serviceDateTime(dictItem.getUpdated());
 
-		document.append(ServiceFieldConstants._ID, dictItem.getId());
+		document.append(MongoDictBackend._ID, dictItem.getId());
 		document.append(ServiceFieldConstants.VERSION, dictItem.getVersion());
 		document.append(ServiceFieldConstants.HISTORY, dictItem.getHistory().stream().map(JsonUtils::toJson).map(Document::parse).toList());
 		document.append(ServiceFieldConstants.CREATED, created);
@@ -117,7 +117,7 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 		var updated = (Date) source.get(ServiceFieldConstants.UPDATED);
 
 		return DictItem.builder()
-				.id(source.get(ServiceFieldConstants._ID).toString())
+				.id(source.get(MongoDictBackend._ID).toString())
 				.data(mappedDictData)
 				.version((Long) source.get(ServiceFieldConstants.VERSION))
 				.history((List<Map<String, Object>>) source.get(ServiceFieldConstants.HISTORY))

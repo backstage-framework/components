@@ -281,6 +281,6 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		dictFields.stream()
 				.filter(it -> it.getId().equals(ServiceFieldConstants.ID))
-				.forEach(it -> it.setId(ServiceFieldConstants._ID));
+				.forEach(it -> it.setId(MongoDictBackend._ID));
 	}
 }

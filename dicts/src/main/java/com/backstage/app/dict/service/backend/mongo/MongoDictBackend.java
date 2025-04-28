@@ -23,6 +23,8 @@ import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.Engine;
+import com.backstage.app.exception.AppException;
+import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -34,6 +36,8 @@ import java.util.Objects;
 @ConditionalOnEngine(MongoEngine.MONGO)
 public class MongoDictBackend extends AbstractMongoBackend implements DictBackend
 {
+	public static final String _ID = "_id";
+
 	@Override
 	public Engine getEngine()
 	{
@@ -58,12 +62,16 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 	@Override
 	public Dict saveDict(Dict dict)
 	{
+		validate(dict);
+
 		return save(dict);
 	}
 
 	@Override
 	public Dict updateDict(Dict dict)
 	{
+		validate(dict);
+
 		return save(dict);
 	}
 
@@ -119,5 +127,19 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 	private Dict save(Dict dict)
 	{
 		return mongoDictRepository.save(dict);
+	}
+
+	private void validate(Dict dict)
+	{
+		dict.getFieldIds()
+				.stream()
+				.filter(_ID::equals)
+				.findAny()
+				.ifPresent(it -> {
+					throw new AppException(
+							ApiStatusCodeImpl.ILLEGAL_INPUT,
+							"Недопустимо использование пользовательского поля 'id' для Mongo."
+					);
+				});
 	}
 }
