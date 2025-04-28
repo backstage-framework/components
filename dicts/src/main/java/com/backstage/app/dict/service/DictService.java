@@ -162,7 +162,7 @@ public class DictService
 		var actualDictEngine = actualDict.getEngine();
 		var targetDictEngine = dict.getEngine();
 
-		var updated = dict.withId(dictId);
+		var updated = dict.copy();
 
 		updated.setId(actualDict.getId());
 		updated.setVersion(actualDict.getVersion());

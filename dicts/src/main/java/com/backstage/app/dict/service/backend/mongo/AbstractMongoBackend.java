@@ -17,7 +17,6 @@
 package com.backstage.app.dict.service.backend.mongo;
 
 import com.backstage.app.dict.configuration.annotation.DictsMongoTemplate;
-import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictIndex;
 import com.backstage.app.dict.repository.mongo.MongoDictRepository;
@@ -44,14 +43,6 @@ public abstract class AbstractMongoBackend
 	protected void addTransactionData(Dict dict, boolean schemeUsed)
 	{
 		dictTransactionProvider.addDictTransactionItem(dict, schemeUsed);
-	}
-
-	protected void convertMongoServiceFields(Dict dict)
-	{
-		dict.getFields()
-				.stream()
-				.filter(it -> it.getId().equals(ServiceFieldConstants._ID))
-				.forEach(it -> it.setId(ServiceFieldConstants.ID));
 	}
 
 	protected Index buildIndex(DictIndex source)

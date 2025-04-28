@@ -23,7 +23,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Data
-@With
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
@@ -39,10 +38,10 @@ public class DictEnum
 
 	public DictEnum copy()
 	{
-		var result = this.withId(this.id);
-
-		result.setValues(new HashSet<>(result.getValues()));
-
-		return result;
+		return DictEnum.builder()
+				.id(id)
+				.name(name)
+				.values(new HashSet<>(values))
+				.build();
 	}
 }

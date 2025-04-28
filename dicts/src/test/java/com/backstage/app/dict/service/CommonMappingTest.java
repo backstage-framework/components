@@ -17,7 +17,6 @@
 package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.common.CommonTest;
-import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
 import com.backstage.app.dict.service.mapping.DictItemMappingService;
@@ -92,26 +91,6 @@ public class CommonMappingTest extends CommonTest
 
 		assertEquals("integerField", integerFieldName.getFieldId());
 		assertEquals("*", allFieldName.getFieldId());
-	}
-
-	//TODO: При реализации валидации переданных клиентом сервисных для адаптера полей, актуализировать тест.
-	protected void mapServiceDictFieldName()
-	{
-		var serviceField = ServiceFieldConstants._ID;
-
-		var actual = dictFieldNameMappingService.mapDictFieldName(serviceField);
-
-		assertEquals(ServiceFieldConstants.ID, actual.getFieldId());
-	}
-
-	//TODO: При реализации валидации переданных клиентом сервисных для адаптера полей, актуализировать тест.
-	protected void mapInnerDictServiceDictFieldName()
-	{
-		var serviceField = TESTABLE_DICT_ID + "." + ServiceFieldConstants._ID;
-
-		var actual = dictFieldNameMappingService.mapDictFieldName(serviceField);
-
-		assertEquals(ServiceFieldConstants.ID, actual.getFieldId());
 	}
 
 	private DictDataItem buildDictDataItem(String dictId, Map<String, Object> dataItem)

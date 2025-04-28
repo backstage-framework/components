@@ -70,15 +70,14 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 
 		addTransactionData(dict, true);
 
-		addMongoServiceFields(dict.getFields());
+		var mongoDict = dict.copy();
+		addMongoServiceFields(mongoDict.getFields());
 
-		mongoTemplate.createCollection(id, buildCollectionOptions(dict));
+		mongoTemplate.createCollection(id, buildCollectionOptions(mongoDict));
 
 //		TODO: Валидация индексов при создании
-		dict.getIndexes()
+		mongoDict.getIndexes()
 				.forEach(it -> mongoTemplate.indexOps(id).ensureIndex(buildIndex(it)));
-
-		convertMongoServiceFields(dict);
 
 		return dict;
 	}
@@ -88,15 +87,14 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		addTransactionData(updatedDict, true);
 
-		addMongoServiceFields(updatedDict.getFields());
+		var mongoDict = updatedDict.copy();
+		addMongoServiceFields(mongoDict.getFields());
 
 		var params = new LinkedHashMap<String, Object>();
-		params.put("collMod", updatedDict.getId());
-		params.put("validator", buildMongoJsonSchema(updatedDict).toDocument());
+		params.put("collMod", mongoDict.getId());
+		params.put("validator", buildMongoJsonSchema(mongoDict).toDocument());
 
 		mongoTemplate.executeCommand(new Document(params));
-
-		convertMongoServiceFields(updatedDict);
 
 		return updatedDict;
 	}
@@ -283,6 +281,6 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		dictFields.stream()
 				.filter(it -> it.getId().equals(ServiceFieldConstants.ID))
-				.forEach(it -> it.setId(ServiceFieldConstants._ID));
+				.forEach(it -> it.setId(MongoDictBackend._ID));
 	}
 }
