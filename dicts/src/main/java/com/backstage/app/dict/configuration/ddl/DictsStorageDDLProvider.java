@@ -50,12 +50,15 @@ public class DictsStorageDDLProvider implements DDLProvider
 	@Override
 	public void update()
 	{
-		var engine = engines.stream()
-				.filter(it -> StringUtils.equalsAny(it.getDictEngine().getName(), dictsProperties.getStorage()))
-				.findFirst()
-				.orElseThrow(() -> new EngineException("Cannot find engine with type '%s'.".formatted(dictsProperties.getStorage())));
+		if (dictsProperties.getDdl().isEnabled())
+		{
+			var engine = engines.stream()
+					.filter(it -> StringUtils.equalsAny(it.getDictEngine().getName(), dictsProperties.getStorage()))
+					.findFirst()
+					.orElseThrow(() -> new EngineException("Cannot find engine with type '%s'.".formatted(dictsProperties.getStorage())));
 
-		engine.createDict();
-		engine.createVersionScheme();
+			engine.createDict();
+			engine.createVersionScheme();
+		}
 	}
 }

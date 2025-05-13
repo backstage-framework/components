@@ -20,7 +20,6 @@ import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.domain.VersionScheme;
-import com.backstage.app.dict.repository.mongo.MongoDictRepository;
 import com.backstage.app.dict.service.backend.Engine;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -34,7 +33,6 @@ public class MongoEngine implements Engine
 	public static final String MONGO = "mongo";
 
 	private final MongoTemplate mongoTemplate;
-	private final MongoDictRepository mongoDictRepository;
 
 	@Override
 	public DictEngine getDictEngine()

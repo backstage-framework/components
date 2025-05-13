@@ -43,7 +43,7 @@ class JpaModelGenPlugin implements Plugin<Project>
 
 class JpaModelGenPluginExtension
 {
-	static final def DEFAULT_HIBERNATE_VERSION = "6.6.11.Final"
+	static final def DEFAULT_HIBERNATE_VERSION = "6.6.13.Final"
 
 	Property<String> hibernateVersion
 
