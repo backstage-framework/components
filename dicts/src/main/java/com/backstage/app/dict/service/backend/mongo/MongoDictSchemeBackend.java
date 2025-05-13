@@ -59,6 +59,11 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	}
 
 	@Override
+	public void applyDdl()
+	{
+	}
+
+	@Override
 	public Dict createDictScheme(Dict dict)
 	{
 		var id = dict.getId();

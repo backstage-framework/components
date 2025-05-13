@@ -19,7 +19,6 @@ package com.backstage.app.dict.service.backend.postgres;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.service.backend.Engine;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.EmptySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -38,14 +37,6 @@ public class PostgresEngine implements Engine
 
 	private final NamedParameterJdbcTemplate jdbcTemplate;
 
-	@PostConstruct
-	public void createSchema()
-	{
-		var sql = "create schema if not exists %s".formatted(dictsProperties.getDdl().getScheme());
-
-		jdbcTemplate.update(sql, Map.of());
-	}
-
 	@Override
 	public DictEngine getDictEngine()
 	{
@@ -55,6 +46,8 @@ public class PostgresEngine implements Engine
 	@Override
 	public void createDict()
 	{
+		createScheme();
+
 		var createSql = """
 				create table if not exists %s.dict (
 					id                varchar(40)   not null,
@@ -92,6 +85,8 @@ public class PostgresEngine implements Engine
 	@Override
 	public void createVersionScheme()
 	{
+		createScheme();
+
 		var sql = """
 				create table if not exists %s.version_scheme (
 					id                varchar(40)   not null,
@@ -101,6 +96,13 @@ public class PostgresEngine implements Engine
 					installed         timestamp     not null,
 					primary key (id))
 				""".formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(sql, Map.of());
+	}
+
+	private void createScheme()
+	{
+		var sql = "create schema if not exists %s".formatted(dictsProperties.getDdl().getScheme());
 
 		jdbcTemplate.update(sql, Map.of());
 	}

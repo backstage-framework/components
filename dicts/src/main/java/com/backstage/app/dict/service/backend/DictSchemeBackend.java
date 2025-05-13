@@ -24,6 +24,8 @@ import com.backstage.app.dict.domain.scheme.DictNativeScheme;
 
 public interface DictSchemeBackend extends Backend
 {
+	void applyDdl();
+
 	Dict createDictScheme(Dict dict);
 
 	Dict updateDictScheme(Dict updatedDict);

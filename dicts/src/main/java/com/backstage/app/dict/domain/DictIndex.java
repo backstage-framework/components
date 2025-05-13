@@ -17,7 +17,10 @@
 package com.backstage.app.dict.domain;
 
 import com.backstage.app.cache.utils.proxy.ForceProxy;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Sort;
 
 import java.util.ArrayList;

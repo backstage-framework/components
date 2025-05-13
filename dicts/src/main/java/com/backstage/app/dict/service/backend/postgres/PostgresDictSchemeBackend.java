@@ -70,6 +70,14 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	}
 
 	@Override
+	public void applyDdl()
+	{
+		var sql = "create schema if not exists %s".formatted(dictsProperties.getDdl().getScheme());
+
+		jdbc.update(sql, Map.of());
+	}
+
+	@Override
 	public Dict createDictScheme(Dict dict)
 	{
 		return transactionWithResult(() -> createdDictScheme(dict), dict.getId(), DictCreatedException::new);
