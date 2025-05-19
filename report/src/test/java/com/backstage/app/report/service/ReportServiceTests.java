@@ -25,8 +25,7 @@ import com.backstage.app.report.model.filter.SimpleReportFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ReportServiceTests extends AbstractTests
 {
@@ -37,6 +36,34 @@ public class ReportServiceTests extends AbstractTests
 	@Autowired private ReportService reportService;
 
 	@Autowired private ObjectMapper objectMapper;
+
+	@Test
+	public void generateExampleXlsCorrectAsyncTest()
+	{
+		var filter = SimpleReportFilter.builder()
+				.reportType(ExampleReportType.EXAMPLE_1)
+				.from(FROM)
+				.to(TO)
+				.build();
+
+		var feature = reportService.generateAsync(ExampleReportType.EXAMPLE_1, filter);
+
+		feature.whenComplete((data, e) -> { });
+
+		assertTrue(feature.isDone());
+		assertFalse(feature.isCompletedExceptionally());
+	}
+
+	@Test
+	public void generateExampleXlsErrorAsyncTest()
+	{
+		var feature = reportService.generateAsync(ExampleReportType.ERROR);
+
+		feature.whenComplete((data, e) -> { });
+
+		assertTrue(feature.isDone());
+		assertTrue(feature.isCompletedExceptionally());
+	}
 
 	@Test
 	public void generateExampleXlsCorrectTest()

@@ -25,21 +25,19 @@ import com.backstage.app.report.model.task.ReportTask;
 import com.backstage.app.report.service.queue.ReportQueueService;
 import com.backstage.app.report.service.store.ReportStore;
 import com.backstage.app.report.service.task.ReportTaskManager;
-import com.backstage.app.utils.JsonUtils;
+import com.backstage.app.utils.ClassUtils;
 import com.backstage.app.utils.MimeTypeUtils;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Async;
-import org.springframework.scheduling.annotation.AsyncResult;
-import org.springframework.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.CompletableFuture;
 
 @Slf4j
 public abstract class AbstractReportService implements ReportService
 {
-	public static final String EMPTY_FILTER_JSON = "{}";
-
 	protected static final String REPORT_ATTACHMENT_BINDING_KEY = "REPORT_TASK";
 
 	@Autowired protected ReportTaskManager reportTaskManager;
@@ -58,10 +56,7 @@ public abstract class AbstractReportService implements ReportService
 	@Override
 	public ReportTask generate(ReportType type, String userId)
 	{
-		// TODO: 25.10.2023 Заменить на более органичный способ получения пустого инстанса
-		var emptyFilter = JsonUtils.toObject(EMPTY_FILTER_JSON, type.getFilterType());
-
-		return generate(type, emptyFilter, userId);
+		return generate(type, createEmptyFilter(type), userId);
 	}
 
 	@Override
@@ -87,37 +82,40 @@ public abstract class AbstractReportService implements ReportService
 
 	@Async
 	@Override
-	public ListenableFuture<byte[]> generateAsync(ReportType type)
+	public CompletableFuture<byte[]> generateAsync(ReportType type)
 	{
-		// TODO: 25.10.2023 Заменить на более органичный способ получения пустого инстанса
-		var emptyFilter = JsonUtils.toObject(EMPTY_FILTER_JSON, type.getFilterType());
-
-		return generateAsync(type, emptyFilter);
+		return generateAsync(type, createEmptyFilter(type));
 	}
 
 	@Async
 	@Override
-	public ListenableFuture<byte[]> generateAsync(ReportType type, ReportFilter filter)
+	public CompletableFuture<byte[]> generateAsync(ReportType type, ReportFilter filter)
 	{
-		var reportType = filter.getReportType();
-
 		try
 		{
-			log.info("Начало генерации отчета {}.", reportType);
+			log.info("Начало генерации отчета {}.", type);
 
-			byte[] data = generatorLocator.getGenerator(filter.getReportType())
+			byte[] data = generatorLocator.getGenerator(type)
 					.generate(filter);
 
-			log.info("Завершение генерации отчета {}.", reportType);
+			log.info("Завершение генерации отчета {}.", type);
 
-			return AsyncResult.forValue(data);
+			return CompletableFuture.completedFuture(data);
 		}
 		catch (Exception e)
 		{
-			log.error("Ошибка генерации отчета {}.", reportType, e);
+			log.error("Ошибка генерации отчета {}.", type, e);
 
-			return AsyncResult.forExecutionException(e);
+			return CompletableFuture.failedFuture(e);
 		}
+	}
+
+	protected ReportFilter createEmptyFilter(ReportType type)
+	{
+		var filter = ClassUtils.newInstance(type.getFilterType());
+		filter.setReportType(type);
+
+		return filter;
 	}
 
 	protected void runInternal(ReportMessage message)

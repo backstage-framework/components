@@ -14,26 +14,17 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.report.model.filter;
+package com.backstage.app.utils;
 
-import com.backstage.app.report.model.ReportType;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 
-import java.io.Serializable;
-import java.time.LocalDate;
-
-/**
- * Для корректной сериализации/десериализации в @JsonTypeInfo
- * на клиенте необходимо использовать Id.MINIMAL_CLASS
- * */
-@JsonTypeInfo(use = JsonTypeInfo.Id.MINIMAL_CLASS)
-public interface ReportFilter extends Serializable
+@UtilityClass
+public class ClassUtils
 {
-	void setReportType(ReportType reportType);
-
-	ReportType getReportType();
-
-	LocalDate getFrom();
-
-	LocalDate getTo();
+	@SneakyThrows
+	public <T> T newInstance(Class<T> clazz)
+	{
+		return clazz.getDeclaredConstructor().newInstance();
+	}
 }

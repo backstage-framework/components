@@ -1,3 +1,7 @@
+## 5.1.58 - 2025-05-19
+### Report
+- Заменили ListenableFuture на CompletableFuture в ReportService.
+
 ## 5.1.57 - 2025-05-13
 ### Dicts
 - Параметр конфигурации `app.dicts.ddl.enabled` теперь влияет на создание служебных таблиц всех движков справочников.

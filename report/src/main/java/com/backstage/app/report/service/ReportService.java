@@ -20,7 +20,8 @@ import com.backstage.app.report.model.ReportMessage;
 import com.backstage.app.report.model.ReportType;
 import com.backstage.app.report.model.filter.ReportFilter;
 import com.backstage.app.report.model.task.ReportTask;
-import org.springframework.util.concurrent.ListenableFuture;
+
+import java.util.concurrent.CompletableFuture;
 
 public interface ReportService
 {
@@ -32,9 +33,9 @@ public interface ReportService
 
 	ReportTask generate(ReportType type, ReportFilter filter, String userId);
 
-	ListenableFuture<byte[]> generateAsync(ReportType type);
+	CompletableFuture<byte[]> generateAsync(ReportType type);
 
-	ListenableFuture<byte[]> generateAsync(ReportType type, ReportFilter filter);
+	CompletableFuture<byte[]> generateAsync(ReportType type, ReportFilter filter);
 
 	void generate(ReportMessage message);
 
