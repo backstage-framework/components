@@ -1,3 +1,16 @@
+## 5.1.59 - 2025-05-21
+### Dependency Upgrades
+- Spring Doc 2.8.8
+- EclipseLink 4.0.6
+- jOOQ 3.19.23
+- Nashorn 15.6
+- Flyway 11.8.2
+- ClickHouse JDBC 0.8.6
+- Guava 33.4.8-jre
+- Commons-IO 2.19.0
+- Commons-text 1.13.1
+- Apache POI 5.4.1
+
 ## 5.1.58 - 2025-05-19
 ### Report
 - Заменили ListenableFuture на CompletableFuture в ReportService.
