@@ -228,7 +228,6 @@ public class DictItemModelGenerator
 				.build();
 
 		var enumSpec = TypeSpec.enumBuilder(className)
-				.addJavadoc(dictEnum.getName())
 				.addAnnotation(ClassName.get("lombok", "Getter"))
 				.addAnnotation(ClassName.get("lombok", "RequiredArgsConstructor"))
 				.addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -239,6 +238,11 @@ public class DictItemModelGenerator
 						.addParameter(valueParameterSpec)
 						.addStatement("return $T.stream($T.values()).filter(it -> it.getValue().equals($N)).findFirst().orElse(null)", Arrays.class, className, valueParameterSpec)
 						.build());
+
+		if (dictEnum.getName() != null)
+		{
+			enumSpec.addJavadoc(dictEnum.getName());
+		}
 
 		dictEnum.getValues().forEach(value -> {
 			enumSpec.addEnumConstant(DictModelNameUtils.enumConstantName(value), TypeSpec.anonymousClassBuilder("$S", value)

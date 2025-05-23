@@ -56,8 +56,8 @@ public class DictItemMappingService
 				.entrySet()
 				.stream()
 				.peek(entry -> {
-					var value = mapField(requiredFields.get(entry.getKey()), entry.getValue());
-					entry.setValue(value);
+					var field = requiredFields.get(entry.getKey());
+					entry.setValue(mapField(field, Optional.ofNullable(entry.getValue()).orElse(field.getDefaultValue())));
 				})
 				.collect(StreamCollectors.toLinkedHashMap(Map.Entry::getKey, Map.Entry::getValue));
 

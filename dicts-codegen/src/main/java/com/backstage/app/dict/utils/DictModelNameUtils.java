@@ -73,7 +73,14 @@ public class DictModelNameUtils
 
 	public String enumConstantName(String id)
 	{
-		return id;
+		if (id.contains("_"))
+		{
+			return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_UNDERSCORE, id);
+		}
+		else
+		{
+			return CaseFormat.LOWER_CAMEL.to(CaseFormat.UPPER_UNDERSCORE, id);
+		}
 	}
 
 	public String constantName(String id)

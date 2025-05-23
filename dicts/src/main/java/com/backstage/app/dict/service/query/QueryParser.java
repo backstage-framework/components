@@ -29,7 +29,7 @@ public class QueryParser
 {
 	final String[] OPERATORS = { "=", "!=", "<>", "<", ">", "<=", ">=", ",", "(", ")", "::", ".", "[", "]" };
 
-	final String[] KEYWORDS = { "in", "like", "ilike", "any", "all", "true", "false", "not", "and", "or", "null" };
+	final String[] KEYWORDS = { "in", "like", "ilike", "any", "all", "true", "false", "not", "and", "or", "is", "null" };
 
 	final Terminals TERMS = Terminals.operators(OPERATORS).words(Scanners.IDENTIFIER).caseInsensitiveKeywords(KEYWORDS).build();
 
@@ -93,9 +93,12 @@ public class QueryParser
 
 	final Parser<AllOrAnyQueryExpression> ALL_OR_ANY_EXPR = Parsers.sequence(FIELD, ArrayOp, CONSTANT_ARRAY, AllOrAnyQueryExpression::new);
 
+	final Parser<Predicate> IS_NULL_EXPR = Parsers.sequence(FIELD, term("is"), NULL_CONSTANT, (lhs, type, rhs) -> new Predicate(lhs, rhs, Predicate.Type.EQ));
+	final Parser<Predicate> IS_NOT_NULL_EXPR = Parsers.sequence(FIELD, term("is").followedBy(term("not")), NULL_CONSTANT, (lhs, type, rhs) -> new Predicate(lhs, rhs, Predicate.Type.NEQ));
+
 	final Parser<Predicate> COMPARE_EXPR = Parsers.sequence(FIELD, CompOp, CONSTANT, (lhs, type, rhs) -> new Predicate(lhs, rhs, type));
 
-	final Parser<QueryExpression> PREDICATE = Parsers.or(COMPARE_EXPR, LIKE_EXPR, IN_EXPR, ILIKE_EXPR, ALL_OR_ANY_EXPR);
+	final Parser<QueryExpression> PREDICATE = Parsers.or(COMPARE_EXPR, IS_NULL_EXPR, IS_NOT_NULL_EXPR, LIKE_EXPR, IN_EXPR, ILIKE_EXPR, ALL_OR_ANY_EXPR);
 
 	final UnaryOperator<QueryExpression> NOT = expr -> new LogicQueryExpression(expr, null, LogicQueryExpression.Type.NOT);
 	final BinaryOperator<QueryExpression> AND = (lhs, rhs) -> new LogicQueryExpression(lhs, rhs, LogicQueryExpression.Type.AND);
