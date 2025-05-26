@@ -61,9 +61,9 @@ public class DictModelNameUtils
 
 	public String className(String id)
 	{
-		if (id.contains("_"))
+		if (id.contains("_") || id.toUpperCase().equals(id))
 		{
-			return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, id);
+			return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL, id.toLowerCase());
 		}
 		else
 		{
@@ -73,9 +73,9 @@ public class DictModelNameUtils
 
 	public String enumConstantName(String id)
 	{
-		if (id.contains("_"))
+		if (id.contains("_") || id.toUpperCase().equals(id))
 		{
-			return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_UNDERSCORE, id);
+			return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.UPPER_UNDERSCORE, id.toLowerCase());
 		}
 		else
 		{
@@ -90,9 +90,9 @@ public class DictModelNameUtils
 
 	public String fieldName(String id)
 	{
-		if (id.contains("_"))
+		if (id.contains("_") || id.toUpperCase().equals(id))
 		{
-			return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, id);
+			return CaseFormat.LOWER_UNDERSCORE.to(CaseFormat.LOWER_CAMEL, id.toLowerCase());
 		}
 		else
 		{
