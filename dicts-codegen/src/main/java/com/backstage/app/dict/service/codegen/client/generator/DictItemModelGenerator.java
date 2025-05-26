@@ -237,6 +237,12 @@ public class DictItemModelGenerator
 						.addModifiers(Modifier.PUBLIC, Modifier.STATIC)
 						.addParameter(valueParameterSpec)
 						.addStatement("return $T.stream($T.values()).filter(it -> it.getValue().equals($N)).findFirst().orElse(null)", Arrays.class, className, valueParameterSpec)
+						.build())
+				.addMethod(MethodSpec.methodBuilder("toString")
+						.addAnnotation(Override.class)
+						.returns(String.class)
+						.addModifiers(Modifier.PUBLIC)
+						.addStatement("return $L", valueParameterSpec.name)
 						.build());
 
 		if (dictEnum.getName() != null)
