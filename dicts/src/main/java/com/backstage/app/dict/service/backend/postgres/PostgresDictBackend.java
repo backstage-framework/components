@@ -133,8 +133,9 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		completeClauses(parameterMap, dict);
 
 		var sql = """
-				insert into %s.dict values
-				(:id, :name, :fields::jsonb, :indexes::jsonb, :constraints::jsonb, :enums::jsonb, :view_permission,
+				insert into %s.dict (id, name, fields, indexes, constraints, enums, view_permission,
+				edit_permission, max_history, engine, version)
+				values (:id, :name, :fields::jsonb, :indexes::jsonb, :constraints::jsonb, :enums::jsonb, :view_permission,
 				:edit_permission, :max_history, :engine, :version)
 				""".formatted(dictsProperties.getDdl().getScheme());
 
