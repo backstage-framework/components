@@ -350,7 +350,9 @@ public class DictDataValidationService
 		var availableRefDicts = scheme.getFields()
 				.stream()
 				.filter(it -> it.getType() == DictFieldType.DICT)
-				.map(it -> it.getDictRef().getDictId())
+				.map(DictField::getDictRef)
+				.map(DictFieldName::getDictId)
+				.distinct()
 				.map(dictService::getById)
 				.collect(Collectors.toMap(Dict::getId, Function.identity()));
 

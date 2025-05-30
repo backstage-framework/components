@@ -69,6 +69,16 @@ public class CommonDictDataValidationServiceTest extends CommonTest
 				.build()
 		);
 
+		refDictFields.add(DictField.builder()
+				.id(TESTABLE_DICT_ID + "2")
+				.name("Ссылка 2")
+				.type(DictFieldType.DICT)
+				.required(false)
+				.multivalued(false)
+				.dictRef(new DictFieldName(TESTABLE_DICT_ID, ID))
+				.build()
+		);
+
 		TESTABLE_REF_DICT_ID = dictService.create(refDict).getId();
 
 		addDictData(TESTABLE_DICT_ID);
