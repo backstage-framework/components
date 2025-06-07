@@ -1,5 +1,4 @@
 /* Роли */
-/* Роли */
 create table roles['Роли'] (name['Название'] text, comments['Комментарии'] text[]);
 
 create table useless['Для удаления'] (field['Название'] text);

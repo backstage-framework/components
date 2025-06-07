@@ -52,9 +52,9 @@ public class PostgresDictFieldNameMapper
 		var wordDictId = Optional.ofNullable(fieldName.getDictId())
 				.map(reservedKeyword::postgresWordMap)
 				.map(it -> it.get(fieldName.getDictId()))
-				.orElse(reservedKeyword.postgresWordMap(dictId).get(dictId));
+				.orElse(reservedKeyword.postgresWord(dictId));
 
-		var wordFieldId = reservedKeyword.postgresWordMap(fieldName.getFieldId()).get(fieldName.getFieldId());
+		var wordFieldId = reservedKeyword.postgresWord(fieldName.getFieldId());
 
 		return new PostgresDictFieldName(wordDictId, wordFieldId);
 	}

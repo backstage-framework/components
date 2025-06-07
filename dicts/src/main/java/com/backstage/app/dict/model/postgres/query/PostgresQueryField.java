@@ -38,12 +38,12 @@ public class PostgresQueryField
 
 	private PostgresWord dictId(String dictId, PostgresReservedKeyword reservedKeyword)
 	{
-		return reservedKeyword.postgresWordMap(dictId).get(dictId);
+		return reservedKeyword.postgresWord(dictId);
 	}
 
 	private PostgresWord fieldId(String fieldId, PostgresReservedKeyword reservedKeyword)
 	{
-		return reservedKeyword.postgresWordMap(fieldId).get(fieldId);
+		return reservedKeyword.postgresWord(fieldId);
 	}
 
 	private String concat(String dictId, String fieldId)

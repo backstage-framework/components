@@ -19,8 +19,8 @@ package com.backstage.app.dict.service.backend.postgres.clause;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
-import com.backstage.app.dict.model.postgres.backend.PostgresDictItem;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.backend.postgres.PostgresReservedKeyword;
 import com.backstage.app.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -34,6 +34,7 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -43,9 +44,11 @@ public class PostgresDictDataInsertClause
 {
 	private final DictService dictService;
 
+	private final PostgresReservedKeyword reservedKeyword;
+
 	public void addInsertClause(String column, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		columns.add(column);
+		columns.add(reservedKeyword.postgresWord(column).getQuotedIfKeyword());
 
 		sqlParameterSource.addValue(sqlParamName(column), value);
 	}
@@ -64,13 +67,13 @@ public class PostgresDictDataInsertClause
 		addInsertClause(columnPlaceholder, pgValue, columns, sqlParameterSource);
 	}
 
-	public void addDictDataInsertClause(Dict dict, PostgresDictItem dictItem, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
+	public void addDictDataInsertClause(Dict dict, Map<String, Object> data, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
 		var fieldMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
-		dictItem.getDictData()
+		data
 				.forEach((column, value) -> {
 					var mapKeyColumn = column.replace("\"", "");
 
@@ -141,8 +144,6 @@ public class PostgresDictDataInsertClause
 
 	protected String sqlParamName(String column)
 	{
-		column = column.replaceAll("\"", "");
-
 		return column + "Val";
 	}
 

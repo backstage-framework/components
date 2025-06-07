@@ -20,8 +20,8 @@ import com.backstage.app.attachment.model.domain.Attachment;
 import com.backstage.app.attachment.service.AttachmentService;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
-import com.backstage.app.dict.common.TestPipeline;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
+import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
@@ -45,7 +45,10 @@ import org.assertj.core.api.ThrowingConsumer;
 import org.geojson.Feature;
 import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
-import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -81,6 +84,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	protected static String TESTABLE_ATTACH_DICT_ID;
 	protected static String TESTABLE_GEO_JSON_DICT_ID;
 	protected static String TESTABLE_TRUNCATED_DICT_ID;
+	protected static String TESTABLE_RESERVED_WORDS_DICT_ID;
 
 	@Autowired
 	private AttachmentService attachmentService;
@@ -203,6 +207,28 @@ public class CommonDictDataServiceTest extends CommonTest
 		var truncatedDict = buildDict(storageDictId + "data_truncated");
 
 		TESTABLE_TRUNCATED_DICT_ID = dictService.create(truncatedDict).getId();
+
+		var reserverWordsDict = Dict.builder()
+				.id((storageDictId + "ReserverWords"))
+				.build();
+
+		reserverWordsDict.getFields()
+				.add(DictField.builder()
+						.id("name")
+						.type(DictFieldType.STRING)
+						.required(true)
+						.multivalued(false)
+						.build());
+
+		reserverWordsDict.getFields()
+				.add(DictField.builder()
+						.id("order")
+						.type(DictFieldType.INTEGER)
+						.required(false)
+						.multivalued(false)
+						.build());
+
+		TESTABLE_RESERVED_WORDS_DICT_ID = dictService.create(reserverWordsDict).getId();
 	}
 
 	@BeforeAll
@@ -244,7 +270,6 @@ public class CommonDictDataServiceTest extends CommonTest
 	}
 
 	@Test
-	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	protected void streamByFilter()
 	{
 		var query = "stringField like 'string'";
@@ -255,6 +280,31 @@ public class CommonDictDataServiceTest extends CommonTest
 
 			assertEquals(itemCount, stream.count());
 		}
+	}
+
+	@Test
+	protected void checkReserverWords()
+	{
+		var name = "testName";
+		var order = RandomUtils.secure().randomLong();
+
+		var item = dictDataService.create(DictDataItem.of(TESTABLE_RESERVED_WORDS_DICT_ID, Map.of(
+				"name", name,
+				"order", order
+		)));
+
+		assertEquals(name, item.getData().get("name"));
+		assertEquals(order, item.getData().get("order"));
+
+		order = RandomUtils.secure().randomLong();
+
+		item = dictDataService.update(item.getId(), DictDataItem.of(TESTABLE_RESERVED_WORDS_DICT_ID, Map.of(
+				"name", name,
+				"order", order
+		)), item.getVersion());
+
+		assertEquals(name, item.getData().get("name"));
+		assertEquals(order, item.getData().get("order"));
 	}
 
 	protected void getByFilterWithNullRefField()

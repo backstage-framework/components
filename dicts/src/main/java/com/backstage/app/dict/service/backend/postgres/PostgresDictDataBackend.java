@@ -296,7 +296,7 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		var dictId = dict.getId();
 		var sqlParameterSource = new MapSqlParameterSource();
 
-		completeInsertClauses(columns, dict, dataBackendMapper.mapTo(dictId, dictItem), sqlParameterSource);
+		completeInsertClauses(columns, dict, dictItem, sqlParameterSource);
 
 		var parameterMap = Map.of(
 				"scheme", dictsProperties.getDdl().getScheme(),
@@ -328,7 +328,7 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		var dictId = dict.getId();
 		var sqlParameterSource = new MapSqlParameterSource();
 
-		completeUpdateClause(updateClauses, dict, itemId, dataBackendMapper.mapTo(dictId, dictItem), sqlParameterSource);
+		completeUpdateClause(updateClauses, dict, itemId, dictItem, sqlParameterSource);
 
 		var parameterMap = Map.of(
 				"scheme", dictsProperties.getDdl().getScheme(),
@@ -378,24 +378,24 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 		jdbc.update(sql, sqlParameterSource);
 	}
 
-	private void completeInsertClauses(LinkedHashSet<String> columns, Dict dict, PostgresDictItem postgresDictItem, MapSqlParameterSource sqlParameterSource)
+	private void completeInsertClauses(LinkedHashSet<String> columns, Dict dict, DictItem dictItem, MapSqlParameterSource sqlParameterSource)
 	{
-		insertClause.addInsertClause(DictItemColumnName.ID.getName(), postgresDictItem.getId(), columns, sqlParameterSource);
-		insertClause.addDictDataInsertClause(dict, postgresDictItem, columns, sqlParameterSource);
-		insertClause.addInsertJsonClause(DictItemColumnName.HISTORY.getName(), postgresDictItem.getHistory(), columns, sqlParameterSource);
-		insertClause.addInsertClause(DictItemColumnName.VERSION.getName(), postgresDictItem.getVersion(), columns, sqlParameterSource);
-		insertClause.addInsertClause(DictItemColumnName.CREATED.getName(), postgresDictItem.getCreated(), columns, sqlParameterSource);
-		insertClause.addInsertClause(DictItemColumnName.UPDATED.getName(), postgresDictItem.getUpdated(), columns, sqlParameterSource);
+		insertClause.addInsertClause(DictItemColumnName.ID.getName(), dictItem.getId(), columns, sqlParameterSource);
+		insertClause.addDictDataInsertClause(dict, dictItem.getData(), columns, sqlParameterSource);
+		insertClause.addInsertJsonClause(DictItemColumnName.HISTORY.getName(), dictItem.getHistory(), columns, sqlParameterSource);
+		insertClause.addInsertClause(DictItemColumnName.VERSION.getName(), dictItem.getVersion(), columns, sqlParameterSource);
+		insertClause.addInsertClause(DictItemColumnName.CREATED.getName(), dictItem.getCreated(), columns, sqlParameterSource);
+		insertClause.addInsertClause(DictItemColumnName.UPDATED.getName(), dictItem.getUpdated(), columns, sqlParameterSource);
 	}
 
-	private void completeUpdateClause(LinkedHashSet<String> updateClauses, Dict dict, String itemId, PostgresDictItem postgresDictItem, MapSqlParameterSource sqlParameterSource)
+	private void completeUpdateClause(LinkedHashSet<String> updateClauses, Dict dict, String itemId, DictItem dictItem, MapSqlParameterSource sqlParameterSource)
 	{
 		var oldItem = getById(dict, itemId, List.of(new DictFieldName(null, "*")));
 
-		updateClause.addDictDataUpdateClause(dict, oldItem.getData(), postgresDictItem.getDictData(), updateClauses, sqlParameterSource);
-		updateClause.addUpdateClause(DictItemColumnName.VERSION.getName(), oldItem.getVersion(), postgresDictItem.getVersion(), updateClauses, sqlParameterSource);
-		updateClause.addUpdateJsonClause(DictItemColumnName.HISTORY.getName(), oldItem.getHistory(), postgresDictItem.getHistory(), updateClauses, sqlParameterSource);
-		updateClause.addUpdateClause(DictItemColumnName.UPDATED.getName(), oldItem.getUpdated(), postgresDictItem.getUpdated(), updateClauses, sqlParameterSource);
+		updateClause.addDictDataUpdateClause(dict, oldItem.getData(), dictItem.getData(), updateClauses, sqlParameterSource);
+		updateClause.addUpdateClause(DictItemColumnName.VERSION.getName(), oldItem.getVersion(), dictItem.getVersion(), updateClauses, sqlParameterSource);
+		updateClause.addUpdateJsonClause(DictItemColumnName.HISTORY.getName(), oldItem.getHistory(), dictItem.getHistory(), updateClauses, sqlParameterSource);
+		updateClause.addUpdateClause(DictItemColumnName.UPDATED.getName(), oldItem.getUpdated(), dictItem.getUpdated(), updateClauses, sqlParameterSource);
 	}
 
 	private void completeFilterClauses(BidiMap<String, String> dictAliasesRelation,

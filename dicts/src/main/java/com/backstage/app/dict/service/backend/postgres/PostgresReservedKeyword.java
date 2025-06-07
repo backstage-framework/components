@@ -46,6 +46,11 @@ public class PostgresReservedKeyword
 		postgresKeywords.addAll(keywords);
 	}
 
+	public PostgresWord postgresWord(String word)
+	{
+		return new PostgresWord(word, keywordCondition(word));
+	}
+
 	public Map<String, PostgresWord> postgresWordMap(String... words)
 	{
 		return Arrays.stream(words)

@@ -34,7 +34,10 @@ import java.lang.reflect.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -55,7 +58,8 @@ public class PostgresDictDataUpdateClause
 		}
 
 		var paramName = sqlParamName(column);
-		updateClauses.add("%s = :%s".formatted(column, paramName));
+
+		updateClauses.add("%s = :%s".formatted(reservedKeyword.postgresWord(column).getQuotedIfKeyword(), paramName));
 		sqlParameterSource.addValue(paramName, newValue);
 	}
 
@@ -82,17 +86,9 @@ public class PostgresDictDataUpdateClause
 	public void addDictDataUpdateClause(Dict dict, Map<String, Object> oldData, Map<String, Object> newData,
 	                                    LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
 	{
-		var dictDataFields = dictService.getDataFieldsByDict(dict);
-
-		var dataWordMap = dictDataFields.stream()
-				.map(DictField::getId)
-				.map(reservedKeyword::postgresWordMap)
-				.map(Map::entrySet)
-				.flatMap(Collection::stream)
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-		var fieldMap = dictDataFields.stream()
-				.collect(Collectors.toMap(it -> dataWordMap.get(it.getId()).getQuotedIfKeyword(), Function.identity()));
+		var fieldMap = dictService.getDataFieldsByDict(dict)
+				.stream()
+				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
 		newData.entrySet()
 				.stream()
@@ -179,8 +175,6 @@ public class PostgresDictDataUpdateClause
 
 	protected String sqlParamName(String column)
 	{
-		column = column.replaceAll("\"", "");
-
 		return column + "Val";
 	}
 

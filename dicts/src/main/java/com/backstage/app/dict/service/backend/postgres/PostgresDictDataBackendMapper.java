@@ -69,7 +69,7 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 				.collect(StreamCollectors.toLinkedHashMap(it -> dataWordMap.get(it.getKey()).getQuotedIfKeyword(), Map.Entry::getValue));
 
 		return new PostgresDictItem(
-				reservedKeyword.postgresWordMap(dictId).get(dictId).getQuotedIfKeyword(),
+				reservedKeyword.postgresWord(dictId).getQuotedIfKeyword(),
 				dictItem.getId(),
 				postgresDictData,
 				dictItem.getHistory(),
