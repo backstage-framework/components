@@ -162,7 +162,14 @@ public class DictItemMappingService
 
 		if (field.getType() == DictFieldType.DECIMAL && o instanceof String s)
 		{
-			return new BigDecimal(s);
+			try
+			{
+				return new BigDecimal(s);
+			}
+			catch (NumberFormatException e)
+			{
+				throw new RuntimeException("Некорректный формат decimal поля.", e);
+			}
 		}
 
 		if (field.getType() == DictFieldType.JSON && o instanceof String s)
@@ -178,7 +185,7 @@ public class DictItemMappingService
 			}
 			catch (JsonProcessingException e)
 			{
-				throw new RuntimeException("Некорректный формат json поля.");
+				throw new RuntimeException("Некорректный формат json поля.", e);
 			}
 		}
 
