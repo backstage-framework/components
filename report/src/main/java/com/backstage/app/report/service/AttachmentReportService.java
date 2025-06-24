@@ -22,7 +22,6 @@ import com.backstage.app.report.service.store.ReportStore;
 import com.backstage.app.utils.transactional.TransactionalExecutor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.transaction.annotation.Transactional;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -37,7 +36,6 @@ public class AttachmentReportService extends AbstractReportService
 		return reportStore;
 	}
 
-	@Transactional
 	public void run(ReportMessage message)
 	{
 		try
@@ -55,7 +53,6 @@ public class AttachmentReportService extends AbstractReportService
 		}
 	}
 
-	@Transactional
 	public void generate(ReportMessage message)
 	{
 		var reportType = message.getReportFilter()
