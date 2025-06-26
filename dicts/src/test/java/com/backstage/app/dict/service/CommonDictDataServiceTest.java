@@ -28,6 +28,7 @@ import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.exception.dict.DictConcurrentUpdateException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
+import com.backstage.app.dict.exception.dictitem.DictItemCreateException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.advice.AttachmentDictDataServiceAdvice;
 import com.backstage.app.exception.ObjectNotFoundException;
@@ -67,6 +68,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -1247,6 +1249,124 @@ public class CommonDictDataServiceTest extends CommonTest
 		dictDataService.deleteAll(TESTABLE_TRUNCATED_DICT_ID);
 
 		assertEquals(0, dictDataService.countByFilter(TESTABLE_TRUNCATED_DICT_ID, null));
+	}
+
+	protected void concurrentCreateRefDictItemPossible()
+	{
+		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		var refItemId = refDictItem.getId();
+
+		var refDataMap = new HashMap<>(DATA_MAP);
+		refDataMap.put(TESTABLE_DICT_ID, refItemId);
+
+		var latch = new CountDownLatch(1);
+
+		var createThread = new Thread(() ->
+				transactionTemplate.execute(status -> {
+					try
+					{
+						dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+
+						latch.countDown();
+
+						Thread.sleep(1000);
+					}
+					catch (Exception ignored)
+					{
+						//ignored
+					}
+
+					return null;
+				}));
+
+		var secondCreateThread = new Thread(() -> {
+			try
+			{
+				latch.await();
+
+				dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+			}
+			catch (Exception ignored)
+			{
+				//ignored
+			}
+		});
+
+		createThread.start();
+		secondCreateThread.start();
+
+		try
+		{
+			createThread.join();
+			secondCreateThread.join();
+		}
+		catch (InterruptedException ignored)
+		{
+			//ignored
+		}
+
+		assertEquals(14, dictDataService.countByFilter(TESTABLE_REF_DICT_ID, null));
+	}
+
+	protected void createDictItemWithDeletedRefBlocked()
+	{
+		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		var refItemId = refDictItem.getId();
+
+		var refDataMap = new HashMap<>(DATA_MAP);
+		refDataMap.put(TESTABLE_DICT_ID, refItemId);
+
+		var latch = new CountDownLatch(1);
+
+		var deleteThread = new Thread(() ->
+				transactionTemplate.execute(status -> {
+					try
+					{
+						dictDataService.delete(TESTABLE_DICT_ID, refItemId);
+
+						latch.countDown();
+
+						Thread.sleep(1000);
+					}
+					catch (Exception ignored)
+					{
+						//ignored
+					}
+
+					return null;
+				}));
+
+		var createThreadException = new AtomicReference<Throwable>();
+
+		var createThread = new Thread(() -> {
+			try
+			{
+				latch.await();
+
+				dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+			}
+			catch (Exception exception)
+			{
+				createThreadException.set(exception.getCause());
+			}
+		});
+
+		deleteThread.start();
+		createThread.start();
+
+		try
+		{
+			deleteThread.join();
+			createThread.join();
+		}
+		catch (InterruptedException ignored)
+		{
+			//ignored
+		}
+
+		assertFalse(dictDataService.existsById(TESTABLE_DICT_ID, refItemId));
+		assertInstanceOf(DictItemCreateException.class, createThreadException.get());
+		assertEquals(27, dictDataService.countByFilter(TESTABLE_REF_DICT_ID, null));
 	}
 
 	protected void deleteRefDictItemBlocked()

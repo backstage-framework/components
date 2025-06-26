@@ -22,6 +22,7 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dictitem.DictItemCreateException;
 import com.backstage.app.dict.exception.dictitem.DictItemDeleteException;
 import com.backstage.app.dict.exception.dictitem.DictItemUpdateException;
@@ -44,6 +45,7 @@ import com.backstage.app.utils.DataUtils;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.BidiMap;
 import org.apache.commons.collections4.bidimap.DualHashBidiMap;
+import org.apache.commons.lang3.mutable.MutableInt;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
@@ -356,7 +358,7 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 
 		sqlParameterSource.addValue("id", id);
 
-		lockItems(dictId, List.of(id));
+		lockItemsForDelete(dictId, List.of(id));
 
 		var sql = "delete from %s.%s where id = :id"
 				.formatted(scheme, quotedDictId);
@@ -430,6 +432,28 @@ public class PostgresDictDataBackend extends AbstractPostgresBackend implements 
 	}
 
 	private void lockItems(String dictId, List<String> ids)
+	{
+		var scheme = dictsProperties.getDdl().getScheme();
+		var quotedDictId = wordMap(dictId).get(dictId).getQuotedIfKeyword();
+
+		var sqlParameterSource = new MapSqlParameterSource();
+		sqlParameterSource.addValue("ids", ids);
+
+		var lockSql = "select id from %s.%s where id in (:ids) for update"
+				.formatted(scheme, quotedDictId);
+
+		var lockedIds = jdbc.queryForList(lockSql, sqlParameterSource, String.class);
+
+		if (lockedIds.size() < ids.size())
+		{
+			throw new DictException(
+					"Не удалось получить блокировку на связанные записи в справочнике '%s': некоторые записи отсутствуют."
+							.formatted(dictId)
+			);
+		}
+	}
+
+	private void lockItemsForDelete(String dictId, List<String> ids)
 	{
 		var sqlParameterSource = new MapSqlParameterSource();
 		var scheme = dictsProperties.getDdl().getScheme();
