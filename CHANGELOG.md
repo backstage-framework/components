@@ -1,3 +1,11 @@
+## 5.1.68 - 2025-06-26
+### Dependency Upgrades
+- Spring Boot 3.4.7
+- Spring Doc 2.8.9
+- Flyway 11.9.1
+- Postgresql JDBC 42.7.7
+- Groovy 4.0.27
+
 ## 5.1.67 - 2025-06-23
 ### Report
 - Исправили обновление статуса задачи при ошибке генерации отчета.
