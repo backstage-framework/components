@@ -271,6 +271,18 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void concurrentCreateWithReferencePossible()
+	{
+		concurrentCreateRefDictItemPossible();
+	}
+
+	@Test
+	void createWithDeletedReferenceBlocked()
+	{
+		createDictItemWithDeletedRefBlocked();
+	}
+
+	@Test
 	void createMany()
 	{
 		createManyDictItems();
