@@ -61,6 +61,7 @@ public class DictItemModelGenerator
 				.addSuperinterface(AbstractDictItem.class)
 				.addAnnotation(ClassName.get("lombok", "Getter"))
 				.addAnnotation(ClassName.get("lombok", "Setter"))
+				.addAnnotation(DictCodegenUtils.suppressWarningsAnnotation("unused"))
 				.addAnnotation(DictCodegenUtils.generatedAnnotation(this))
 				.addTypes(dict.getEnums().stream()
 						.map(this::addEnum)
