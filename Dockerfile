@@ -1,4 +1,4 @@
-ARG JDK_VERSION=17-jdk-slim
+ARG JDK_VERSION=21-jdk-slim
 
 FROM openjdk:$JDK_VERSION
 
