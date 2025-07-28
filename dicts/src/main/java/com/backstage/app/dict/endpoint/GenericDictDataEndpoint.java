@@ -174,7 +174,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 
 	@Operation(summary = "Импорт CSV в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = "text/csv")
-	public OkResponse importCsv(@PathVariable String dictId, @RequestBody InputStream inputStream)
+	public OkResponse importCsv(@PathVariable String dictId, InputStream inputStream)
 	{
 		importCsvService.importDict(dictId, inputStream);
 
@@ -183,7 +183,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 
 	@Operation(summary = "Импорт JSON в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public OkResponse importJson(@PathVariable String dictId, @RequestBody InputStream inputStream)
+	public OkResponse importJson(@PathVariable String dictId, InputStream inputStream)
 	{
 		importJsonService.importDict(dictId, inputStream);
 

@@ -93,11 +93,11 @@ public interface GenericDictDataService<T extends DictItemDto>
 
 	@Operation(summary = "Импорт CSV в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = "text/csv")
-	OkResponse importCsv(@PathVariable String dictId, @RequestBody InputStream inputStream);
+	OkResponse importCsv(@PathVariable String dictId, InputStream inputStream);
 
 	@Operation(summary = "Импорт JSON в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = MediaType.APPLICATION_JSON_VALUE)
-	OkResponse importJson(@PathVariable String dictId, @RequestBody InputStream inputStream);
+	OkResponse importJson(@PathVariable String dictId, InputStream inputStream);
 
 	@Operation(summary = "Экспорт элементов справочника.")
 	@PostMapping("/{dictId}/export")
