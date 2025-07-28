@@ -156,7 +156,7 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Импорт CSV в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = "text/csv")
 	public OkResponse importCsv(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                            @RequestBody InputStream inputStream)
+	                            InputStream inputStream)
 	{
 		return externalDictDataService.importCsv(dictId, inputStream);
 	}
@@ -165,7 +165,7 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Импорт JSON в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public OkResponse importJson(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                             @RequestBody InputStream inputStream)
+	                             InputStream inputStream)
 	{
 		return externalDictDataService.importJson(dictId, inputStream);
 	}
