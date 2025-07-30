@@ -198,4 +198,29 @@ public abstract class CommonDictExportServiceTest extends CommonTest
 			throw new RuntimeException(e);
 		}
 	}
+
+	@Test
+	public void exportJsonColumnToCsv()
+	{
+		var dictId = "testJsonColumnImport";
+
+		try (var fileStream = new ClassPathResource("testJsonColumnImport.csv").getInputStream())
+		{
+ 			importCsvService.importDict(dictId, fileStream);
+
+			var exportedResource = dictExportService.exportToResource(dictId, ExportedDictFormat.CSV, List.of());
+
+			try (var inputStream = exportedResource.getResource().getInputStream())
+			{
+				var data = IOUtils.toString(inputStream, StandardCharsets.UTF_8);
+
+				assertTrue(data.contains("\"{\"\"single\"\":\"\"value\"\"}\""));
+				assertTrue(data.contains("\"{\"\"temp\"\":23}\""));
+			}
+		}
+		catch (IOException e)
+		{
+			throw new RuntimeException(e);
+		}
+	}
 }
