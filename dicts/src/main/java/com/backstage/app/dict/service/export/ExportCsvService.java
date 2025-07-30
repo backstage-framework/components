@@ -103,7 +103,12 @@ public class ExportCsvService implements ExportService
 
 	private Object normalizeValue(DictField field, Object value)
 	{
-		return field.getType() == DictFieldType.GEO_JSON ? JsonUtils.toJson(value) : value;
+		if (field.getType() == DictFieldType.GEO_JSON || field.getType() == DictFieldType.JSON)
+		{
+			return JsonUtils.toJson(value);
+		}
+
+		return value;
 	}
 
 	private byte[] writeToByteArray(List<String> headers, List<Object[]> data)
