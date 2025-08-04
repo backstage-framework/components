@@ -39,7 +39,7 @@ dependencies {
 
 	api "com.zaxxer:HikariCP"
 	api "org.postgresql:postgresql"
-	api "com.clickhouse:clickhouse-jdbc:$clickhouseJdbcVersion:http"
+	api "com.clickhouse:clickhouse-jdbc:$clickhouseJdbcVersion"
 
 	api "org.flywaydb:flyway-core"
 	api "org.flywaydb:flyway-database-postgresql:$flywayVersion"

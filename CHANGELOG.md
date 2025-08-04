@@ -1,3 +1,18 @@
+## 5.1.73 - 2025-08-04
+### Dependency Upgrades
+- Spring Boot 3.4.8
+- Spring Cloud 4.2.2
+- Spring Doc 2.8.9
+- EclipseLink 4.0.7
+- Flyway 11.10.5
+- Groovy 4.0.28
+- ClickHouse JDBC 0.9.1
+- Feign Jackson 13.6
+- Commons-IO 2.20.0
+- Commons-codec 1.19.0
+- Commons-text 1.14.0
+- Commons-CSV 1.14.1
+
 ## 5.1.72 - 2025-07-30
 ### Dicts
 - Добавили поддержку типа поля JSON в экспорте справочника в CSV. Теперь поля типа JSON корректно сериализуются в строку, аналогично GEO_JSON.
