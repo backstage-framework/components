@@ -1,4 +1,9 @@
 buildscript {
+	repositories {
+		maven { url = 'https://plugins.gradle.org/m2/' }
+		mavenCentral()
+	}
+
 	Properties properties = new Properties()
 	file('../gradle.properties').withInputStream {
 		properties.load(it)
