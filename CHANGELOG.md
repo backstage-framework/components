@@ -1,3 +1,8 @@
+## 5.1.74 - 2025-09-01
+### Dependency Upgrades
+- Spring Boot 3.4.9
+- Spring Doc 2.8.11
+
 ## 5.1.73 - 2025-08-04
 ### Dependency Upgrades
 - Spring Boot 3.4.8
