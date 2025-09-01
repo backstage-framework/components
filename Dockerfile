@@ -7,4 +7,4 @@ WORKDIR /tmp
 
 RUN --mount=type=secret,id=NEXUS_URL \
     --mount=type=secret,id=NEXUS_PASSWORD \
-    ./gradlew -b build.gradle clean publish :gradle-plugins:publish -PbackstageNexusUrl=$(cat /run/secrets/NEXUS_URL) -PbackstageNexusToken=$(cat /run/secrets/NEXUS_PASSWORD) -PbackstageNexusDeployToken=$(cat /run/secrets/NEXUS_PASSWORD)
+    ./gradlew clean publish :gradle-plugins:publish -PbackstageNexusUrl=$(cat /run/secrets/NEXUS_URL) -PbackstageNexusToken=$(cat /run/secrets/NEXUS_PASSWORD) -PbackstageNexusDeployToken=$(cat /run/secrets/NEXUS_PASSWORD)
