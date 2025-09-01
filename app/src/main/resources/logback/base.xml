@@ -19,4 +19,5 @@
 	</root>
 
 	<logger name="ch.qos.logback" level="ERROR"/>
+	<logger name="org.jooq.Constants" level="WARNING"/>
 </included>

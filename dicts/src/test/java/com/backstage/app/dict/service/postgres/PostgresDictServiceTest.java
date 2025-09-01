@@ -141,7 +141,7 @@ public class PostgresDictServiceTest extends CommonDictServiceTest
 	@Order(TestPipeline.DICT_GET_ALL_TEST)
 	void getAll()
 	{
-		assertEquals(14, dictService.getAll().size());
+		assertEquals(15, dictService.getAll().size());
 	}
 
 	@Test
