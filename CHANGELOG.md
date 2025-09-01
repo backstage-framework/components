@@ -1,3 +1,11 @@
+## 5.2.0 - 2025-09-01
+### Breaking changes
+- Поддерживается только JDK 21+.
+
+### Dependency Upgrades
+- Spring Boot 3.5.5
+- Spring Cloud 4.3.0
+
 ## 5.1.74 - 2025-09-01
 ### Dependency Upgrades
 - Spring Boot 3.4.9
