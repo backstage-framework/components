@@ -1,10 +1,13 @@
-## 5.2.0 - 2025-09-01
+## 5.2.0 - 2025-09-02
 ### Breaking changes
 - Поддерживается только JDK 21+.
 
 ### Dependency Upgrades
 - Spring Boot 3.5.5
 - Spring Cloud 4.3.0
+
+### App
+- Добавили алиас taskExecutor к applicationTaskExecutor для совместимости ранее разработанных приложений с Spring Boot 3.5+.
 
 ## 5.1.74 - 2025-09-01
 ### Dependency Upgrades
