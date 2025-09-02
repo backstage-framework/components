@@ -21,6 +21,7 @@ import com.backstage.app.model.other.user.SpringPrincipal;
 import com.backstage.app.service.user.PermissionService;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.Getter;
+import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.boot.autoconfigure.AutoConfigureOrder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -70,5 +71,11 @@ public class AppConfiguration implements ApplicationContextAware
 				return getPermissions(SecurityUtils.getCurrentUserId());
 			}
 		};
+	}
+
+	@Bean
+	static BeanFactoryPostProcessor taskExecutorAliasBeanFactoryPostProcessor()
+	{
+		return (beanFactory) -> beanFactory.registerAlias("applicationTaskExecutor", "taskExecutor");
 	}
 }
