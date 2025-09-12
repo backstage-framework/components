@@ -1,10 +1,14 @@
-## 5.2.0 - 2025-09-02
+## 5.2.0 - 2025-09-12
 ### Breaking changes
 - Поддерживается только JDK 21+.
 
 ### Dependency Upgrades
 - Spring Boot 3.5.5
 - Spring Cloud 4.3.0
+- Spring Doc 2.8.13
+- jOOQ 3.19.25
+- Flyway 11.12.0
+- ClickHouse JDBC 0.9.2
 
 ### App
 - Добавили алиас taskExecutor к applicationTaskExecutor для совместимости ранее разработанных приложений с Spring Boot 3.5+.
