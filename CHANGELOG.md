@@ -1,3 +1,10 @@
+## 5.2.1 - 2025-10-02
+### Dependency Upgrades
+- EclipseLink 4.0.8
+- Flyway 11.13.2
+- Postgresql JDBC 42.7.8
+- Guava 33.5.0-jre
+
 ## 5.2.0 - 2025-09-18
 ### Breaking changes
 - Поддерживается только JDK 21+.
