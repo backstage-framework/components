@@ -24,7 +24,7 @@ import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.Engine;
 import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.model.other.exception.CoreAppStatusCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -137,7 +137,7 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 				.findAny()
 				.ifPresent(it -> {
 					throw new AppException(
-							ApiStatusCodeImpl.ILLEGAL_INPUT,
+							CoreAppStatusCode.ILLEGAL_INPUT,
 							"Недопустимо использование пользовательского поля 'id' для Mongo."
 					);
 				});

@@ -24,10 +24,10 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
+import org.eclipse.persistence.annotations.*;
 import org.eclipse.persistence.annotations.Convert;
 import org.eclipse.persistence.annotations.Converter;
 import org.eclipse.persistence.annotations.Index;
-import org.eclipse.persistence.annotations.*;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
