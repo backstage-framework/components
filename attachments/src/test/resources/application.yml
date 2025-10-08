@@ -2,9 +2,15 @@ app:
     attachments:
         enabled: true
         store-type: directory
+
         minio:
             bucket: uploads
+
         directory:
             path: uploads
+
         ddl:
             scheme: abc
+
+        delete-unbound-duration: 1S
+        delete-unbound: true

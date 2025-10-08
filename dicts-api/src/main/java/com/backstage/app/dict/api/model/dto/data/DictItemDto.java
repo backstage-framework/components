@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,9 @@
 
 package com.backstage.app.dict.api.model.dto.data;
 
+import com.backstage.app.dict.api.configuration.jackson.MapTypedValueSerializer;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -41,6 +43,7 @@ public class DictItemDto
 
 	@Schema(description = "Пользовательские поля")
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	@JsonSerialize(contentUsing = MapTypedValueSerializer.class)
 	private Map<String, Object> data = new HashMap<>();
 
 	@Schema(description = "История изменений записи")
@@ -56,11 +59,4 @@ public class DictItemDto
 
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private LocalDateTime updated;
-
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private LocalDateTime deleted;
-
-	@Schema(description = "Причина удаления")
-	@JsonInclude(JsonInclude.Include.NON_NULL)
-	private String deletionReason;
 }

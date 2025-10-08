@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import com.backstage.app.dict.api.configuration.properties.DictsRemoteEndpointPr
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.model.dto.data.request.CreateDictItemRequest;
-import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
+import com.backstage.app.dict.api.model.dto.request.SearchDistinctRequest;
 import com.backstage.app.dict.api.model.dto.request.SearchRequest;
 import com.backstage.app.dict.api.service.remote.ExternalDictDataService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -85,16 +85,24 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Получение записей справочника по списку id.")
 	@PostMapping("/{dictId}/byIds")
 	public ApiResponse<List<DictItemDto>> getByIds(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                                                     @RequestBody List<String> ids)
+	                                               @RequestBody List<String> ids)
 	{
 		return externalDictDataService.getByIds(dictId, ids);
+	}
+
+	@Operation(summary = "Получение уникальных значений полей справочника по фильтру.")
+	@PostMapping("/{dictId}/distinctValues")
+	public ApiResponse<List<Object>> getDistinctValuesByFilter(@PathVariable String dictId,
+	                                                           @RequestBody @Valid SearchDistinctRequest request)
+	{
+		return externalDictDataService.getDistinctValuesByFilter(dictId, request);
 	}
 
 	@Override
 	@Operation(summary = "Добавление записи в справочник.")
 	@PostMapping("/{dictId}/create")
 	public ApiResponse<DictItemDto> create(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                                             @RequestBody @Valid CreateDictItemRequest request)
+	                                       @RequestBody @Valid CreateDictItemRequest request)
 	{
 		return externalDictDataService.create(dictId, request);
 	}
@@ -103,18 +111,18 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Обновление записи в справочнике.")
 	@PostMapping("/{dictId}/update")
 	public ApiResponse<DictItemDto> update(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                                             @RequestBody @Valid UpdateDictItemRequest request)
+	                                       @RequestBody @Valid UpdateDictItemRequest request)
 	{
 		return externalDictDataService.update(dictId, request);
 	}
 
 	@Override
-	@Operation(summary = "Удаление записи в справочнике (soft delete).")
+	@Operation(summary = "Удаление записи в справочнике.")
 	@PostMapping("/{dictId}/delete")
-	public ApiResponse<?> delete(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                             @RequestBody @Valid DeleteDictItemRequest request)
+	public OkResponse delete(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
+	                         @Parameter(description = "Идентификатор записи справочника") @RequestParam String itemId)
 	{
-		return externalDictDataService.delete(dictId, request);
+		return externalDictDataService.delete(dictId, itemId);
 	}
 
 	@Override
@@ -148,7 +156,7 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Импорт CSV в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = "text/csv")
 	public OkResponse importCsv(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                            @RequestBody InputStream inputStream)
+	                            InputStream inputStream)
 	{
 		return externalDictDataService.importCsv(dictId, inputStream);
 	}
@@ -157,7 +165,7 @@ public class DictDataEndpoint implements ExternalDictDataService
 	@Operation(summary = "Импорт JSON в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public OkResponse importJson(@Parameter(description = "Идентификатор справочника") @PathVariable String dictId,
-	                             @RequestBody InputStream inputStream)
+	                             InputStream inputStream)
 	{
 		return externalDictDataService.importJson(dictId, inputStream);
 	}

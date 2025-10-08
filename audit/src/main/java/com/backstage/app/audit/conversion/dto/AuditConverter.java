@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,10 +19,15 @@ package com.backstage.app.audit.conversion.dto;
 import com.backstage.app.audit.configuration.conditional.ConditionalOnAudit;
 import com.backstage.app.audit.model.domain.Audit;
 import com.backstage.app.audit.model.dto.AuditEvent;
+import com.backstage.app.audit.model.dto.AuditEventField;
+import com.backstage.app.audit.model.dto.AuditEventProperty;
 import com.backstage.app.conversion.dto.AbstractConverter;
 import org.springframework.stereotype.Component;
 
 import java.time.ZoneId;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 
 @Component
 @ConditionalOnAudit
@@ -38,8 +43,33 @@ public class AuditConverter extends AbstractConverter<Audit, AuditEvent>
 		target.setObjectId(source.getObjectId());
 		target.setDate(source.getDate().atZone(ZoneId.systemDefault()));
 		target.setSuccess(source.isSuccess());
-		target.setFields(source.getProperties().getFields());
-		target.setProperties(source.getProperties().getProperties());
+
+		var sourceProperties = source.getProperties();
+
+		var fields = Optional.ofNullable(sourceProperties.getFields())
+				.map(Map::entrySet)
+				.stream()
+				.flatMap(Set::stream)
+				.map(field -> new AuditEventField(
+						field.getKey(),
+						field.getValue().getOldValue(),
+						field.getValue().getNewValue()
+				))
+				.toList();
+
+		target.setFields(fields);
+
+		var properties = Optional.ofNullable(sourceProperties.getProperties())
+				.map(Map::entrySet)
+				.stream()
+				.flatMap(Set::stream)
+				.map(property -> new AuditEventProperty(
+						property.getKey(),
+						property.getValue()
+				))
+				.toList();
+
+		target.setProperties(properties);
 
 		return target;
 	}

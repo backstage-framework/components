@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -35,12 +35,17 @@ public class CSVUtils
 			.setEscape('\\')
 			.setQuoteMode(QuoteMode.MINIMAL)
 			.setQuote('"')
-			.build();
+			.get();
 
 	public String[] parseMultiValuedCell(String stringValue)
 	{
 		try
 		{
+			if (stringValue == null)
+			{
+				return new String[0];
+			}
+
 			var records = MULTI_VALUED_CELL_FORMAT.parse(new StringReader(stringValue)).getRecords();
 
 			if (!records.isEmpty())

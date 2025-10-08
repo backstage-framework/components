@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,6 +24,6 @@ public class MigrationHasSameVersionException extends MigrationException
 {
 	public MigrationHasSameVersionException(List<String> migrations)
 	{
-		super(DictsAppStatusCode.MIGRATIONS_HAS_SAME_VERSION, "Миграции %s".formatted(String.join(", ", migrations)));
+		super(DictsAppStatusCode.MIGRATIONS_HAS_SAME_VERSION, String.join(", ", migrations));
 	}
 }

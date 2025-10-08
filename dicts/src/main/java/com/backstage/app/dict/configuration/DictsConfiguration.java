@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -42,15 +42,30 @@ import java.util.Set;
 public class DictsConfiguration
 {
 	public static final String CACHE_NAME_DICTS = "dicts";
+	public static final String CACHE_NAME_DICT_SCHEMES = "dictsSchemes";
+	public static final String CACHE_NAME_DICT_DATA_FIELDS = "dictDataFields";
+
+	private static final int DEFAULT_CACHE_SIZE = 10000;
 
 	@Bean
 	public CacheSettingsProvider dictsCacheSettingsProvider()
 	{
-		return new CacheSettingsProvider(List.of(DistributedCacheSettings.builder()
-				.name(CACHE_NAME_DICTS)
-				.maxEntriesLocalHeap(10000)
-				.distributedOperations(Set.of(DistributedCacheOperations.DistributedCacheOperation.EVICT))
-				.build()));
+		return new CacheSettingsProvider(List.of(
+				DistributedCacheSettings.builder()
+						.name(CACHE_NAME_DICTS)
+						.maxEntriesLocalHeap(DEFAULT_CACHE_SIZE)
+						.distributedOperations(Set.of(DistributedCacheOperations.DistributedCacheOperation.EVICT))
+						.build(),
+				DistributedCacheSettings.builder()
+						.name(CACHE_NAME_DICT_SCHEMES)
+						.maxEntriesLocalHeap(DEFAULT_CACHE_SIZE)
+						.distributedOperations(Set.of(DistributedCacheOperations.DistributedCacheOperation.EVICT))
+						.build(),
+				DistributedCacheSettings.builder()
+						.name(CACHE_NAME_DICT_DATA_FIELDS)
+						.maxEntriesLocalHeap(DEFAULT_CACHE_SIZE)
+						.distributedOperations(Set.of(DistributedCacheOperations.DistributedCacheOperation.EVICT))
+						.build()));
 	}
 
 	@Configuration

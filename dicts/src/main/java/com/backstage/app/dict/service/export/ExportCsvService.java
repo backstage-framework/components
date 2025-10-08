@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,16 +16,19 @@
 
 package com.backstage.app.dict.service.export;
 
+import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.DictsAppStatusCode;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.utils.CSVUtils;
 import com.backstage.app.exception.AppException;
+import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
+import com.backstage.app.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
 import org.springframework.stereotype.Service;
 
@@ -33,6 +36,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,12 +54,11 @@ public class ExportCsvService implements ExportService
 				ServiceFieldConstants.ID,
 				ServiceFieldConstants.CREATED,
 				ServiceFieldConstants.UPDATED,
-				ServiceFieldConstants.DELETED,
 				ServiceFieldConstants.VERSION
 		);
 
 		var dict = dictService.getById(dictId);
-		var dataFields = DictService.getDataFieldsByDict(dict)
+		var dataFields = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.toList();
 
@@ -71,38 +74,49 @@ public class ExportCsvService implements ExportService
 		return writeToByteArray(headers, data);
 	}
 
-	private String[] mapDictItem(List<DictField> dictFields, DictItem item)
+	private Object[] mapDictItem(List<DictField> dictFields, DictItem item)
 	{
 		var builder = Stream.builder()
 				.add(item.getId())
 				.add(item.getCreated())
 				.add(item.getUpdated())
-				.add(item.getDeleted() != null)
 				.add(item.getVersion());
 
 		dictFields.stream()
 				.map(it -> {
 					var value = item.getData().getOrDefault(it.getId(), "");
 
-					if (it.isMultivalued() && value instanceof Iterable<?> collection)
+					if (it.isMultivalued() && value instanceof Collection<?> collection)
 					{
-						return CSVUtils.buildMultiValuedCell(collection);
+						var values = collection.stream()
+								.map(o -> normalizeValue(it, o))
+								.collect(Collectors.toList());
+
+						return CSVUtils.buildMultiValuedCell(values);
 					}
 
-					return value;
+					return normalizeValue(it, value);
 				})
 				.forEach(builder::add);
 
-		return builder.build()
-				.map(String::valueOf)
-				.toArray(String[]::new);
+		return builder.build().toArray();
 	}
 
-	private byte[] writeToByteArray(List<String> headers, List<String[]> data)
+	private Object normalizeValue(DictField field, Object value)
+	{
+		if (field.getType() == DictFieldType.GEO_JSON || field.getType() == DictFieldType.JSON)
+		{
+			return JsonUtils.toJson(value);
+		}
+
+		return value;
+	}
+
+	private byte[] writeToByteArray(List<String> headers, List<Object[]> data)
 	{
 		try (var stream = new ByteArrayOutputStream();
 		     var streamWriter = new OutputStreamWriter(stream, StandardCharsets.UTF_8);
-		     var writer = new CSVPrinter(streamWriter, CSVFormat.DEFAULT))
+		     var writer = new CSVPrinter(streamWriter, ImportCsvService.CSV_FORMAT))
 		{
 			writer.printRecord(headers);
 			writer.printRecords(data);

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.backstage.app.dict.api.model.dto.DictEnumDto;
 import com.backstage.app.dict.api.model.dto.request.CreateDictEnumRequest;
 import com.backstage.app.dict.api.model.dto.request.CreateDictRequest;
 import com.backstage.app.dict.api.model.dto.request.DeleteDictRequest;
+import com.backstage.app.dict.configuration.conditional.ConditionalOnApi;
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.conversion.dto.DictEnumConverter;
 import com.backstage.app.dict.conversion.dto.DictEnumRequestConverter;
@@ -43,6 +44,7 @@ import java.util.stream.Collectors;
 import static java.util.function.Predicate.not;
 
 @Slf4j
+@ConditionalOnApi
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/dicts")
@@ -196,7 +198,7 @@ public class DictEndpoint
 	@PostMapping("/delete")
 	public ApiResponse<?> delete(@RequestBody @Valid DeleteDictRequest request)
 	{
-		schemeService.delete(request.getId(), request.isDeleted());
+		schemeService.delete(request.getId());
 
 		log.info("Справочник {} был удален.", request.getId());
 

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,15 +19,15 @@ package com.backstage.app.dict.service.backend.mongo;
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEnum;
-import com.backstage.app.dict.exception.dict.DictDeletedException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.Engine;
+import com.backstage.app.exception.AppException;
+import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -36,6 +36,8 @@ import java.util.Objects;
 @ConditionalOnEngine(MongoEngine.MONGO)
 public class MongoDictBackend extends AbstractMongoBackend implements DictBackend
 {
+	public static final String _ID = "_id";
+
 	@Override
 	public Engine getEngine()
 	{
@@ -47,37 +49,29 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 	{
 		Objects.requireNonNull(id, "dictId не может быть null.");
 
-		var dict = getDict(id);
-
-		if (dict.getDeleted() != null)
-		{
-			throw new DictDeletedException(id);
-		}
-
-		convertMongoServiceFields(dict);
-
-		return dict;
+		return mongoDictRepository.findById(id)
+				.orElseThrow(() -> new DictNotFoundException(id));
 	}
 
 	@Override
 	public List<Dict> getAllDicts()
 	{
-		var result = mongoDictRepository.findAll();
-
-		result.forEach(this::convertMongoServiceFields);
-
-		return result;
+		return mongoDictRepository.findAll();
 	}
 
 	@Override
 	public Dict saveDict(Dict dict)
 	{
+		validate(dict);
+
 		return save(dict);
 	}
 
 	@Override
 	public Dict updateDict(Dict dict)
 	{
+		validate(dict);
+
 		return save(dict);
 	}
 
@@ -85,19 +79,6 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 	public void deleteById(String id)
 	{
 		mongoDictRepository.deleteById(id);
-	}
-
-	@Override
-	//	TODO: История изменений схемы, даты создания/обновления схемы?
-	public void softDelete(String id, LocalDateTime deleted)
-	{
-		var dict = getDict(id);
-
-		addTransactionData(dict, true);
-
-		dict.setDeleted(deleted);
-
-		save(dict);
 	}
 
 	@Override
@@ -143,17 +124,22 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 		save(dict);
 	}
 
-	/**
-	 * Метод получения {@link Dict} для {@link #softDelete} в обход валидации в {@link #getDictById}.
-	 */
-	private Dict getDict(String id)
-	{
-		return mongoDictRepository.findById(id)
-				.orElseThrow(() -> new DictNotFoundException(id));
-	}
-
 	private Dict save(Dict dict)
 	{
 		return mongoDictRepository.save(dict);
+	}
+
+	private void validate(Dict dict)
+	{
+		dict.getFieldIds()
+				.stream()
+				.filter(_ID::equals)
+				.findAny()
+				.ifPresent(it -> {
+					throw new AppException(
+							ApiStatusCodeImpl.ILLEGAL_INPUT,
+							"Недопустимо использование пользовательского поля 'id' для Mongo."
+					);
+				});
 	}
 }

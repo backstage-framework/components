@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -75,6 +75,12 @@ public class ReadOnlyObjectProxyFactory
 
 			return method.invoke(object, objects);
 		}
+	}
+
+	@SuppressWarnings("unchecked")
+	public static <T> T createProxy(T source)
+	{
+		return createProxy(source, (Class<T>) source.getClass());
 	}
 
 	public static <T> T createProxy(Object source, Class<T> targetClass)

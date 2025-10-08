@@ -1,5 +1,4 @@
 /* Роли */
-/* Роли */
 create table roles['Роли'] (name['Название'] text, comments['Комментарии'] text[]);
 
 create table useless['Для удаления'] (field['Название'] text);
@@ -19,7 +18,6 @@ insert into users values('Иван', 20, 'MANAGER', '2020-08-20', ARRAY['11', '2
 
 update roles set name = 'Супер-Менеджер' where id = 'MANAGER';
 
-delete from roles where id = 'MANAGER';
 delete from roles where name = 'Менеджер2';
 
 alter table users rename column age to age['Только обновили описание'];
@@ -38,6 +36,8 @@ alter table users drop constraint usersNameConstraint;
 
 alter table users set readPermission = 'DICT_READ';
 alter table users set writePermission = null;
+
+alter table users set maxHistory = 64;
 
 create enum sthEnum for users as ('value1', 'value2');
 alter table users alter enum sthEnum add value 'value3';

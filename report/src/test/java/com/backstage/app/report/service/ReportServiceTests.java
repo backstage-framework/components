@@ -16,6 +16,9 @@
 
 package com.backstage.app.report.service;
 
+import com.backstage.app.report.model.ReportStatus;
+import com.backstage.app.report.service.task.ReportTaskManager;
+import com.backstage.app.report.service.task.ReportTaskService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.backstage.app.report.AbstractTests;
@@ -24,10 +27,16 @@ import com.backstage.app.report.model.ReportMessage;
 import com.backstage.app.report.model.filter.SimpleReportFilter;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Import;
+import org.springframework.context.annotation.Primary;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import java.util.concurrent.TimeUnit;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.*;
+
+@Import(ReportServiceTests.ReportServiceTestsConfig.class)
 public class ReportServiceTests extends AbstractTests
 {
 	private static final String USER_ID = "system";
@@ -35,8 +44,59 @@ public class ReportServiceTests extends AbstractTests
 	private static final String MIME_TYPE = "mimeType";
 
 	@Autowired private ReportService reportService;
+	@Autowired private ReportTaskManager reportTaskManager;
 
 	@Autowired private ObjectMapper objectMapper;
+
+	static class ReportServiceTestsConfig
+	{
+		@Bean
+		@Primary
+		public ReportTaskService reportTaskService()
+		{
+			return new TestInMemoryReportTaskService();
+		}
+	}
+
+	@Test
+	public void generateExampleXlsCorrectAsyncTest()
+	{
+		var filter = SimpleReportFilter.builder()
+				.reportType(ExampleReportType.EXAMPLE_1)
+				.from(FROM)
+				.to(TO)
+				.build();
+
+		var feature = reportService.generateAsync(ExampleReportType.EXAMPLE_1, filter);
+
+		feature.whenComplete((data, e) -> { });
+
+		assertTrue(feature.isDone());
+		assertFalse(feature.isCompletedExceptionally());
+	}
+
+	@Test
+	public void generateExampleXlsErrorAsyncTest()
+	{
+		var feature = reportService.generateAsync(ExampleReportType.ERROR);
+
+		feature.whenComplete((data, e) -> { });
+
+		assertTrue(feature.isDone());
+		assertTrue(feature.isCompletedExceptionally());
+	}
+
+	@Test
+	public void generateErrorReportTaskUpdateTest()
+	{
+		var taskId = reportService.generate(ExampleReportType.ERROR)
+				.getId();
+
+		await().atMost(1, TimeUnit.SECONDS)
+				.until(() -> reportTaskManager.getById(taskId).getReportStatus() == ReportStatus.ERROR);;
+
+		assertEquals(ReportStatus.ERROR, reportTaskManager.getById(taskId).getReportStatus());
+	}
 
 	@Test
 	public void generateExampleXlsCorrectTest()

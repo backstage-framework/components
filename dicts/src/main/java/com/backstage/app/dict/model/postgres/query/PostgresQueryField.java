@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -38,12 +38,12 @@ public class PostgresQueryField
 
 	private PostgresWord dictId(String dictId, PostgresReservedKeyword reservedKeyword)
 	{
-		return reservedKeyword.postgresWordMap(dictId).get(dictId);
+		return reservedKeyword.postgresWord(dictId);
 	}
 
 	private PostgresWord fieldId(String fieldId, PostgresReservedKeyword reservedKeyword)
 	{
-		return reservedKeyword.postgresWordMap(fieldId).get(fieldId);
+		return reservedKeyword.postgresWord(fieldId);
 	}
 
 	private String concat(String dictId, String fieldId)

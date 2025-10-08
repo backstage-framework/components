@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.backstage.app.attachment.service.job;
 
+import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
 import com.backstage.app.attachment.repository.AttachmentRepository;
 import com.backstage.app.jobs.model.dto.other.JobResult;
 import com.backstage.app.jobs.model.dto.param.EmptyJobParams;
@@ -23,6 +24,7 @@ import com.backstage.app.jobs.service.AbstractManualJob;
 import com.backstage.app.jobs.service.JobDescription;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
 import org.springframework.util.unit.DataSize;
 
@@ -30,6 +32,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
+@ConditionalOnProperty(AttachmentProperties.ACTIVATION_PROPERTY)
 @JobDescription("Получение метрик хранилища вложений")
 @RequiredArgsConstructor
 public class CheckAttachmentsJob extends AbstractManualJob<EmptyJobParams>

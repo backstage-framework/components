@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,10 +26,10 @@ public enum DictsAppStatusCode implements AppStatusCode
 {
 	MIGRATION_APPLIED_ERROR(1, "Ошибка применения миграции."),
 	MIGRATION_FILE_READ_ERROR(2, "Ошибка чтения миграции из файла."),
-	MIGRATIONS_HAS_SAME_VERSION(3, "Миграция имеет одинаковую версию."),
-	MIGRATION_PROCESS_UNKNOWN_ERROR(4, "Неизвестная ошибка при обработке миграций."),
+	MIGRATIONS_HAS_SAME_VERSION(3, "Несколько миграций с одинаковой версией: %s."),
+	MIGRATION_PROCESS_ERROR(4, "Ошибка обработки миграций."),
 
-	SQL_PARSE_SYNTAX_ERROR(5, "Синтаксическая ошибка парсинга SQL выражения.", HttpStatus.BAD_REQUEST),
+	SQL_PARSE_SYNTAX_ERROR(5, "Синтаксическая ошибка в SQL выражении.", HttpStatus.BAD_REQUEST),
 
 	PREPARE_PAGEABLE_MONGO_ERROR(6, "Ошибка при адаптации pageable к MongoDB адаптеру."),
 

@@ -55,7 +55,7 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	@Test
 	void create_AlreadyExists()
 	{
-		createAlreadyExistsDict(MONGO_DICT_ID);
+		createAlreadyExistingDict(MONGO_DICT_ID);
 	}
 
 	@Test
@@ -74,12 +74,6 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	void deleteWithAnotherEngine()
 	{
 		deleteDictWithAnotherEngine(MONGO_DICT_ID, new DictEngine(PostgresEngine.POSTGRES));
-	}
-
-	@Test
-	void restoreDeletedDict()
-	{
-		restoreDeletedDict(MONGO_DICT_ID);
 	}
 
 	@Test
@@ -131,6 +125,12 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	}
 
 	@Test
+	void deleteWithActiveReference()
+	{
+		deleteDictWithActiveReference();
+	}
+
+	@Test
 	void updateEnum()
 	{
 		updateDictEnum(MONGO_DICT_ID);
@@ -147,6 +147,6 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	@Order(TestPipeline.DICT_GET_ALL_TEST)
 	void getAll()
 	{
-		assertEquals(55, dictService.getAll().size());
+		assertEquals(45, dictService.getAll().size());
 	}
 }

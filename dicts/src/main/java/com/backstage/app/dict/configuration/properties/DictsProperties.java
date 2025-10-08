@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.backstage.app.dict.configuration.properties;
 
 import com.backstage.app.database.configuration.properties.DDLProperties;
+import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.Getter;
@@ -32,9 +33,11 @@ import java.util.Set;
 @Validated
 public class DictsProperties
 {
-	public static final String ENGINE_PROPERTY = "app.dicts.engines";
+	public static final String REST_API_ACTIVATION_PROPERTY = "app.dicts.api-enabled";
+
 	public static final String STORAGE_PROPERTY = "app.dicts.storage";
-	public static final String DDL_ACTIVATION_PROPERTY = "app.dicts.ddl.enabled";
+
+	public static final String ENGINE_PROPERTY = "app.dicts.engines";
 	public static final String DEFAULT_ENGINE_PROPERTY = "app.dicts.default-engine";
 	public static String DEFAULT_ENGINE;
 
@@ -44,6 +47,11 @@ public class DictsProperties
 	 * Параметры для DDLProvider. Схема указывается для PostgreSQL.
 	 */
 	private DDLProperties ddl = new DDLProperties();
+
+	private boolean apiEnabled = true;
+
+	@Min(0)
+	public Integer maxHistory = 32;
 
 	@NotBlank
 	private String storage;

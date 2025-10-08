@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.backstage.app.api.model.OkResponse;
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.model.dto.data.request.CreateDictItemRequest;
-import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
@@ -143,11 +142,11 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 		return ApiResponse.of((T) dictItemConverter.convert(result, getDictItemConverterConfig()));
 	}
 
-	@Operation(summary = "Удаление записи в справочнике (soft delete).")
+	@Operation(summary = "Удаление записи в справочнике.")
 	@PostMapping("/{dictId}/delete")
-	public ApiResponse<?> delete(@PathVariable String dictId, @RequestBody @Valid DeleteDictItemRequest request)
+	public OkResponse delete(@PathVariable String dictId, @RequestParam String itemId)
 	{
-		dictDataService.delete(dictId, request.getItemId(), request.isDeleted(), request.getReason(), request.getVersion());
+		dictDataService.delete(dictId, itemId);
 
 		return ApiResponse.ok();
 	}
@@ -175,7 +174,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 
 	@Operation(summary = "Импорт CSV в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = "text/csv")
-	public OkResponse importCsv(@PathVariable String dictId, @RequestBody InputStream inputStream)
+	public OkResponse importCsv(@PathVariable String dictId, InputStream inputStream)
 	{
 		importCsvService.importDict(dictId, inputStream);
 
@@ -184,7 +183,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 
 	@Operation(summary = "Импорт JSON в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public OkResponse importJson(@PathVariable String dictId, @RequestBody InputStream inputStream)
+	public OkResponse importJson(@PathVariable String dictId, InputStream inputStream)
 	{
 		importJsonService.importDict(dictId, inputStream);
 
@@ -195,7 +194,7 @@ public class GenericDictDataEndpoint<T extends DictItemDto> implements GenericDi
 	@PostMapping("/{dictId}/export")
 	public ResponseEntity<Resource> export(@PathVariable String dictId, @RequestBody @Valid ExportDictRequest request)
 	{
-		var exportedResource = dictExportService.exportToResource(dictId, request.getFormat(), request.getItemIds());
+		var exportedResource = dictExportService.exportToResource(dictId, request.getFormat(), request.getItemIds(), request.getQuery());
 
 		return ResponseEntity.ok()
 				.header(HttpHeaders.CONTENT_DISPOSITION, HttpUtils.buildContentDisposition(false, exportedResource.getFilename(), exportedResource.getFilename()))

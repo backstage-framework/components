@@ -187,9 +187,9 @@ class JobManagerTest extends AbstractTests
 	{
 		var jobName = "testJobs.TestManualJobWithParams";
 
-		var actualResult = jobManager.getParams(jobName);
+		var actualResult = jobManager.getParamsSchema(jobName);
 
-		Assertions.assertEquals(new TestJobs.TestManualJobParams("defaultValue"), actualResult);
+		Assertions.assertEquals("TestManualJobParams", actualResult.schema.getName());
 	}
 
 	@Test
@@ -197,7 +197,7 @@ class JobManagerTest extends AbstractTests
 	{
 		var jobName = "testJobs.notExistingJob";
 
-		AppException thrown = assertThrows(AppException.class, () -> jobManager.getParams(jobName));
+		AppException thrown = assertThrows(AppException.class, () -> jobManager.getParamsSchema(jobName));
 
 		Assertions.assertEquals(CoreAppStatusCode.OBJECT_NOT_FOUND, thrown.getStatus());
 	}

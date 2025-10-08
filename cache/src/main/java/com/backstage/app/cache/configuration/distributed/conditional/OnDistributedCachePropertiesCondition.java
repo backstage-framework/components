@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -36,7 +36,7 @@ public class OnDistributedCachePropertiesCondition extends SpringBootCondition
 			{
 				if (propertySource instanceof EnumerablePropertySource)
 				{
-					for (String key : ((EnumerablePropertySource) propertySource).getPropertyNames())
+					for (String key : ((EnumerablePropertySource<?>) propertySource).getPropertyNames())
 					{
 						if (key.startsWith(CacheProperties.DISTRIBUTED_OPERATIONS_ACTIVATION_PROPERTY))
 						{

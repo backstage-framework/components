@@ -40,6 +40,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -92,7 +93,7 @@ class ScheduledJobsEndpointTest
 	}
 
 	@Test
-	void executeWitEmptyParams() throws Exception
+	void executeWithEmptyParams() throws Exception
 	{
 		executeJob("testJobs.TestManualJobWithParams", Map.of());
 	}
@@ -108,6 +109,14 @@ class ScheduledJobsEndpointTest
 				.andExpect(status().isBadRequest())
 				.andExpect(jsonPath("message").value(Matchers.is(CoreAppStatusCode.ILLEGAL_INPUT.getMessage())))
 				.andDo(print());
+	}
+
+	@Test
+	void getParamsFromEmptyParamsJob() throws Exception
+	{
+		mvc.perform(get("/api/scheduledJobs/testJobs.TestFixedDelayRescheduling/params"))
+				.andExpect(status().isOk())
+				.andExpect(jsonPath("data.referencedSchemas.EmptyJobParams").exists());
 	}
 
 	private <K, V> void executeJob(String jobName, Map<K, V> params) throws Exception

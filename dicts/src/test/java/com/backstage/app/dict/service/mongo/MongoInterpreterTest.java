@@ -65,6 +65,6 @@ public class MongoInterpreterTest extends CommonInterpreterTest
 	@Test
 	protected void parse_DeleteWithoutCondition()
 	{
-		parseDeleteWithoutCondition();
+		parseDeleteWithoutCondition(MONGO_DICT_ID);
 	}
 }

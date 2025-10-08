@@ -1,0 +1,118 @@
+/*
+ *    Copyright 2019-2025 the original author or authors.
+ *
+ *    Licensed under the Apache License, Version 2.0 (the "License");
+ *    you may not use this file except in compliance with the License.
+ *    You may obtain a copy of the License at
+ *
+ *        https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *    Unless required by applicable law or agreed to in writing, software
+ *    distributed under the License is distributed on an "AS IS" BASIS,
+ *    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *    See the License for the specific language governing permissions and
+ *    limitations under the License.
+ */
+
+package com.backstage.app.dict.service.codegen.server.base;
+
+import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.model.dictitem.DictDataItem;
+import com.backstage.app.dict.service.DictDataService;
+import com.backstage.app.dict.service.codegen.client.base.AbstractDictItem;
+import lombok.RequiredArgsConstructor;
+import org.jooq.Condition;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
+@RequiredArgsConstructor
+public abstract class AbstractDictItemService<T extends AbstractDictItem>
+{
+	private final DictDataService dictDataService;
+
+	public T getById(String itemId)
+	{
+		return buildItem(dictDataService.getById(getDictId(), itemId));
+	}
+
+	public List<T> getByIds(List<String> itemIds)
+	{
+		return dictDataService.getByIds(getDictId(), itemIds).stream()
+				.map(this::buildItem)
+				.collect(Collectors.toList());
+	}
+
+	public List<String> getIdsByFilter(Condition condition)
+	{
+		return dictDataService.getIdsByFilter(getDictId(), ConditionBuilder.buildQuery(condition))
+				.getContent();
+	}
+
+	public Page<T> getByFilter(Condition condition, Pageable pageable)
+	{
+		var result = dictDataService.getByFilter(getDictId(), List.of(), ConditionBuilder.buildQuery(condition), pageable);
+
+		return new PageImpl<>(result.stream().map(this::buildItem).collect(Collectors.toList()), pageable, result.getTotalElements());
+	}
+
+	public List<Object> getDistinctValuesByFilter(String field, Condition condition)
+	{
+		return dictDataService.getDistinctValuesByFilter(getDictId(), field, ConditionBuilder.buildQuery(condition));
+	}
+
+	public <V> List<V> getDistinctValuesByFilter(String field, Condition condition, Class<V> clazz)
+	{
+		return dictDataService.getDistinctValuesByFilter(getDictId(), field, ConditionBuilder.buildQuery(condition))
+				.stream()
+				.map(clazz::cast)
+				.toList();
+	}
+
+	public boolean existsById(String itemId)
+	{
+		return dictDataService.existsById(getDictId(), itemId);
+	}
+
+	public boolean existsByFilter(Condition condition)
+	{
+		return dictDataService.existsByFilter(getDictId(), ConditionBuilder.buildQuery(condition));
+	}
+
+	public long countByFilter(Condition condition)
+	{
+		return dictDataService.countByFilter(getDictId(), ConditionBuilder.buildQuery(condition));
+	}
+
+	public T create(T item)
+	{
+		return buildItem(dictDataService.create(DictDataItem.of(getDictId(), item.toMap())));
+	}
+
+	public T update(T item)
+	{
+		return buildItem(dictDataService.update(item.getId(), DictDataItem.of(getDictId(), item.toMap()), item.getVersion()));
+	}
+
+	public void delete(String itemId)
+	{
+		delete(getById(itemId));
+	}
+
+	public void delete(T item)
+	{
+		dictDataService.delete(getDictId(), item.getId());
+	}
+
+	protected abstract String getDictId();
+
+	protected Long getDictVersion()
+	{
+		return 0L;
+	}
+
+	protected abstract T buildItem(DictItem dictItem);
+}

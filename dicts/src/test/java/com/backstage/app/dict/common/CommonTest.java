@@ -40,8 +40,6 @@ import org.springframework.test.context.ContextConfiguration;
 import java.math.BigDecimal;
 import java.util.*;
 
-import static com.backstage.app.dict.constant.ServiceFieldConstants.getServiceSchemeFields;
-
 @SpringBootTest
 @ContextConfiguration(initializers = {AppDataSourceInitializer.class, MongoInitializer.class})
 @Import({JacksonAutoConfiguration.class, MongoConfiguration.class})
@@ -219,13 +217,6 @@ public class CommonTest
 	protected String withRandom(String dictId)
 	{
 		return "%s%s".formatted(dictId, RandomStringUtils.random(3, true, false));
-	}
-
-	protected List<DictField> withoutServiceFields(List<DictField> source)
-	{
-		return source.stream()
-				.filter(it -> !getServiceSchemeFields().contains(it.getId()))
-				.toList();
 	}
 
 	protected String generateRandomUUIDWithoutDashes()

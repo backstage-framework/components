@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 public interface DictDataBackend extends Backend
 {
@@ -35,6 +36,8 @@ public interface DictDataBackend extends Backend
 
 	Page<DictItem> getByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression, Pageable pageable);
 
+	Stream<DictItem> streamByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression);
+
 	boolean existsById(Dict dict, String itemId);
 
 	boolean existsByFilter(Dict dict, QueryExpression queryExpression);
@@ -45,9 +48,9 @@ public interface DictDataBackend extends Backend
 
 	DictItem update(Dict dict, String itemId, DictItem dictItem, long version);
 
-	void delete(Dict dict, DictItem dictItem);
+	void delete(Dict dict, String itemId);
 
-	void deleteAll(Dict dict, List<DictItem> dictItems);
+	void deleteAll(Dict dict);
 
 	long countByFilter(Dict dict, QueryExpression queryExpression);
 }

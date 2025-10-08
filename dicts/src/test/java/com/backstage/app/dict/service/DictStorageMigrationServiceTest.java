@@ -28,7 +28,6 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -76,24 +75,23 @@ public class DictStorageMigrationServiceTest extends CommonTest
 	@Test
 	public void migratePostgresStorageDictToMongoStorageCorrect()
 	{
-		var sourceDict = dictService.getById(POSTGRES_STORAGE_DICT_ID);
+		var sourceDict = dictService.getById(POSTGRES_STORAGE_DICT_ID).copy();
 		var sourceDictEngine = sourceDict.getEngine();
 		var targetDictEngine = new DictEngine(MongoEngine.MONGO);
 
-		assertEquals(sourceDictEngine.getName(), PostgresEngine.POSTGRES);
+		assertEquals(PostgresEngine.POSTGRES, sourceDictEngine.getName());
 
 		var sourceDictItems = dictDataService.getByFilter(POSTGRES_STORAGE_DICT_ID, List.of("*"), null, Pageable.unpaged())
 				.getContent();
 
 		//Миграция справочника из Postgres в Mongo
 		sourceDict.setEngine(targetDictEngine);
-		sourceDict.setFields(new ArrayList<>(withoutServiceFields(sourceDict.getFields())));
 
 		var migratedToTargetStorageDict = dictService.update(POSTGRES_STORAGE_DICT_ID, sourceDict);
 		var migratedToTargetStorageDictItems = dictDataService.getByFilter(POSTGRES_STORAGE_DICT_ID, List.of("*"), null, Pageable.unpaged())
 				.getContent();
 
-		assertEquals(migratedToTargetStorageDict.getEngine().getName(), MongoEngine.MONGO);
+		assertEquals(MongoEngine.MONGO, migratedToTargetStorageDict.getEngine().getName());
 		assertEquals(sourceDict.getFields().size(), migratedToTargetStorageDict.getFields().size());
 		assertEquals(sourceDict.getConstraints().size(), migratedToTargetStorageDict.getConstraints().size());
 		assertEquals(sourceDict.getIndexes().size(), migratedToTargetStorageDict.getIndexes().size());
@@ -103,13 +101,12 @@ public class DictStorageMigrationServiceTest extends CommonTest
 
 		//Миграция справочника из Mongo в Postgres
 		migratedToTargetStorageDict.setEngine(sourceDictEngine);
-		migratedToTargetStorageDict.setFields(new ArrayList<>(withoutServiceFields(migratedToTargetStorageDict.getFields())));
 
 		var migratedToSourceStorageDict = dictService.update(POSTGRES_STORAGE_DICT_ID, migratedToTargetStorageDict);
 		var migratedToSourceStorageDictItems = dictDataService.getByFilter(POSTGRES_STORAGE_DICT_ID, List.of("*"), null, Pageable.unpaged())
 				.getContent();
 
-		assertEquals(migratedToSourceStorageDict.getEngine().getName(), PostgresEngine.POSTGRES);
+		assertEquals(PostgresEngine.POSTGRES, migratedToSourceStorageDict.getEngine().getName());
 		assertEquals(sourceDict.getFields().size(), migratedToSourceStorageDict.getFields().size());
 		assertEquals(sourceDict.getConstraints().size(), migratedToSourceStorageDict.getConstraints().size());
 		assertEquals(sourceDict.getIndexes().size(), migratedToSourceStorageDict.getIndexes().size());

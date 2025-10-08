@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,19 +16,28 @@
 
 package com.backstage.app.dict.configuration.ddl;
 
-import jakarta.annotation.PostConstruct;
-import lombok.RequiredArgsConstructor;
+import com.backstage.app.configuration.AppConfiguration;
+import com.backstage.app.dict.service.DictDataService;
+import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.backend.VersionSchemeBackend;
+import com.backstage.app.dict.service.lock.DictLockInitializer;
+import com.backstage.app.dict.service.migration.ClasspathMigrationService;
+import org.springframework.boot.autoconfigure.AutoConfigureAfter;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@RequiredArgsConstructor
+@AutoConfigureAfter(AppConfiguration.class)
 public class DictsDDLConfiguration
 {
-	private final DictsDDLProvider dictsDDLProvider;
-
-	@PostConstruct
-	public void initialize()
+	@Bean
+	public DictsDDLProvider dictsDDLProvider(DictLockInitializer dictLockInitializer,
+	                                         ClasspathMigrationService classpathMigrationService,
+	                                         DictService dictService,
+	                                         DictDataService dictDataService,
+	                                         VersionSchemeBackend versionSchemeBackend
+	)
 	{
-		dictsDDLProvider.update();
+		return new DictsDDLProvider(dictLockInitializer, classpathMigrationService, dictService, dictDataService, versionSchemeBackend);
 	}
 }

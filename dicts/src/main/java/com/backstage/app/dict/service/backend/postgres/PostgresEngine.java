@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ package com.backstage.app.dict.service.backend.postgres;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.service.backend.Engine;
-import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.EmptySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
@@ -38,14 +37,6 @@ public class PostgresEngine implements Engine
 
 	private final NamedParameterJdbcTemplate jdbcTemplate;
 
-	@PostConstruct
-	public void createSchema()
-	{
-		var sql = "create schema if not exists %s".formatted(dictsProperties.getDdl().getScheme());
-
-		jdbcTemplate.update(sql, Map.of());
-	}
-
 	@Override
 	public DictEngine getDictEngine()
 	{
@@ -55,7 +46,9 @@ public class PostgresEngine implements Engine
 	@Override
 	public void createDict()
 	{
-		var sql = """
+		createScheme();
+
+		var createSql = """
 				create table if not exists %s.dict (
 					id                varchar(40)   not null,
 					name              varchar(500),
@@ -65,17 +58,35 @@ public class PostgresEngine implements Engine
 					enums             jsonb                  default '[]'::jsonb,
 					view_permission   varchar(100),
 					edit_permission   varchar(100),
-					deleted           timestamp,
+					max_history       int,
 					engine            varchar(40)   not null,
+					version           bigint        not null default 1,
 					primary key (id))
 				""".formatted(dictsProperties.getDdl().getScheme());
 
-		jdbcTemplate.update(sql, Map.of());
+		jdbcTemplate.update(createSql, Map.of());
+
+		var addVersionSql = "alter table %s.dict add column if not exists version bigint not null default 1"
+				.formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(addVersionSql, Map.of());
+
+		var dropDeletedSql = "alter table %s.dict drop column if exists deleted"
+				.formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(dropDeletedSql, Map.of());
+
+		var addMaxHistoryColumn = "alter table %s.dict add column if not exists max_history int"
+				.formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(addMaxHistoryColumn, Map.of());
 	}
 
 	@Override
 	public void createVersionScheme()
 	{
+		createScheme();
+
 		var sql = """
 				create table if not exists %s.version_scheme (
 					id                varchar(40)   not null,
@@ -85,6 +96,13 @@ public class PostgresEngine implements Engine
 					installed         timestamp     not null,
 					primary key (id))
 				""".formatted(dictsProperties.getDdl().getScheme());
+
+		jdbcTemplate.update(sql, Map.of());
+	}
+
+	private void createScheme()
+	{
+		var sql = "create schema if not exists %s".formatted(dictsProperties.getDdl().getScheme());
 
 		jdbcTemplate.update(sql, Map.of());
 	}

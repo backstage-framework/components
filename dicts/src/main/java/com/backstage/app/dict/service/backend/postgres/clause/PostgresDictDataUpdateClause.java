@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -34,7 +34,10 @@ import java.lang.reflect.Array;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.time.LocalDateTime;
-import java.util.*;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -42,6 +45,8 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostgresDictDataUpdateClause
 {
+	private final DictService dictService;
+
 	private final PostgresReservedKeyword reservedKeyword;
 
 	public void addUpdateClause(String column, Object oldValue, Object newValue,
@@ -53,7 +58,8 @@ public class PostgresDictDataUpdateClause
 		}
 
 		var paramName = sqlParamName(column);
-		updateClauses.add("%s = :%s".formatted(column, paramName));
+
+		updateClauses.add("%s = :%s".formatted(reservedKeyword.postgresWord(column).getQuotedIfKeyword(), paramName));
 		sqlParameterSource.addValue(paramName, newValue);
 	}
 
@@ -63,20 +69,26 @@ public class PostgresDictDataUpdateClause
 		addUpdateClause(column, jsonValue(oldValue), jsonValue(newValue), updateClauses, sqlParameterSource);
 	}
 
+	public void addUpdateJsonArrayClause(String column, Object oldValue, Object newValue,
+	                                LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
+	{
+		PGobject[] oldArrayValue = ((List<?>) oldValue).stream()
+				.map(this::jsonValue)
+				.toArray(PGobject[]::new);
+
+		PGobject[] newArrayValue = ((List<?>) newValue).stream()
+				.map(this::jsonValue)
+				.toArray(PGobject[]::new);
+
+		addUpdateClause(column, oldArrayValue, newArrayValue, updateClauses, sqlParameterSource);
+	}
+
 	public void addDictDataUpdateClause(Dict dict, Map<String, Object> oldData, Map<String, Object> newData,
 	                                    LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
 	{
-		var dictDataFields = DictService.getDataFieldsByDict(dict);
-
-		var dataWordMap = dictDataFields.stream()
-				.map(DictField::getId)
-				.map(reservedKeyword::postgresWordMap)
-				.map(Map::entrySet)
-				.flatMap(Collection::stream)
-				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
-
-		var fieldMap = dictDataFields.stream()
-				.collect(Collectors.toMap(it -> dataWordMap.get(it.getId()).getQuotedIfKeyword(), Function.identity()));
+		var fieldMap = dictService.getDataFieldsByDict(dict)
+				.stream()
+				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
 		newData.entrySet()
 				.stream()
@@ -103,6 +115,13 @@ public class PostgresDictDataUpdateClause
 		if (DictFieldType.JSON.equals(field.getType()))
 		{
 			completeSingleValue(field, column, oldValue, newValue, updateClauses, sqlParameterSource);
+
+			return;
+		}
+
+		if (DictFieldType.GEO_JSON.equals(field.getType()))
+		{
+			addUpdateJsonArrayClause(column, oldValue, newValue, updateClauses, sqlParameterSource);
 
 			return;
 		}
@@ -139,7 +158,7 @@ public class PostgresDictDataUpdateClause
 	private void completeSingleValue(DictField field, String column, Object oldValue, Object newValue,
 	                                 LinkedHashSet<String> updateClauses, MapSqlParameterSource sqlParameterSource)
 	{
-		if (DictFieldType.JSON.equals(field.getType()))
+		if (DictFieldType.JSON.equals(field.getType()) || DictFieldType.GEO_JSON.equals(field.getType()))
 		{
 			addUpdateJsonClause(column, oldValue, newValue, updateClauses, sqlParameterSource);
 
@@ -156,8 +175,6 @@ public class PostgresDictDataUpdateClause
 
 	protected String sqlParamName(String column)
 	{
-		column = column.replaceAll("\"", "");
-
 		return column + "Val";
 	}
 

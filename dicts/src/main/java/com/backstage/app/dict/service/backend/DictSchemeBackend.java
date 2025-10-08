@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,9 +20,12 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictIndex;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
 
 public interface DictSchemeBackend extends Backend
 {
+	void applyDdl();
+
 	Dict createDictScheme(Dict dict);
 
 	Dict updateDictScheme(Dict updatedDict);
@@ -42,4 +45,6 @@ public interface DictSchemeBackend extends Backend
 	DictIndex createIndex(Dict dict, DictIndex index);
 
 	void deleteIndex(Dict dict, String id);
+
+	DictNativeScheme getNativeScheme(Dict dict);
 }

@@ -24,7 +24,7 @@ bootJar {
 dependencies {
 	annotationProcessor "org.springframework.boot:spring-boot-configuration-processor"
 
-	api project(":api")
+	api project(":app")
 
 	compileOnly project(":jms")
 

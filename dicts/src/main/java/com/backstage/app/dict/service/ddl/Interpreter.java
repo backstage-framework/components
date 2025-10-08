@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -33,6 +33,9 @@ import com.backstage.app.dict.service.ddl.ast.expression.table.CreateIndexExpres
 import com.backstage.app.dict.service.ddl.ast.expression.table.CreateTable;
 import com.backstage.app.dict.service.ddl.ast.expression.table.DeleteIndexExpression;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.*;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.AlterTableColumn;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetNotNullColumnOperation;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetParameterColumnOperation;
 import com.backstage.app.dict.service.ddl.ast.value.*;
 import com.backstage.app.dict.service.imp.ImportCsvService;
 import com.backstage.app.dict.service.imp.ImportJsonService;
@@ -124,7 +127,7 @@ public class Interpreter
 		if (fieldIds.isEmpty())
 		{
 			fieldIds.addAll(
-					DictService.getDataFieldsByDict(dict)
+					dictService.getDataFieldsByDict(dict)
 							.stream()
 							.map(DictField::getId)
 							.toList());
@@ -151,9 +154,10 @@ public class Interpreter
 
 	private void execute(AlterTable alterTable)
 	{
-		var dict = dictService.getById(alterTable.getTable().getName());
-		var fields = dictService.getDataFieldsByDict(dict);
+		var dict = dictService.getById(alterTable.getTable().getName()).copy();
 		var dictId = dict.getId();
+
+		List<DictField> fields = new ArrayList<>(dictService.getDataFieldsByDict(dict));
 
 		if (alterTable.getOperation() instanceof AddTableColumnOperation addTableColumnOperation)
 		{
@@ -197,7 +201,7 @@ public class Interpreter
 		}
 		else if (alterTable.getOperation() instanceof AddEnumValueOperation addEnumValueOperation)
 		{
-			var savedEnum = dictService.getById(alterTable.getTable().getName())
+			var savedEnum = dict
 					.getEnums()
 					.stream()
 					.filter(it -> it.getId().equals(addEnumValueOperation.getId().getName()))
@@ -222,9 +226,9 @@ public class Interpreter
 
 			return;
 		}
-		else if (alterTable.getOperation() instanceof AlterTableColumnOperation alterTableColumnOperation)
+		else if (alterTable.getOperation() instanceof AlterTableColumn alterTableColumn)
 		{
-			executeAlterTableColumn(alterTableColumnOperation, fields);
+			executeAlterTableColumn(alterTableColumn, dictId, fields);
 		}
 
 		dict.setFields(fields);
@@ -256,20 +260,20 @@ public class Interpreter
 	{
 		if (delete.getColumn() == null)
 		{
-			dictDataService.deleteAll(delete.getTable().getName(), true);
+			dictDataService.deleteAll(delete.getTable().getName());
 
 			return;
 		}
 
 		var filtersQuery = buildFilterQuery(delete.getColumn());
 
-		dictDataService.getByFilter(delete.getTable().getName(), List.of("*"), filtersQuery, Pageable.unpaged())
-				.forEach(item -> dictDataService.delete(delete.getTable().getName(), item.getId(), true, item.getVersion()));
+		dictDataService.streamByFilter(delete.getTable().getName(), List.of(ID), filtersQuery)
+				.forEach(dictItem -> dictDataService.delete(delete.getTable().getName(), dictItem.getId()));
 	}
 
 	private void execute(Drop drop)
 	{
-		dictService.delete(drop.getTable().getName(), true);
+		dictService.delete(drop.getTable().getName());
 	}
 
 	private void execute(Copy copy)
@@ -422,36 +426,59 @@ public class Interpreter
 	{
 		switch (operation.getParameter())
 		{
-			case READ_PERMISSION -> dict.setViewPermission(operation.getParameterValue().getValue());
-			case WRITE_PERMISSION -> dict.setEditPermission(operation.getParameterValue().getValue());
+			case READ_PERMISSION -> dict.setViewPermission(operation.getParameterValue().asString());
+			case WRITE_PERMISSION -> dict.setEditPermission(operation.getParameterValue().asString());
+			case MAX_HISTORY -> dict.setMaxHistory(operation.getParameterValue().asInt());
 		}
 	}
 
-	private void executeAlterTableColumn(AlterTableColumnOperation alterTableColumnOperation, List<DictField> fields)
+	private void executeAlterTableColumn(AlterTableColumn alterTableColumn, String dictId, List<DictField> fields)
 	{
-		var fieldId = alterTableColumnOperation.getField().getName();
+		var fieldId = alterTableColumn.getColumn().getName();
 
 		var field = fields.stream()
 				.filter(it -> it.getId().equals(fieldId))
 				.findAny()
 				.orElseThrow();
 
-		var value = alterTableColumnOperation.getValue();
+		var operation = alterTableColumn.getOperation();
 
-		switch (alterTableColumnOperation.getParameter())
+		if (operation instanceof SetParameterColumnOperation setParameterColumnOperation)
 		{
-			case MIN_SIZE -> field.setMinSize(getFieldSizeValue(value));
-			case MAX_SIZE -> field.setMaxSize(getFieldSizeValue(value));
-			case DEFAULT_VALUE -> field.setDefaultValue(value.getValue());
-			default -> throw new AppException(CoreAppStatusCode.ILLEGAL_INPUT,
-					"Неизвестная операция при ALTER COLUMN: '%s'."
-							.formatted(alterTableColumnOperation.getParameter().getAlias()));
-		}
-	}
+			var value = setParameterColumnOperation.getValue();
 
-	private static Integer getFieldSizeValue(Value<?> value)
-	{
-		return ((Number) value.getValue()).intValue();
+			switch (setParameterColumnOperation.getParameter())
+			{
+				case MIN_SIZE -> field.setMinSize(value.asInt());
+				case MAX_SIZE -> field.setMaxSize(value.asInt());
+				case DEFAULT_VALUE -> field.setDefaultValue(value.getValue());
+
+				default -> throw new AppException(CoreAppStatusCode.ILLEGAL_INPUT,
+						"Неизвестная операция при ALTER COLUMN: '%s'."
+								.formatted(setParameterColumnOperation.getParameter().getAlias()));
+			}
+		}
+		else if (operation instanceof SetNotNullColumnOperation setNotNullColumnOperation)
+		{
+			if (setNotNullColumnOperation.isNotNull())
+			{
+				var filterExpression = "%s = null".formatted(field.getId());
+
+				if (field.getDefaultValue() == null)
+				{
+					if (dictDataService.existsByFilter(dictId, filterExpression))
+					{
+						throw new DictException("В колонке '%s' справочника '%s' присутствуют значения null.".formatted(field.getId(), dictId));
+					}
+				}
+				else
+				{
+					dictDataService.updateByFilter(dictId, filterExpression, Map.of(field.getId(), field.getDefaultValue()));
+				}
+			}
+
+			field.setRequired(setNotNullColumnOperation.isNotNull());
+		}
 	}
 
 	private Map<String, Object> buildDataItemMap(Value<?> value, String fieldId)

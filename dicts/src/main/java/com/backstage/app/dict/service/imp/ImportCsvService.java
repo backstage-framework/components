@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -49,6 +49,13 @@ import java.util.stream.Stream;
 @RequiredArgsConstructor
 public class ImportCsvService implements ImportService
 {
+	public static final CSVFormat CSV_FORMAT = CSVFormat.Builder.create(CSVFormat.EXCEL)
+			.setDelimiter(',')
+			.setHeader()
+			.setSkipHeaderRecord(true)
+			.setNullString("")
+			.get();
+
 	private final DictService dictService;
 	private final DictDataService dictDataService;
 	private final DictPermissionService dictPermissionService;
@@ -71,14 +78,7 @@ public class ImportCsvService implements ImportService
 
 		try (var reader = new InputStreamReader(inputStream, StandardCharsets.UTF_8))
 		{
-//			TODO: валидация полей
-			var format = CSVFormat.Builder.create(CSVFormat.EXCEL)
-					.setDelimiter(',')
-					.setHeader()
-					.setSkipHeaderRecord(true)
-					.build();
-
-			var parser = format.parse(reader);
+			var parser = CSV_FORMAT.parse(reader);
 
 			var headerMap = parser.getHeaderMap()
 					.entrySet()

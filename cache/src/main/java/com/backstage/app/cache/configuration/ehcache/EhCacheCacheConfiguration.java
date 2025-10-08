@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,29 +16,22 @@
 
 package com.backstage.app.cache.configuration.ehcache;
 
-import com.backstage.app.cache.configuration.CacheDecorator;
-import com.backstage.app.cache.configuration.CacheSettings;
 import com.backstage.app.cache.configuration.CacheSettingsProvider;
 import com.backstage.app.cache.configuration.conditional.ConditionalOnCache;
-import com.backstage.app.cache.configuration.jcache.EnhancedJCacheCacheManager;
-import com.backstage.app.cache.configuration.properties.CacheProperties;
+import com.backstage.app.cache.configuration.jcache.JCacheSettingsAdapter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.ehcache.config.builders.CacheConfigurationBuilder;
 import org.ehcache.config.builders.ExpiryPolicyBuilder;
 import org.ehcache.config.builders.ResourcePoolsBuilder;
 import org.ehcache.jsr107.Eh107Configuration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
-import org.springframework.cache.CacheManager;
-import org.springframework.cache.interceptor.KeyGenerator;
-import org.springframework.cache.interceptor.SimpleKeyGenerator;
-import org.springframework.cache.jcache.JCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import java.time.Duration;
-import java.util.List;
-import java.util.Optional;
 
+@Slf4j
 @Configuration
 @ConditionalOnCache
 @ConditionalOnClass(name = "org.ehcache.CacheManager")
@@ -46,56 +39,26 @@ import java.util.Optional;
 public class EhCacheCacheConfiguration
 {
 	@Bean
-	public CacheManager cacheManager(Optional<CacheDecorator> cacheDecorator,
-	                                 List<CacheSettings> cacheSettings,
-	                                 JCacheManagerFactoryBean cacheManagerFactory,
-	                                 CacheProperties cacheProperties)
+	public JCacheSettingsAdapter ehCacheJCacheSettingsAdapter()
 	{
-		var jCacheManager = cacheManagerFactory.getObject();
+		return settings -> {
+			var config = CacheConfigurationBuilder.newCacheConfigurationBuilder(
+							Object.class, Object.class, ResourcePoolsBuilder.heap(settings.getMaxEntriesLocalHeap()))
+					.withExpiry(ExpiryPolicyBuilder.expiry()
+							.create(secondsToDuration(settings.getTimeToLiveSeconds()))
+							.access(secondsToDuration(settings.getTimeToIdleSeconds()))
+							.update(secondsToDuration(settings.getTimeToLiveSeconds()))
+							.build()
+					);
 
-		if (jCacheManager == null)
-		{
-			throw new RuntimeException("JCacheManager is null");
-		}
-
-		cacheSettings.forEach(item -> {
-					var config = CacheConfigurationBuilder.newCacheConfigurationBuilder(
-									Object.class, Object.class, ResourcePoolsBuilder.heap(item.getMaxEntriesLocalHeap()))
-							.withExpiry(ExpiryPolicyBuilder.expiry()
-									.create(secondsToDuration(item.getTimeToLiveSeconds()))
-									.access(secondsToDuration(item.getTimeToIdleSeconds()))
-									.update(secondsToDuration(item.getTimeToLiveSeconds()))
-									.build()
-							);
-
-					jCacheManager.createCache(item.getName(), Eh107Configuration.fromEhcacheCacheConfiguration(config));
-				}
-		);
-
-		var cacheManager = new EnhancedJCacheCacheManager();
-		cacheManager.setCacheDecorator(cacheDecorator.orElse(null));
-		cacheManager.setTransactionAware(cacheProperties.isTransactional());
-		cacheManager.setCacheManager(cacheManagerFactory.getObject());
-
-		return cacheManager;
+			return Eh107Configuration.fromEhcacheCacheConfiguration(config);
+		};
 	}
 
 	@Bean
 	public CacheSettingsProvider ehCacheSettingsProvider()
 	{
 		return new CacheSettingsProvider(EhCacheConfigParser.parse());
-	}
-
-	@Bean
-	public KeyGenerator keyGenerator()
-	{
-		return new SimpleKeyGenerator();
-	}
-
-	@Bean
-	public JCacheManagerFactoryBean cacheManagerFactory()
-	{
-		return new JCacheManagerFactoryBean();
 	}
 
 	private Duration secondsToDuration(int seconds)

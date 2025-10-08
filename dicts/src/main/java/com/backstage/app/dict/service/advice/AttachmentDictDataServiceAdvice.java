@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package com.backstage.app.dict.service.advice;
 
 import com.backstage.app.attachment.configuration.properties.AttachmentProperties;
 import com.backstage.app.attachment.service.AttachmentService;
+import com.backstage.app.attachment.utils.AttachmentBindingUtils;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
@@ -58,27 +59,37 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 	{
 		var attachmentService = attachmentServiceSupplier.get();
 
-		releaseAttachments(attachmentService, dict, oldItem);
-		bindAttachments(attachmentService, dict, item);
+		var oldAttachmentIds = getAttachmentIds(dict, oldItem);
+		var actualAttachmentIds = getAttachmentIds(dict, item);
+
+		if (!oldAttachmentIds.equals(actualAttachmentIds))
+		{
+			releaseAttachments(attachmentService, dict, oldItem, oldAttachmentIds);
+			bindAttachments(attachmentService, dict, item, actualAttachmentIds);
+		}
 	}
 
 	@Override
-	public void handleDelete(Dict dict, DictItem item, boolean deleted)
+	public void handleDelete(Dict dict, DictItem item)
 	{
-		if (deleted)
-		{
-			releaseAttachments(attachmentServiceSupplier.get(), dict, item);
-		}
-		else
-		{
-			bindAttachments(attachmentServiceSupplier.get(), dict, item);
-		}
+		releaseAttachments(attachmentServiceSupplier.get(), dict, item);
+	}
+
+	@Override
+	public void handleDeleteAll(Dict dict)
+	{
+		var attachmentService = attachmentServiceSupplier.get();
+
+		attachmentService.releaseAttachments(DICT_ITEM_ATTACHMENT_TYPE, AttachmentBindingUtils.buildObjectIdPattern(dict.getId()));
 	}
 
 	private void bindAttachments(AttachmentService attachmentService, Dict dict, DictItem item)
 	{
-		var attachmentIds = getAttachmentIds(dict, item);
+		bindAttachments(attachmentService, dict, item, getAttachmentIds(dict, item));
+	}
 
+	private void bindAttachments(AttachmentService attachmentService, Dict dict, DictItem item, Set<String> attachmentIds)
+	{
 		if (!attachmentIds.isEmpty())
 		{
 			attachmentService.bindAttachments(attachmentIds, DEFAULT_USER_ID, DICT_ITEM_ATTACHMENT_TYPE, getAttachmentOwnerId(dict, item));
@@ -87,8 +98,11 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 
 	private void releaseAttachments(AttachmentService attachmentService, Dict dict, DictItem item)
 	{
-		var attachmentIds = getAttachmentIds(dict, item);
+		releaseAttachments(attachmentService, dict, item, getAttachmentIds(dict, item));
+	}
 
+	private void releaseAttachments(AttachmentService attachmentService, Dict dict, DictItem item, Set<String> attachmentIds)
+	{
 		if (!attachmentIds.isEmpty())
 		{
 			attachmentService.releaseAttachments(DICT_ITEM_ATTACHMENT_TYPE, getAttachmentOwnerId(dict, item));
@@ -102,7 +116,7 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 
 	public static String getAttachmentOwnerId(String dictId, DictItem item)
 	{
-		return dictId + "_" + item.getId();
+		return AttachmentBindingUtils.buildComplexObjectId(dictId, item.getId());
 	}
 
 	private Set<String> getAttachmentIds(Dict dict, DictItem item)

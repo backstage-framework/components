@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,31 +20,39 @@ import com.backstage.app.database.model.Identity;
 import com.backstage.app.database.utils.StreamUtils;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.configuration.backend.provider.DictDataBackendProvider;
+import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
+import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
+import com.backstage.app.dict.model.dictitem.DictItemHistoryMap;
 import com.backstage.app.dict.service.advice.DictDataServiceAdvice;
 import com.backstage.app.dict.service.backend.DictDataBackend;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
 import com.backstage.app.dict.service.mapping.DictItemMappingService;
 import com.backstage.app.dict.service.query.QueryParser;
+import com.backstage.app.dict.service.query.ast.QueryExpression;
 import com.backstage.app.dict.service.validation.DictDataValidationService;
 import com.backstage.app.exception.ObjectNotFoundException;
+import com.backstage.app.utils.ListUtils;
 import com.backstage.app.utils.SecurityUtils;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.function.TriFunction;
+import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
+
+import static com.backstage.app.dict.constant.ServiceFieldConstants.*;
 
 @Service
 @RequiredArgsConstructor
@@ -64,8 +72,8 @@ public class DictDataService
 	@Getter
 	private final List<DictDataServiceAdvice> serviceAdviceList;
 
-	//TODO: Провести рефакторинг
-	// создать апи для getDictById с проверкой секьюрити и валидацией.
+	private final DictsProperties dictsProperties;
+
 	public DictItem getById(String dictId, String itemId)
 	{
 		return getById(dictId, itemId, SecurityUtils.getCurrentUserId());
@@ -86,7 +94,7 @@ public class DictDataService
 
 	public List<DictItem> getByIds(String dictId, List<String> ids, String userId)
 	{
-		return getByIds(dictId, ids, List.of("*"), userId);
+		return getByIds(dictId, ids, List.of(ALL_FIELDS), userId);
 	}
 
 	public List<DictItem> getByIds(String dictId, List<String> ids, List<String> selectFields, String userId)
@@ -101,7 +109,7 @@ public class DictDataService
 		dictPermissionService.checkViewPermission(dict, userId);
 		serviceAdviceList.forEach(it -> it.handleGetByIds(dict, ids));
 
-		var requiredFields = selectFields.stream()
+		var requiredFields = verifySelectedFieldNames(dict, selectFields).stream()
 				.map(dictFieldNameMappingService::mapDictFieldName)
 				.toList();
 
@@ -142,8 +150,27 @@ public class DictDataService
 		return getByFilter(dictId, selectFields, filtersQuery, pageable, SecurityUtils.getCurrentUserId());
 	}
 
-	//TODO: реализовать валидацию filtersQuery и маппинг в QueryExpression с учетом сопоставления констант с типом DictField
 	public Page<DictItem> getByFilter(String dictId, List<String> selectFields, String filtersQuery, Pageable pageable, String userId)
+	{
+		return fetchByFilter(dictId, selectFields, filtersQuery, pageable, userId,
+				(dict, requiredFields, query) ->
+						backend(dict).getByFilter(dict, requiredFields, queryParser.parse(filtersQuery), pageable));
+	}
+
+	public Stream<DictItem> streamByFilter(String dictId, List<String> selectFields, String filtersQuery)
+	{
+		return streamByFilter(dictId, selectFields, filtersQuery, SecurityUtils.getCurrentUserId());
+	}
+
+	public Stream<DictItem> streamByFilter(String dictId, List<String> selectFields, String filtersQuery, String userId)
+	{
+		return fetchByFilter(dictId, selectFields, filtersQuery, null, userId,
+				(dict, requiredFields, query) ->
+						backend(dict).streamByFilter(dict, requiredFields, query));
+	}
+
+	//TODO: реализовать валидацию filtersQuery и маппинг в QueryExpression с учетом сопоставления констант с типом DictField
+	private <T> T fetchByFilter(String dictId, List<String> selectFields, String filtersQuery, Pageable pageable, String userId, TriFunction<Dict, List<DictFieldName>, QueryExpression, T> itemProducer)
 	{
 		var dict = dictService.getById(dictId);
 
@@ -154,20 +181,55 @@ public class DictDataService
 				.filter(it -> it.getType() == DictFieldType.DICT)
 				.forEach(it -> dictPermissionService.checkViewPermission(dictService.getById(it.getDictRef().getDictId()), userId));
 
-		var internalSelectFields = selectFields.isEmpty()
-				? List.of("*")
-				: selectFields;
+		selectFields = verifySelectedFieldNames(dict, selectFields);
 
-		serviceAdviceList.forEach(it -> it.handleGetByFilter(dict, internalSelectFields, filtersQuery, pageable));
+		for (var advice : serviceAdviceList)
+		{
+			advice.handleGetByFilter(dict, selectFields, filtersQuery, pageable);
+		}
 
-		var requiredFields = internalSelectFields.stream()
+		var requiredFields = selectFields.stream()
 				.map(dictFieldNameMappingService::mapDictFieldName)
 				.toList();
 
 		dictDataValidationService.validateSelectFields(dict, requiredFields);
 		dictDataValidationService.validatePageable(dict, pageable);
 
-		return backend(dict).getByFilter(dict, requiredFields, queryParser.parse(filtersQuery), pageable);
+		return itemProducer.apply(dict, requiredFields, queryParser.parse(filtersQuery));
+	}
+
+	private List<String> verifySelectedFieldNames(Dict dict, List<String> selectedFieldNames)
+	{
+		List<String> result = new LinkedList<>();
+
+		if (selectedFieldNames != null && !selectedFieldNames.isEmpty())
+		{
+			if (selectedFieldNames.contains(ALL_FIELDS))
+			{
+				result = ListUtils.copyAndAdd(selectedFieldNames, dict.getFields().stream().map(DictField::getId).toList());
+				result.remove(ALL_FIELDS);
+			}
+			else
+			{
+				result.addAll(selectedFieldNames);
+			}
+		}
+		else
+		{
+			result.addAll(dict.getFields().stream().map(DictField::getId).toList());
+		}
+
+		if (!result.contains(ID))
+		{
+			result.add(ID);
+		}
+
+		if (!result.contains(VERSION))
+		{
+			result.add(VERSION);
+		}
+
+		return result;
 	}
 
 	public Page<String> getIdsByFilter(String dictId, String filtersQuery)
@@ -177,7 +239,7 @@ public class DictDataService
 
 	public Page<String> getIdsByFilter(String dictId, String filtersQuery, String userId)
 	{
-		return getByFilter(dictId, List.of("id"), filtersQuery, Pageable.unpaged(), userId)
+		return getByFilter(dictId, List.of(ID), filtersQuery, Pageable.unpaged(), userId)
 				.map(Identity::getId);
 	}
 
@@ -243,7 +305,7 @@ public class DictDataService
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		var dictItem = dictItemMappingService.mapDictItem(dictDataItem, dict, DictService.getDataFieldsByDict(dict));
+		var dictItem = dictItemMappingService.mapDictItem(dictDataItem, dict, dictService.getDataFieldsByDict(dict));
 
 		for (var advice : serviceAdviceList)
 		{
@@ -251,7 +313,7 @@ public class DictDataService
 		}
 
 		// TODO: оптимизировать второй вызов
-		dictItem = dictItemMappingService.mapDictItem(dictItem, dict, DictService.getDataFieldsByDict(dict));
+		dictItem = dictItemMappingService.mapDictItem(dictItem, dict, dictService.getDataFieldsByDict(dict));
 
 		dictDataValidationService.validateDictDataItem(dictId, dictItem, userId);
 
@@ -280,7 +342,7 @@ public class DictDataService
 		dictPermissionService.checkEditPermission(dict, userId);
 
 		var mappedDictItems = dictDataItems.stream()
-				.map(dataItem -> dictItemMappingService.mapDictItem(dataItem, dict, DictService.getDataFieldsByDict(dict)))
+				.map(dataItem -> dictItemMappingService.mapDictItem(dataItem, dict, dictService.getDataFieldsByDict(dict)))
 				.toList();
 
 		for (var advice : serviceAdviceList)
@@ -290,7 +352,7 @@ public class DictDataService
 
 		// TODO: оптимизировать второй вызов
 		mappedDictItems = mappedDictItems.stream()
-				.map(dictItem -> dictItemMappingService.mapDictItem(dictItem, dict, DictService.getDataFieldsByDict(dict)))
+				.map(dictItem -> dictItemMappingService.mapDictItem(dictItem, dict, dictService.getDataFieldsByDict(dict)))
 				.toList();
 
 		var dictItems = mappedDictItems.stream()
@@ -319,11 +381,19 @@ public class DictDataService
 		var item = getById(dictId, itemId, userId);
 
 		var dict = dictService.getById(dictId);
+		var dictDataFields = dictService.getDataFieldsByDict(dict);
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, DictService.getDataFieldsByDict(dict));
+		var mappedItem = dictItemMappingService.mapDictItem(dictDataItem, dict, dictDataFields);
 		mappedItem.setId(itemId);
+
+		var mappedData = mappedItem.getData();
+
+		dictDataFields.stream()
+				.map(DictField::getId)
+				.filter(Predicate.not(mappedData::containsKey))
+				.forEach(key -> mappedData.put(key, null));
 
 		for (var advice : serviceAdviceList)
 		{
@@ -331,12 +401,12 @@ public class DictDataService
 		}
 
 		// TODO: оптимизировать второй вызов
-		mappedItem = dictItemMappingService.mapDictItem(mappedItem, dict, DictService.getDataFieldsByDict(dict));
+		mappedItem = dictItemMappingService.mapDictItem(mappedItem, dict, dictDataFields);
 
 		dictDataValidationService.validateDictDataItem(dictId, mappedItem, userId);
 		dictDataValidationService.validateOptimisticLock(dictId, itemId, version, userId);
 
-		var dictItem = withUpdated(mappedItem, item);
+		var dictItem = applyChanges(dict, mappedItem, item);
 
 		var result = backend(dict).update(dict, itemId, dictItem, version);
 
@@ -346,59 +416,55 @@ public class DictDataService
 	}
 
 	@Transactional
-	public void delete(String dictId, String itemId, boolean deleted, long version)
+	public void updateByFilter(String dictId, String filtersQuery, Map<String, Object> updatedParams)
 	{
-		delete(dictId, itemId, deleted, null, SecurityUtils.getCurrentUserId(), version);
+		getByFilter(dictId, List.of(ALL_FIELDS), filtersQuery, Pageable.unpaged()).stream()
+				.forEach(dictItem -> {
+					dictItem.getData().putAll(updatedParams);
+
+					update(dictItem.getId(), buildDictDataItem(dictId, dictItem.getData()), dictItem.getVersion());
+				});
 	}
 
 	@Transactional
-	public void delete(String dictId, String itemId, boolean deleted, String reason, long version)
+	public void delete(String dictId, String itemId)
 	{
-		delete(dictId, itemId, deleted, reason, SecurityUtils.getCurrentUserId(), version);
+		delete(dictId, itemId, SecurityUtils.getCurrentUserId());
 	}
 
 	@Transactional
-	public void delete(String dictId, String itemId, boolean deleted, String reason, String userId, long version)
+	public void delete(String dictId, String itemId, String userId)
 	{
 		var item = getById(dictId, itemId, userId);
-
 		var dict = dictService.getById(dictId);
 
 		dictPermissionService.checkEditPermission(dict, userId);
 
-		serviceAdviceList.forEach(it -> it.handleDelete(dict, item, deleted));
+		dictDataValidationService.validateDelete(dict, itemId);
 
-		dictDataValidationService.validateOptimisticLock(dictId, itemId, version, userId);
+		serviceAdviceList.forEach(it -> it.handleDelete(dict, item));
 
-		var dictItem = withDeleted(deleted, reason, item);
-
-		backend(dict).delete(dict, dictItem);
+		backend(dict).delete(dict, item.getId());
 	}
 
 	@Transactional
-	public void deleteAll(String dictId, boolean deleted)
+	public void deleteAll(String dictId)
 	{
-		deleteAll(dictId, deleted, SecurityUtils.getCurrentUserId());
+		deleteAll(dictId, SecurityUtils.getCurrentUserId());
 	}
 
 	@Transactional
-	public void deleteAll(String dictId, boolean deleted, String userId)
+	public void deleteAll(String dictId, String userId)
 	{
 		var dict = dictService.getById(dictId);
 
 		dictPermissionService.checkEditPermission(dict, userId);
-		serviceAdviceList.forEach(it -> it.handleDeleteAll(dict, deleted));
 
-		var backend = backend(dictId);
+		dictDataValidationService.validateDeleteAll(dict);
 
-		var dictItems = backend.getByFilter(dict, List.of(new DictFieldName(null, "*")), queryParser.parse("deleted = null"), Pageable.unpaged())
-				.getContent()
-				.stream()
-				.peek(it -> dictDataValidationService.validateOptimisticLock(dictId, it.getId(), it.getVersion(), userId))
-				.map(it -> withDeleted(deleted, null, it))
-				.toList();
+		serviceAdviceList.forEach(it -> it.handleDeleteAll(dict));
 
-		backend.deleteAll(dict, dictItems);
+		backend(dictId).deleteAll(dict);
 	}
 
 	private DictDataBackend backend(String dictId)
@@ -421,72 +487,51 @@ public class DictDataService
 		dictItem.setVersion(1L);
 		dictItem.setCreated(LocalDateTime.now());
 		dictItem.setUpdated(LocalDateTime.now());
-		dictItem.setDeleted(null);
-		dictItem.setDeletionReason(null);
-
-		setupHistoryItemMap(dictItem);
 	}
 
-	private void setupHistoryItemMap(DictItem dictItem)
+	private DictItem applyChanges(Dict dict, DictItem updatedItem, DictItem sourceItem)
 	{
-		var historyItemMap = dictItem.getData()
+		var sourceData = sourceItem.getData();
+
+		Map<String, Object> updatedData = updatedItem.getData()
 				.entrySet()
 				.stream()
-				.filter(it -> !ServiceFieldConstants.ID.equals(it.getKey()))
-				.collect(HashMap::new, (m, e) -> m.put(e.getKey(), e.getValue()), HashMap<String, Object>::putAll);
+				.filter(entry -> !sourceData.containsKey(entry.getKey())
+						|| !Objects.equals(sourceData.get(entry.getKey()), entry.getValue()))
+				.map(Map.Entry::getKey)
+				.map(key -> Pair.of(key, sourceData.get(key)))
+				.collect(HashMap::new,
+						(map, pair) -> map.put(pair.getKey(), pair.getValue()),
+						HashMap::putAll);
 
-		historyItemMap.put(ServiceFieldConstants.VERSION, dictItem.getVersion());
-		historyItemMap.put(ServiceFieldConstants.CREATED, dictItem.getCreated());
-		historyItemMap.put(ServiceFieldConstants.UPDATED, dictItem.getUpdated());
+		var historyMap = new DictItemHistoryMap(updatedData);
 
-		dictItem.setHistory(List.of(historyItemMap));
+		historyMap.put(ServiceFieldConstants.UPDATED, sourceItem.getUpdated());
+		historyMap.put(ServiceFieldConstants.VERSION, sourceItem.getVersion());
+
+		sourceItem.getHistory().add(historyMap);
+
+		rotateHistory(dict, sourceItem);
+
+		sourceItem.setData(updatedItem.getData());
+		sourceItem.setUpdated(LocalDateTime.now());
+		sourceItem.setVersion(sourceItem.getVersion() + 1L);
+
+		return sourceItem;
 	}
 
-	/**
-	 * Id - устанавливается в target по кейсу: создание item с предопределенным id {@link ServiceFieldConstants#serviceInsertableFields}
-	 */
-	private DictItem withUpdated(DictItem source, DictItem target)
+	private void rotateHistory(Dict dict, DictItem dictItem)
 	{
-		target.setId(source.getId() != null ? source.getId() : target.getId());
-		target.setData(source.getData());
-		target.setUpdated(LocalDateTime.now());
-		target.setVersion(target.getVersion() + 1L);
+		var historyLimit = dictsProperties.getMaxHistory();
 
-		var historyMap = new HashMap<>(target.getData());
-
-		historyMap.put(ServiceFieldConstants.UPDATED, target.getUpdated());
-		historyMap.put(ServiceFieldConstants.VERSION, target.getVersion());
-
-		target.getHistory().add(historyMap);
-
-		return target;
-	}
-
-	private DictItem withDeleted(boolean deleted, String reason, DictItem dictItem)
-	{
-		dictItem.setUpdated(LocalDateTime.now());
-		dictItem.setVersion(dictItem.getVersion() + 1L);
-
-		if (deleted)
+		if (dict.getMaxHistory() != null)
 		{
-			dictItem.setDeleted(LocalDateTime.now());
-			dictItem.setDeletionReason(StringUtils.isBlank(reason) ? null : reason);
-		}
-		else
-		{
-			dictItem.setDeleted(null);
-			dictItem.setDeletionReason(null);
+			historyLimit = dict.getMaxHistory();
 		}
 
-		var historyMap = new HashMap<String, Object>();
-
-		historyMap.put(ServiceFieldConstants.UPDATED, dictItem.getUpdated());
-		historyMap.put(ServiceFieldConstants.VERSION, dictItem.getVersion());
-		historyMap.put(ServiceFieldConstants.DELETED, dictItem.getDeleted());
-		historyMap.put(ServiceFieldConstants.DELETION_REASON, dictItem.getDeletionReason());
-
-		dictItem.getHistory().add(historyMap);
-
-		return dictItem;
+		if (historyLimit != null && historyLimit > 0 && historyLimit < dictItem.getHistory().size())
+		{
+			dictItem.setHistory(dictItem.getHistory().subList(dictItem.getHistory().size() - historyLimit, dictItem.getHistory().size()));
+		}
 	}
 }

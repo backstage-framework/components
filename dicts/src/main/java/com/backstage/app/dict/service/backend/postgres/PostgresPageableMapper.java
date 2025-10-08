@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -46,10 +46,15 @@ public class PostgresPageableMapper
 
 			return PostgresPageable.of(pageable.isPaged(), pageable.getPageNumber(), pageable.getPageSize(), pageable.getOffset(), postgresSort);
 		}
-		else
+
+		if (pageable.getSort().isSorted())
 		{
-			return PostgresPageable.UNPAGED;
+			var postgresSort = postgresSort(dictId, pageable.getSort());
+
+			return PostgresPageable.of(false, 0, 0, 0, postgresSort);
 		}
+
+		return PostgresPageable.UNPAGED;
 	}
 
 	private PostgresSort postgresSort(String dictId, Sort sort)

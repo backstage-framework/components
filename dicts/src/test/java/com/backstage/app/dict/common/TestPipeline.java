@@ -31,6 +31,7 @@ public class TestPipeline
 	public static final int POSTGRES_EXPORT = 100;
 	public static final int POSTGRES_INTERPRETER = 110;
 	public static final int POSTGRES_CSV_IMPORT = 120;
+	public static final int POSTGRES_TARGET_SCHEME = 128;
 
 	public static final int MONGO_STORAGE_MIGRATION = 130;
 	public static final int MONGO_DICT = 140;
@@ -43,6 +44,7 @@ public class TestPipeline
 	public static final int MONGO_EXPORT = 210;
 	public static final int MONGO_INTERPRETER = 220;
 	public static final int MONGO_CSV_IMPORT = 230;
+	public static final int MONGO_TARGET_SCHEME = 240;
 
 	public static final int DICT_GET_ALL_TEST = -100;
 	public static final int DICT_GET_BY_ID_TEST = -200;

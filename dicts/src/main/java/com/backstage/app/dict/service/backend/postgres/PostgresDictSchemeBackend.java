@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,7 +24,12 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictIndex;
-import com.backstage.app.dict.exception.dict.*;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
+import com.backstage.app.dict.domain.scheme.FieldNativeScheme;
+import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
+import com.backstage.app.dict.exception.dict.DictCreatedException;
+import com.backstage.app.dict.exception.dict.DictNotFoundException;
+import com.backstage.app.dict.exception.dict.DictUpdatedException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintCreatedException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintDeletedException;
 import com.backstage.app.dict.exception.dict.field.FieldUpdatedException;
@@ -42,6 +47,8 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -50,6 +57,8 @@ import java.util.stream.Collectors;
 @ConditionalOnEngine(PostgresEngine.POSTGRES)
 public class PostgresDictSchemeBackend extends AbstractPostgresBackend implements DictSchemeBackend
 {
+	public static final Set<DictFieldType> COMPLEX_FIELD_TYPES = Set.of(DictFieldType.JSON, DictFieldType.GEO_JSON);
+
 	private final DictsProperties dictsProperties;
 
 	private final DictBackend dictBackend;
@@ -61,20 +70,22 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	}
 
 	@Override
+	public void applyDdl()
+	{
+		var sql = "create schema if not exists %s".formatted(dictsProperties.getDdl().getScheme());
+
+		jdbc.update(sql, Map.of());
+	}
+
+	@Override
 	public Dict createDictScheme(Dict dict)
 	{
-		var created = transactionWithResult(() -> createdDictScheme(dict), dict.getId(), DictCreatedException::new);
-
-		addTransactionData(dict, true);
-
-		return created;
+		return transactionWithResult(() -> createdDictScheme(dict), dict.getId(), DictCreatedException::new);
 	}
 
 	@Override
 	public Dict updateDictScheme(Dict updatedDict)
 	{
-		addTransactionData(updatedDict, true);
-
 		var dictId = updatedDict.getId();
 
 		return transactionWithResult(() -> updatedDictScheme(dictId, updatedDict), dictId, DictUpdatedException::new);
@@ -89,7 +100,19 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	@Override
 	public void deleteDictSchemeById(String dictId)
 	{
-		transactionWithoutResult(() -> deleteScheme(dictId), dictId, DictDeletedException::new);
+		if (!existsDictSchemeById(dictId))
+		{
+			throw new DictNotFoundException(dictId);
+		}
+
+		Map<String, String> parameterMap = Map.of(
+				"scheme", dictsProperties.getDdl().getScheme(),
+				"dictId", wordMap(dictId).get(dictId).getQuotedIfKeyword()
+		);
+
+		var sql = sqlWithParameters("drop table ${scheme}.${dictId}", parameterMap);
+
+		jdbc.update(sql, new EmptySqlParameterSource());
 	}
 
 	@Override
@@ -107,41 +130,50 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	@Override
 	public DictField renameDictField(Dict dict, String oldFieldId, DictField field)
 	{
-		addTransactionData(dict, true);
-
 		return transactionWithResult(() -> renamedField(dict, oldFieldId, field), dict.getId(), oldFieldId, FieldUpdatedException::new);
 	}
 
 	@Override
 	public DictConstraint createConstraint(Dict dict, DictConstraint constraint)
 	{
-		addTransactionData(dict, true);
-
 		return transactionWithResult(() -> createdConstraint(dict, constraint), dict.getId(), ConstraintCreatedException::new);
 	}
 
 	@Override
 	public void deleteConstraint(Dict dict, String id)
 	{
-		addTransactionData(dict, true);
-
 		transactionWithoutResult(() -> deleteDictConstraint(dict, id), dict.getId(), id, ConstraintDeletedException::new);
 	}
 
 	@Override
 	public DictIndex createIndex(Dict dict, DictIndex index)
 	{
-		addTransactionData(dict, true);
-
 		return transactionWithResult(() -> createdIndex(dict, index), dict.getId(), IndexCreatedException::new);
 	}
 
 	@Override
 	public void deleteIndex(Dict dict, String id)
 	{
-		addTransactionData(dict, true);
-
 		transactionWithoutResult(() -> deleteDictIndex(id), dict.getId(), id, IndexDeletedException::new);
+	}
+
+	@Override
+	public DictNativeScheme getNativeScheme(Dict dict)
+	{
+		var fieldIds = dict.getFieldIds();
+		var wordMap = wordMap(fieldIds, dict.getId());
+
+		var tableId = wordMap.get(dict.getId())
+				.getQuotedIfKeyword();
+
+		var fullTableId = "%s.%s".formatted(dictsProperties.getDdl().getScheme(), tableId);
+
+		return DictNativeScheme.builder()
+				.dictId(dict.getId())
+				.engine(dict.getEngine())
+				.tableId(fullTableId)
+				.fields(getFieldsNativeScheme(tableId, dict.getFields(), wordMap))
+				.build();
 	}
 
 	private Dict createdDictScheme(Dict dict)
@@ -234,8 +266,11 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 				})
 				.toList();
 
+		var alterFieldNullabilityOperations = getAlterFieldNullabilityOperations(updatedDict, actualDict, updatedWordMap);
+
 		operations.addAll(addColumnOperations);
 		operations.addAll(dropColumnOperations);
+		operations.addAll(alterFieldNullabilityOperations);
 
 		jdbc.update(String.join(";", operations), new EmptySqlParameterSource());
 
@@ -258,23 +293,6 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		);
 
 		var sql = sqlWithParameters("alter table ${scheme}.${oldDictId} rename to ${newDictId}", parameterMap);
-
-		jdbc.update(sql, new EmptySqlParameterSource());
-	}
-
-	private void deleteScheme(String dictId)
-	{
-		if (!existsDictSchemeById(dictId))
-		{
-			throw new DictNotFoundException(dictId);
-		}
-
-		Map<String, String> parameterMap = Map.of(
-				"scheme", dictsProperties.getDdl().getScheme(),
-				"dictId", wordMap(dictId).get(dictId).getQuotedIfKeyword()
-		);
-
-		var sql = sqlWithParameters("drop table ${scheme}.${dictId}", parameterMap);
 
 		jdbc.update(sql, new EmptySqlParameterSource());
 	}
@@ -392,14 +410,15 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		{
 			case INTEGER -> "bigint";
 			case DECIMAL -> "numeric";
-			case STRING, DICT, ENUM, ATTACHMENT, GEO_JSON -> "text"; //TODO: рассмотреть varchar с max ограничением символов на уровне движка БД
+			case STRING, DICT, ENUM, ATTACHMENT -> "text"; //TODO: рассмотреть varchar с max ограничением символов на уровне движка БД
 			case BOOLEAN -> "boolean";
 			case DATE -> "date";
 			case TIMESTAMP -> "timestamp";
 			case JSON -> "jsonb default '%s'::jsonb".formatted(field.isMultivalued() ? "[]" : "{}");
+			case GEO_JSON -> "jsonb%1$s default %2$s".formatted(field.isMultivalued() ? "[]" : "", field.isMultivalued() ? "array[]::jsonb[]" : "'{}'");
 		};
 
-		if (field.isMultivalued() && !DictFieldType.JSON.equals(field.getType()))
+		if (field.isMultivalued() && !COMPLEX_FIELD_TYPES.contains(field.getType()))
 		{
 			singleType += "[]";
 		}
@@ -410,5 +429,69 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		}
 
 		return singleType;
+	}
+
+	private List<FieldNativeScheme> getFieldsNativeScheme(String tableId, List<DictField> fields, Map<String, PostgresWord> wordMap)
+	{
+		return fields.stream()
+				.map(field -> getFieldNativeScheme(tableId, field, wordMap))
+				.toList();
+	}
+
+	private FieldNativeScheme getFieldNativeScheme(String tableId, DictField field, Map<String, PostgresWord> wordMap)
+	{
+		var fieldId = field.getId();
+
+		var columnId = wordMap.get(fieldId)
+				.getQuotedIfKeyword();
+
+		return FieldNativeScheme.builder()
+				.fieldId(fieldId)
+				.columnId(columnId)
+				.fullColumnId("%s.%s".formatted(tableId, columnId))
+				.nativeType(computeDefinitionType(field))
+				.build();
+	}
+
+	private List<String> getAlterFieldNullabilityOperations(Dict updatedDict, Dict actualDict, Map<String, PostgresWord> updatedWordMap)
+	{
+		var actualFieldById = actualDict.getFields()
+				.stream()
+				.collect(Collectors.toMap(DictField::getId, Function.identity()));
+
+		var schemeName = dictsProperties.getDdl().getScheme();
+		var tableName = updatedWordMap.get(updatedDict.getId()).getQuotedIfKeyword();
+
+		return updatedDict.getFields()
+				.stream()
+				.filter(it -> isFieldNullabilityUpdated(it, actualFieldById))
+				.map(it -> buildChangeNullabilityQuery(it, schemeName, tableName, updatedWordMap))
+				.toList();
+	}
+
+	private boolean isFieldNullabilityUpdated(DictField updatedField, Map<String, DictField> actualFieldById)
+	{
+		var actualField = actualFieldById.get(updatedField.getId());
+
+		if (actualField == null)
+		{
+			return false;
+		}
+
+		return updatedField.isRequired() != actualField.isRequired();
+	}
+
+	private String buildChangeNullabilityQuery(DictField field, String schemeName, String tableName,
+	                                           Map<String, PostgresWord> updatedWordMap)
+	{
+		var nullabilityOperator = field.isRequired() ? "set" : "drop";
+
+		return "alter table %s.%s alter column %s %s not null"
+				.formatted(
+						schemeName,
+						tableName,
+						updatedWordMap.get(field.getId()).getQuotedIfKeyword(),
+						nullabilityOperator
+				);
 	}
 }

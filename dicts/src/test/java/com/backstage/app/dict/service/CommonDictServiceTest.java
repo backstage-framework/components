@@ -18,9 +18,12 @@ package com.backstage.app.dict.service;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
+import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.*;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
-import com.backstage.app.dict.exception.dict.DictDeletedException;
+import com.backstage.app.dict.exception.dict.DictException;
+import com.backstage.app.dict.exception.dict.DictNotFoundException;
+import com.backstage.app.dict.service.backend.mongo.MongoDictBackend;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,8 +33,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import static com.backstage.app.dict.constant.ServiceFieldConstants.ID;
-import static com.backstage.app.dict.constant.ServiceFieldConstants._ID;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CommonDictServiceTest extends CommonTest
@@ -47,9 +48,9 @@ public class CommonDictServiceTest extends CommonTest
 	{
 		var deleted = createNewDict(dictId);
 
-		dictService.delete(deleted.getId(), true);
+		dictService.delete(deleted.getId());
 
-		assertThrows(DictDeletedException.class, () -> dictService.getById(deleted.getId()));
+		assertThrows(DictNotFoundException.class, () -> dictService.getById(deleted.getId()));
 	}
 
 	protected void createDict(String dictId)
@@ -63,12 +64,13 @@ public class CommonDictServiceTest extends CommonTest
 		var existsCorrectedServiceFields = actual.getFields()
 				.stream()
 				.map(DictField::getId)
-				.anyMatch(it -> it.equals(ID));
+				.anyMatch(it -> it.equals(ServiceFieldConstants.ID));
 
+		// На уровне домена не должно быть ключей, специфичных для конкретного хранилища
 		var existsUncorrectedServiceFields = actual.getFields()
 				.stream()
 				.map(DictField::getId)
-				.anyMatch(it -> it.equals(_ID));
+				.anyMatch(it -> it.equals(MongoDictBackend._ID));
 
 		var stringField = actual.getFields()
 				.stream()
@@ -80,18 +82,16 @@ public class CommonDictServiceTest extends CommonTest
 		assertFalse(existsUncorrectedServiceFields);
 		assertEquals(CommonTest.STRING_DEFAULT_VALUE, stringField.getDefaultValue());
 
-		dictService.delete(expected.getId(), true);
+		dictService.delete(expected.getId());
 	}
 
 	protected void updateDict(String dictId)
 	{
-		var updateDict = createNewDict(dictId);
+		var updateDict = createNewDict(dictId).copy();
 
 		updateDict.setName("updated_" + updateDict.getId());
 
 		updateDict.setIndexes(List.of(buildIndex(dictId, "stringField", "integerField"), buildIndex(dictId, "doubleField")));
-
-		var fields = new ArrayList<>(withoutServiceFields(updateDict.getFields()));
 
 		var newFieldId = "field_" + updateDict.getId();
 
@@ -106,11 +106,8 @@ public class CommonDictServiceTest extends CommonTest
 				.defaultValue(STRING_DEFAULT_VALUE)
 				.build();
 
-		fields.add(field);
-
-		fields.removeIf(it -> StringUtils.equals(it.getId(), "integerField"));
-
-		updateDict.setFields(fields);
+		updateDict.getFields().add(field);
+		updateDict.getFields().removeIf(it -> StringUtils.equals(it.getId(), "integerField"));
 
 		var expected = dictService.update(updateDict.getId(), updateDict);
 
@@ -140,7 +137,7 @@ public class CommonDictServiceTest extends CommonTest
 		assertTrue(noneExistsDroppedFieldsConstraint);
 		assertEquals(CommonTest.STRING_DEFAULT_VALUE, newField.getDefaultValue());
 
-		dictService.delete(updateDict.getId(), true);
+		dictService.delete(updateDict.getId());
 	}
 
 	protected void renameDictField(String dictId)
@@ -181,10 +178,10 @@ public class CommonDictServiceTest extends CommonTest
 		assertTrue(successRenameFieldIndex);
 		assertTrue(successRenameFieldConstraint);
 
-		dictService.delete(actualDict.getId(), true);
+		dictService.delete(actualDict.getId());
 	}
 
-	protected void createAlreadyExistsDict(String dictId)
+	protected void createAlreadyExistingDict(String dictId)
 	{
 		var d = createNewDict(dictId);
 
@@ -192,7 +189,7 @@ public class CommonDictServiceTest extends CommonTest
 
 		assertThrows(DictAlreadyExistsException.class, () -> dictService.create(alreadyExistsDict));
 
-		dictService.delete(d.getId(), true);
+		dictService.delete(d.getId());
 	}
 
 	protected void createWithUUIDDictFieldIds()
@@ -214,36 +211,23 @@ public class CommonDictServiceTest extends CommonTest
 	{
 		var expected = createNewDict(dictId);
 
-		dictService.delete(expected.getId(), true);
+		dictService.delete(expected.getId());
 
-		assertThrows(DictDeletedException.class, () -> dictService.getById(expected.getId()));
+		assertThrows(DictNotFoundException.class, () -> dictService.getById(expected.getId()));
 	}
 
 	protected void deleteDictWithAnotherEngine(String dictId, DictEngine engine)
 	{
 		var expected = createNewDict(dictId, engine);
 
-		dictService.delete(expected.getId(), true);
+		dictService.delete(expected.getId());
 
-		assertThrows(DictDeletedException.class, () -> dictService.getById(expected.getId()));
-	}
-
-	protected void restoreDeletedDict(String dictId)
-	{
-		var dict = createNewDict(dictId);
-
-		dictService.delete(dict.getId(), true);
-
-		dictService.delete(dict.getId(), false);
-
-		var restoredDict = dictService.getById(dict.getId());
-
-		assertNull(restoredDict.getDeleted());
+		assertThrows(DictNotFoundException.class, () -> dictService.getById(expected.getId()));
 	}
 
 	protected void createDictIndex(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getIndexes().size() + 1;
 
@@ -255,20 +239,25 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
+		// Создание справочника + создание индекса
+		expectedDict.setVersion(2L);
+
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getIndexes().size());
 
-		dictService.delete(expectedDict.getId(), true);
+		dictService.delete(expectedDict.getId());
 	}
 
 	protected void deleteDictIndex(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var index = dictService.createIndex(expectedDict.getId(), buildIndex(expectedDict.getId(), "doubleField"));
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getIndexes().size() - 1;
 
+		// Создание справочника + создание индекса + удаление индекса
+		expectedDict.setVersion(3L);
 		dictService.deleteIndex(expectedDict.getId(), index.getId());
 
 		var actualDict = dictService.getById(expectedDict.getId());
@@ -276,12 +265,12 @@ public class CommonDictServiceTest extends CommonTest
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getIndexes().size());
 
-		dictService.delete(expectedDict.getId(), true);
+		dictService.delete(expectedDict.getId());
 	}
 
 	protected void createDictConstraint(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getConstraints().size() + 1;
 
@@ -292,15 +281,18 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
+		// Создание справочника + создание констрэинта
+		expectedDict.setVersion(2L);
+
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getConstraints().size());
 
-		dictService.delete(expectedDict.getId(), true);
+		dictService.delete(expectedDict.getId());
 	}
 
 	protected void deleteDictConstraint(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var constraint = dictService.createConstraint(expectedDict.getId(), buildConstraint(expectedDict.getId(), "integerField"));
 
@@ -310,15 +302,18 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
+		// Создание справочника + создание констрэинта + удаление констрэинта
+		expectedDict.setVersion(3L);
+
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getConstraints().size());
 
-		dictService.delete(expectedDict.getId(), true);
+		dictService.delete(expectedDict.getId());
 	}
 
 	protected void createDictEnum(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var expectedSize = dictService.getById(expectedDict.getId()).getEnums().size() + 1;
 
@@ -327,20 +322,23 @@ public class CommonDictServiceTest extends CommonTest
 
 		expectedDict.setEnums(enums);
 
+		// Создание справочника + создание енама
+		expectedDict.setVersion(2L);
+
 		var actualDict = dictService.getById(expectedDict.getId());
 
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getEnums().size());
 
-		dictService.delete(expectedDict.getId(), true);
+		dictService.delete(expectedDict.getId());
 	}
 
 	protected void updateDictEnum(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var enums = new ArrayList<>(expectedDict.getEnums());
-		var dictEnum = dictService.createEnum(expectedDict.getId(), buildEnum(expectedDict.getId()));
+		var dictEnum = dictService.createEnum(expectedDict.getId(), buildEnum(expectedDict.getId())).copy();
 		enums.add(dictEnum);
 
 		expectedDict.setEnums(enums);
@@ -349,15 +347,18 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actual = dictService.updateEnum(expectedDict.getId(), dictEnum);
 
+		// Создание справочника + создание енама + обновление енама
+		expectedDict.setVersion(3L);
+
 		assertEquals(expectedDict, dictService.getById(expectedDict.getId()));
 		assertEquals(dictEnum.getName(), actual.getName());
 
-		dictService.delete(expectedDict.getId(), true);
+		dictService.delete(expectedDict.getId());
 	}
 
 	protected void deleteDictEnum(String dictId)
 	{
-		var expectedDict = createNewDict(dictId);
+		var expectedDict = createNewDict(dictId).copy();
 
 		var dictEnum = dictService.createEnum(expectedDict.getId(), buildEnum(expectedDict.getId()));
 
@@ -367,9 +368,17 @@ public class CommonDictServiceTest extends CommonTest
 
 		var actualDict = dictService.getById(expectedDict.getId());
 
+		// Создание справочника + создание енама + удаление енама
+		expectedDict.setVersion(3L);
+
 		assertEquals(expectedDict, actualDict);
 		assertEquals(expectedSize, actualDict.getEnums().size());
 
-		dictService.delete(expectedDict.getId(), true);
+		dictService.delete(expectedDict.getId());
+	}
+
+	protected void deleteDictWithActiveReference()
+	{
+		assertThrows(DictException.class, () -> dictService.delete("objects"));
 	}
 }

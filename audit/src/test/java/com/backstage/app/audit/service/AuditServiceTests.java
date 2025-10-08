@@ -32,8 +32,7 @@ import org.springframework.data.domain.Pageable;
 import java.util.List;
 import java.util.stream.Stream;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class AuditServiceTests extends AbstractTests
@@ -53,7 +52,11 @@ public class AuditServiceTests extends AbstractTests
 				AuditEventBuilder.create(TestEventTypes.EVENT_TYPE_2, TestData.USER_1_ID, TestData.ADMIN_ID),
 				AuditEventBuilder.create(TestEventTypes.EVENT_TYPE_1, TestData.USER_1_ID, TestData.ADMIN_ID),
 				AuditEventBuilder.create(TestData.TYPE_1, TestData.ADMIN_ID),
-				AuditEventBuilder.create(TestData.TYPE_2, TestData.ADMIN_ID, TestData.ADMIN_ID))
+				AuditEventBuilder.create(TestData.TYPE_2, TestData.ADMIN_ID, TestData.ADMIN_ID),
+				AuditEventBuilder.create(TestEventTypes.EVENT_TYPE_4, TestData.TYPE_4)
+						.withField(TestData.TYPE_4_FIELD_KEY, TestData.TYPE_4_FIELD_OLD_VALUE, TestData.TYPE_4_FIELD_NEW_VALUE)
+						.withProperty(TestData.TYPE_4_PROPERTY_KEY, TestData.TYPE_4_PROPERTY_VALUE)
+				)
 				.map(AuditEventBuilder::build)
 				.forEach(auditService::log);
 
@@ -61,7 +64,7 @@ public class AuditServiceTests extends AbstractTests
 
 		var actual = auditService.getByFilter(AuditFilter.builder().build(), Pageable.unpaged());
 
-		assertEquals(7, actual.getTotalElements());
+		assertEquals(8, actual.getTotalElements());
 	}
 
 	@AfterAll
@@ -75,7 +78,7 @@ public class AuditServiceTests extends AbstractTests
 	{
 		var actual = auditService.getByFilter(AuditFilter.builder().build(), Pageable.unpaged());
 
-		assertEquals(7, actual.getTotalElements());
+		assertEquals(8, actual.getTotalElements());
 	}
 
 	@Test
@@ -157,11 +160,31 @@ public class AuditServiceTests extends AbstractTests
 		assertEquals(1, actual.size());
 	}
 
+	@Test
+	public void getByFilter_WithPropertiesAndFields()
+	{
+		var testFilter = AuditFilter.builder()
+				.objectId(TestData.TYPE_4)
+				.types(List.of(TestEventTypes.EVENT_TYPE_4.name()))
+				.build();
+
+		var audits = auditService.getByFilter(testFilter,  Pageable.unpaged());
+
+		assertEquals(1, audits.getTotalElements());
+
+		var audit = audits.getContent()
+				.get(0);
+
+		assertEquals(1, audit.getProperties().getFields().size());
+		assertEquals(1, audit.getProperties().getProperties().size());
+	}
+
 	enum TestEventTypes
 	{
 		EVENT_TYPE_1,
 		EVENT_TYPE_2,
 		EVENT_TYPE_3,
+		EVENT_TYPE_4
 	}
 
 	interface TestData
@@ -171,5 +194,11 @@ public class AuditServiceTests extends AbstractTests
 		String ADMIN_ID = "admin_id";
 		String TYPE_1 = "TYPE_1";
 		String TYPE_2 = "TYPE_2";
+		String TYPE_4 = "TYPE_4";
+		String TYPE_4_FIELD_KEY = "TYPE_4_FIELD_KEY";
+		String TYPE_4_FIELD_OLD_VALUE = "TYPE_4_FIELD_OLD_VALUE";
+		String TYPE_4_FIELD_NEW_VALUE = "TYPE_4_FIELD_NEW_VALUE";
+		String TYPE_4_PROPERTY_KEY = "TYPE_4_PROPERTY_KEY";
+		String TYPE_4_PROPERTY_VALUE = "TYPE_4_PROPERTY_VALUE";
 	}
 }

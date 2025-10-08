@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -24,6 +24,10 @@ import com.backstage.app.dict.service.ddl.ast.expression.table.CreateIndexExpres
 import com.backstage.app.dict.service.ddl.ast.expression.table.CreateTable;
 import com.backstage.app.dict.service.ddl.ast.expression.table.DeleteIndexExpression;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.*;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.AlterTableColumn;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetDefaultValueColumnOperation;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetNotNullColumnOperation;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetParameterColumnOperation;
 import com.backstage.app.dict.service.ddl.ast.value.*;
 import com.backstage.app.dict.service.query.ast.Predicate;
 import org.jparsec.Parser;
@@ -157,22 +161,23 @@ public class SqlParser
 
 	final Parser<SetTableParameterOperation> ALTER_TABLE_PARAMETER_EXPR = Parsers.sequence(
 			term("set").next(TABLE_PARAMETER),
-			term("=").next(Parsers.or(STRING_VALUE, NULL_VALUE.map((v) -> new StringValue(null)))),
+			term("=").next(VALUE),
 			SetTableParameterOperation::new);
 
 	final Parser<ColumnParameter> COLUMN_PARAMETER = ID.map(id -> ColumnParameter.fromString(id.getName()));
 
-	final Parser<AlterTableColumnOperation> ALTER_COLUMN_PARAMETER_EXPR = Parsers.or(
-			Parsers.sequence(
-					phrase("alter", "column").next(ID),
-					phrase("set", "default").retn(ColumnParameter.DEFAULT_VALUE),
-					VALUE,
-					AlterTableColumnOperation::new),
-			Parsers.sequence(
-					phrase("alter", "column").next(ID),
-					term("set").next(COLUMN_PARAMETER),
-					term("=").next(VALUE),
-					AlterTableColumnOperation::new)
+	final Parser<AlterTableColumn> ALTER_TABLE_COLUMN_EXPR = Parsers.sequence(
+			phrase("alter", "column").next(ID),
+			Parsers.or(
+					phrase("drop", "not", "null").retn(new SetNotNullColumnOperation(false)),
+					phrase("set", "not", "null").retn(new SetNotNullColumnOperation(true)),
+					phrase("set", "default").next(VALUE).map(SetDefaultValueColumnOperation::new),
+					Parsers.sequence(
+							term("set").next(COLUMN_PARAMETER),
+							term("=").next(VALUE),
+							SetParameterColumnOperation::new)
+			),
+			AlterTableColumn::new
 	);
 
 	final Parser<RenameColumnOperation> RENAME_COLUMN_EXPR = Parsers.sequence(
@@ -185,7 +190,7 @@ public class SqlParser
 			Parsers.or(
 					ADD_TABLE_COLUMN_EXPR, DROP_TABLE_COLUMN_EXPR, ALTER_TABLE_PARAMETER_EXPR,
 					RENAME_COLUMN_EXPR, ADD_TABLE_CONSTRAINT_EXPR, DROP_TABLE_CONSTRAINT_EXPR,
-					ADD_ENUM_VALUE_EXPR, DROP_ENUM_EXPR, ALTER_COLUMN_PARAMETER_EXPR),
+					ADD_ENUM_VALUE_EXPR, DROP_ENUM_EXPR, ALTER_TABLE_COLUMN_EXPR),
 			AlterTable::new);
 
 	final Parser<Expression> INSERT_EXPR = Parsers.sequence(

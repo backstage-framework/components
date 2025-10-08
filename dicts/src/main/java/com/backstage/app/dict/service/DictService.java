@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 
 package com.backstage.app.dict.service;
 
+import com.backstage.app.cache.utils.proxy.ReadOnlyObjectProxyFactory;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.configuration.DictsConfiguration;
 import com.backstage.app.dict.configuration.backend.provider.DictSchemeBackendProvider;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.*;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintNotFoundException;
@@ -30,6 +32,7 @@ import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.index.IndexAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.index.IndexNotFoundException;
+import com.backstage.app.dict.service.advice.DictServiceAdvice;
 import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.DictSchemeBackend;
 import com.backstage.app.dict.service.lock.DictLockService;
@@ -45,7 +48,6 @@ import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -69,30 +71,49 @@ public class DictService
 
 	private final DictItemMappingService dictItemMappingService;
 
+	private final List<DictServiceAdvice> serviceAdviceList;
+
 	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICTS, sync = true)
 	public Dict getById(String id)
 	{
-		return dictBackend.getDictById(id);
+		serviceAdviceList.forEach(it -> it.handleGetById(id));
+
+		return getByIdInternal(id);
 	}
 
+	private Dict getByIdInternal(String id)
+	{
+		return ReadOnlyObjectProxyFactory.createProxy(dictBackend.getDictById(id));
+	}
+
+	// TODO: кэш
+	// TODO: добавить internal методы по аналогии с getById, чтобы не вызывать advice'ы на каждый внутренний вызов.
 	public List<Dict> getAll()
 	{
+		serviceAdviceList.forEach(DictServiceAdvice::handleGetAll);
+
 		return dictBackend.getAllDicts();
 	}
 
 	public boolean existsById(String id)
 	{
+		serviceAdviceList.forEach(it -> it.handleExistsById(id));
+
 		return dictBackend.existsById(id);
 	}
 
 	@Transactional
-	@CachePut(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dict.getId()")
-	public Dict create(Dict dict)
+	@CachePut(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#newDict.getId()")
+	public Dict create(Dict newDict)
 	{
-		if (existsById(dict.getId()))
+		if (existsById(newDict.getId()))
 		{
-			throw new DictAlreadyExistsException(dict.getId());
+			throw new DictAlreadyExistsException(newDict.getId());
 		}
+
+		var dict = incrementDictVersion(newDict);
+
+		serviceAdviceList.forEach(it -> it.handleBeforeCreate(dict));
 
 		if (dict.getEngine() == null)
 		{
@@ -101,18 +122,15 @@ public class DictService
 
 		dictValidationService.validateDictScheme(dict, this);
 
-		// TODO: убрать в валидацию
-		mapDefaultFieldValues(dict);
+		schemeBackend(dict).createDictScheme(dict);
 
-		var created = buildScheme(dict, new Dict());
-
-		schemeBackend(dict).createDictScheme(created);
-
-		var savedDict = dictBackend.saveDict(created);
+		var savedDict = dictBackend.saveDict(dict);
 
 		dictLockService.addLock(savedDict.getId());
 
-		return savedDict;
+		serviceAdviceList.forEach(it -> it.handleAfterCreate(dict));
+
+		return ReadOnlyObjectProxyFactory.createProxy(savedDict);
 	}
 
 	@Transactional
@@ -120,9 +138,18 @@ public class DictService
 	// сейчас обновляется схема только для DictField и DictEnum, последний только в монго.
 	@LockDictSchemaModifyOperation("#dictId")
 	@CachePut(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
+	@CacheEvict(
+			value = {
+					DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS,
+					DictsConfiguration.CACHE_NAME_DICT_SCHEMES
+			},
+			key = "#dictId"
+	)
 	public Dict update(String dictId, Dict dict)
 	{
-		var actualDict = getById(dictId);
+		var actualDict = getByIdInternal(dictId);
+
+		serviceAdviceList.forEach(it -> it.handleBeforeUpdate(actualDict, dict));
 
 		//TODO: разработать обновление engine через api
 		if (dict.getEngine() == null)
@@ -132,20 +159,22 @@ public class DictService
 
 		dictValidationService.validateDictScheme(dict, this);
 
-		// TODO: убрать в валидацию
-		mapDefaultFieldValues(dict);
-
 		var actualDictEngine = actualDict.getEngine();
 		var targetDictEngine = dict.getEngine();
 
-		var updated = buildScheme(dict, actualDict);
+		var updated = dict.copy();
+
+		updated.setId(actualDict.getId());
+		updated.setVersion(actualDict.getVersion());
+
+		updated = incrementDictVersion(updated);
 
 		if (actualDictEngine != null && !actualDictEngine.getName().equals(targetDictEngine.getName()))
 		{
 			dictStorageMigrationService.migrate(updated, actualDictEngine, targetDictEngine);
 		}
 
-		schemeBackend(dict).updateDictScheme(updated);
+		schemeBackend(updated).updateDictScheme(updated);
 
 		var updatedFieldIds = updated.getFields()
 				.stream()
@@ -165,24 +194,68 @@ public class DictService
 		updated.setIndexes(actualIndexes);
 		updated.setConstraints(actualConstraints);
 
-		return dictBackend.updateDict(updated);
+		var updateDict = dictBackend.updateDict(updated);
+
+		serviceAdviceList.forEach(it -> it.handleAfterUpdate(updateDict));
+
+		return updateDict;
+	}
+
+	private Dict incrementDictVersion(Dict dict)
+	{
+		dict = dict.copy();
+
+		addServiceFields(dict.getFields());
+
+		// TODO: убрать в валидацию
+		mapDefaultFieldValues(dict);
+
+		var version = dict.getVersion() == null
+				? 1L
+				: dict.getVersion() + 1;
+
+		dict.setVersion(version);
+
+		return dict;
 	}
 
 	@Transactional
 	//	TODO: История изменений схемы, даты создания/обновления схемы?
 	@LockDictSchemaModifyOperation("#dictId")
-	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
-	public void delete(String dictId, boolean deleted)
+	@CacheEvict(
+			value = {
+					DictsConfiguration.CACHE_NAME_DICTS,
+					DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS,
+					DictsConfiguration.CACHE_NAME_DICT_SCHEMES},
+			key = "#dictId"
+	)
+	public void delete(String dictId)
 	{
-		dictBackend.softDelete(dictId, deleted ? LocalDateTime.now() : null);
+		var dict = getByIdInternal(dictId);
+
+		serviceAdviceList.forEach(it -> it.handleDelete(dict));
+
+		dictValidationService.validateDrop(dictId);
+
+		schemeBackend(dict).deleteDictSchemeById(dictId);
+		dictBackend.deleteById(dictId);
 	}
 
 	@Transactional
 	@LockDictSchemaModifyOperation("#dictId")
-	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
+	@CacheEvict(
+			value = {
+					DictsConfiguration.CACHE_NAME_DICTS,
+					DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS,
+					DictsConfiguration.CACHE_NAME_DICT_SCHEMES
+			},
+			key = "#dictId"
+	)
 	public DictField renameField(String dictId, String fieldId, String newFieldId, String newFieldName)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
+
+		serviceAdviceList.forEach(it -> it.handleRenameField(dict, fieldId, newFieldId, newFieldName));
 
 		var field = dict.getFields()
 				.stream()
@@ -211,7 +284,7 @@ public class DictService
 
 		dictBackend.updateDict(dict);
 
-		return renamed;
+		return ReadOnlyObjectProxyFactory.createProxy(renamed);
 	}
 
 	@Transactional
@@ -219,7 +292,9 @@ public class DictService
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	public DictConstraint createConstraint(String dictId, DictConstraint constraint)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
+
+		serviceAdviceList.forEach(it -> it.handleCreateConstraint(dict, constraint));
 
 //		TODO: Валидация - в validationService
 		var dictConstraintAlreadyExistsCondition = dict.getConstraints()
@@ -247,7 +322,7 @@ public class DictService
 
 		dictBackend.updateDict(dict);
 
-		return created;
+		return ReadOnlyObjectProxyFactory.createProxy(created);
 	}
 
 	@Transactional
@@ -255,7 +330,9 @@ public class DictService
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	public void deleteConstraint(String dictId, String constraintId)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
+
+		serviceAdviceList.forEach(it -> it.handleDeleteConstraint(dict, constraintId));
 
 		var constraintNotFoundCondition = dict.getConstraints()
 				.stream()
@@ -284,7 +361,9 @@ public class DictService
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	public DictIndex createIndex(String dictId, DictIndex index)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
+
+		serviceAdviceList.forEach(it -> it.handleCreateIndex(dict, index));
 
 //		TODO: Валидация - в validationService
 		var indexAlreadyExistsCondition = dict.getIndexes()
@@ -312,7 +391,7 @@ public class DictService
 
 		dictBackend.updateDict(dict);
 
-		return created;
+		return ReadOnlyObjectProxyFactory.createProxy(created);
 	}
 
 	@Transactional
@@ -320,7 +399,9 @@ public class DictService
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	public void deleteIndex(String dictId, String indexId)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
+
+		serviceAdviceList.forEach(it -> it.handleDeleteIndex(dict, indexId));
 
 		var indexNotFoundCondition = dict.getIndexes()
 				.stream()
@@ -349,7 +430,9 @@ public class DictService
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	public DictEnum createEnum(String dictId, DictEnum dictEnum)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
+
+		serviceAdviceList.forEach(it -> it.handleCreateEnum(dict, dictEnum));
 
 		var exists = dict.getEnums()
 				.stream()
@@ -363,7 +446,7 @@ public class DictService
 //		TODO: Валидация - ни один из адапатеров самостоятельно не добавил enum
 		dict.getEnums().add(dictEnum);
 
-		return dictBackend.createEnum(dict, dictEnum);
+		return ReadOnlyObjectProxyFactory.createProxy(dictBackend.createEnum(dict, dictEnum));
 	}
 
 	@Transactional
@@ -371,17 +454,21 @@ public class DictService
 	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
 	public DictEnum updateEnum(String dictId, DictEnum dictEnum)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
 
-		return dictBackend.updateEnum(dict, dictEnum);
+		serviceAdviceList.forEach(it -> it.handleUpdateEnum(dict, dictEnum));
+
+		return ReadOnlyObjectProxyFactory.createProxy(dictBackend.updateEnum(dict, dictEnum));
 	}
 
 	@Transactional
 	@LockDictSchemaModifyOperation("#dictId")
-	@CacheEvict(value = DictsConfiguration.CACHE_NAME_DICTS, key = "#dictId")
+	@CacheEvict(value = {DictsConfiguration.CACHE_NAME_DICTS}, key = "#dictId")
 	public void deleteEnum(String dictId, String enumId)
 	{
-		var dict = getById(dictId);
+		var dict = incrementDictVersion(getByIdInternal(dictId));
+
+		serviceAdviceList.forEach(it -> it.handleDeleteEnum(dict, enumId));
 
 		var exists = dict.getEnums()
 				.stream()
@@ -403,14 +490,21 @@ public class DictService
 		dictBackend.deleteEnum(dict, enumId);
 	}
 
-	// TODO: кэш
-	public static List<DictField> getDataFieldsByDict(Dict dict)
+	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICT_DATA_FIELDS, key = "#dict.id")
+	public List<DictField> getDataFieldsByDict(Dict dict)
 	{
 		return dict.getFields()
 				.stream()
 				.filter(it -> !ServiceFieldConstants.getServiceSchemeFields().contains(it.getId()))
-//				FIXME: На данном этапе коллекция должна быть изменяемой
-				.collect(Collectors.toList());
+				.toList();
+	}
+
+	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICT_SCHEMES, sync = true)
+	public DictNativeScheme getNativeScheme(String dictId)
+	{
+		var dict = getByIdInternal(dictId);
+
+		return schemeBackend(dict).getNativeScheme(dict);
 	}
 
 	// TODO: кэш
@@ -422,25 +516,13 @@ public class DictService
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 	}
 
-	private Dict buildScheme(Dict source, Dict target)
-	{
-		addServiceFields(source.getFields());
-
-		target.setId(source.getId());
-		target.setName(source.getName());
-		target.setFields(source.getFields());
-		target.setViewPermission(source.getViewPermission());
-		target.setEditPermission(source.getEditPermission());
-		target.setDeleted(source.getDeleted());
-		target.setIndexes(source.getIndexes());
-		target.setConstraints(source.getConstraints());
-		target.setEngine(source.getEngine());
-
-		return target;
-	}
-
 	private void addServiceFields(List<DictField> dictFields)
 	{
+		if (dictFields.stream().anyMatch(f -> ServiceFieldConstants.ID.equals(f.getId())))
+		{
+			return;
+		}
+
 		dictFields.add(0, DictField.builder()
 				.id(ID)
 				.name("Идентификатор")
@@ -464,24 +546,6 @@ public class DictService
 						.name("Дата обновления")
 						.type(DictFieldType.TIMESTAMP)
 						.required(true)
-						.multivalued(false)
-						.build());
-
-		dictFields.add(
-				DictField.builder()
-						.id(DELETED)
-						.name("Дата удаления")
-						.type(DictFieldType.TIMESTAMP)
-						.required(false)
-						.multivalued(false)
-						.build());
-
-		dictFields.add(
-				DictField.builder()
-						.id(DELETION_REASON)
-						.name("Причина удаления")
-						.type(DictFieldType.STRING)
-						.required(false)
 						.multivalued(false)
 						.build());
 

@@ -3,7 +3,11 @@
 	<if condition='p("jsonOutput").equals("true")'>
 		<then>
 			<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-				<encoder class="ch.qos.logback.classic.encoder.JsonEncoder" />
+				<encoder class="ch.qos.logback.classic.encoder.JsonEncoder">
+					<withFormattedMessage>true</withFormattedMessage>
+					<withMessage>false</withMessage>
+					<withArguments>false</withArguments>
+				</encoder>
 			</appender>
 		</then>
 		<else>

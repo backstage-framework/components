@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,13 +30,10 @@ public enum DictItemColumnName
 	HISTORY("history"),
 	VERSION("version"),
 	CREATED("created"),
-	UPDATED("updated"),
-	DELETED("deleted"),
-	// TODO для dictId/dictFieldId/...Id Postgres адаптера, реализовать маппинг camelCase в snake_case
-	DELETION_REASON("deletionreason");
+	UPDATED("updated");
 
 	private final String name;
 
 	public static final Set<String> SERVICE_COLUMNS = Set.of(ID.getName(), HISTORY.getName(), VERSION.getName(),
-			CREATED.getName(), UPDATED.getName(), DELETED.getName(), DELETION_REASON.getName());
+			CREATED.getName(), UPDATED.getName());
 }

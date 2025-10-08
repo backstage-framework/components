@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@
 package com.backstage.app.cache.utils;
 
 import com.backstage.app.cache.utils.proxy.ReadOnlyObjectProxyFactory;
-import com.backstage.app.configuration.AppConfiguration;
 import com.backstage.app.exception.ObjectsNotFoundException;
+import com.backstage.app.utils.SpringContextUtils;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -30,6 +30,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -41,25 +42,20 @@ public class CacheUtils
 
 	private static final LoadingCache<String, Object> locks = CacheBuilder.newBuilder().build(CacheLoader.from(Object::new));
 
-	private static CacheManager defaultCacheManager = null;
+	private static final Supplier<CacheManager> defaultCacheManagerSupplier = SpringContextUtils.createBeanSupplier(CacheManager.class);
 
 	public static <T, S> List<T> getCachedItems(Collection<S> objectIds, Function<Collection<S>, Collection<T>> objectSource, String cacheName, Function<T, S> cacheKeyGenerator, Class<T> targetCass)
 	{
-		return getCachedItems(objectIds, objectSource, defaultCacheManager, cacheName, cacheKeyGenerator, targetCass, true);
+		return getCachedItems(objectIds, objectSource, defaultCacheManagerSupplier.get(), cacheName, cacheKeyGenerator, targetCass, true);
 	}
 
 	public static <T, S> List<T> getCachedItems(Collection<S> objectIds, Function<Collection<S>, Collection<T>> objectSource, String cacheName, Function<T, S> cacheKeyGenerator, Class<T> targetCass, boolean createProxy)
 	{
-		return getCachedItems(objectIds, objectSource, defaultCacheManager, cacheName, cacheKeyGenerator, targetCass, createProxy);
+		return getCachedItems(objectIds, objectSource, defaultCacheManagerSupplier.get(), cacheName, cacheKeyGenerator, targetCass, createProxy);
 	}
 
 	public static <T, S> List<T> getCachedItems(Collection<S> objectIds, Function<Collection<S>, Collection<T>> objectSource, CacheManager cacheManager, String cacheName, Function<T, S> cacheKeyGenerator, Class<T> targetCass, boolean createProxy)
 	{
-		if (defaultCacheManager == null)
-		{
-			defaultCacheManager = initCacheManager();
-		}
-
 		if (objectIds.isEmpty())
 		{
 			return Collections.emptyList();
@@ -149,19 +145,5 @@ public class CacheUtils
 				nonCachedItems.add(objectId);
 			}
 		}
-	}
-
-	private static CacheManager initCacheManager()
-	{
-		try
-		{
-			defaultCacheManager = AppConfiguration.getApplicationContext().getBean(CacheManager.class);
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException("no default cache manager detected", e);
-		}
-
-		return defaultCacheManager;
 	}
 }

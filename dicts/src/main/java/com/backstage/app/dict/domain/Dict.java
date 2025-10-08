@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,14 +16,15 @@
 
 package com.backstage.app.dict.domain;
 
+import com.backstage.app.cache.utils.proxy.ForceProxy;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -35,15 +36,19 @@ public class Dict
 
 	private String name;
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictField> fields = new ArrayList<>();
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictIndex> indexes = new ArrayList<>();
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictConstraint> constraints = new ArrayList<>();
 
+	@ForceProxy
 	@Builder.Default
 	private List<DictEnum> enums = new ArrayList<>();
 
@@ -51,7 +56,63 @@ public class Dict
 
 	private String editPermission;
 
-	private LocalDateTime deleted;
+	private Integer maxHistory;
 
 	private DictEngine engine;
+
+	private Long version;
+
+	public void setMaxHistory(Integer maxHistory)
+	{
+		if (maxHistory != null && maxHistory < 0)
+		{
+			throw new IllegalArgumentException("maxHistory must be >= 0");
+		}
+
+		this.maxHistory = maxHistory;
+	}
+
+	public List<String> getFieldIds()
+	{
+		return fields.stream()
+				.map(DictField::getId)
+				.toList();
+	}
+
+	public Dict copy()
+	{
+		List<DictField> fields = this.fields
+				.stream()
+				.map(DictField::copy)
+				.collect(Collectors.toList());
+
+		List<DictIndex> indexes = this.indexes
+				.stream()
+				.map(DictIndex::copy)
+				.collect(Collectors.toList());
+
+		List<DictConstraint> constraints = this.constraints
+				.stream()
+				.map(DictConstraint::copy)
+				.collect(Collectors.toList());
+
+		List<DictEnum> enums = this.enums
+				.stream()
+				.map(DictEnum::copy)
+				.collect(Collectors.toList());
+
+		return Dict.builder()
+				.id(id)
+				.name(name)
+				.fields(fields)
+				.indexes(indexes)
+				.constraints(constraints)
+				.enums(enums)
+				.viewPermission(viewPermission)
+				.editPermission(editPermission)
+				.version(version)
+				.engine(engine == null ? null : new DictEngine(engine.getName()))
+				.maxHistory(maxHistory)
+				.build();
+	}
 }

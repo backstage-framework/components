@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -18,7 +18,10 @@ package com.backstage.app.audit.service;
 
 import com.backstage.app.audit.model.domain.Audit;
 import com.backstage.app.audit.model.domain.AuditProperties;
+import com.backstage.app.audit.model.domain.AuditPropertiesField;
 import com.backstage.app.audit.model.dto.AuditEvent;
+import com.backstage.app.audit.model.dto.AuditEventField;
+import com.backstage.app.audit.model.dto.AuditEventProperty;
 import com.backstage.app.audit.model.other.AuditFilter;
 import com.backstage.app.audit.repository.AuditRepository;
 import com.backstage.app.database.configuration.properties.DDLProperties;
@@ -59,10 +62,7 @@ public class JpaAuditStore implements AuditStore
 		audit.setUserId(event.getUserId());
 		audit.setDate(DateUtils.toLocalDateTime(event.getDate()));
 		audit.setSuccess(event.isSuccess());
-		audit.setProperties(new AuditProperties());
-
-		audit.getProperties().getFields().addAll(event.getFields());
-		audit.getProperties().getProperties().addAll(event.getProperties());
+		audit.setProperties(buildAuditProperties(event));
 
 		auditRepository.save(audit);
 	}
@@ -129,4 +129,30 @@ public class JpaAuditStore implements AuditStore
 		return auditRepository.findAll(specification, pageable);
 	}
 
+	private AuditProperties buildAuditProperties(AuditEvent event)
+	{
+		var auditProperties = new AuditProperties();
+
+		var properties = event.getProperties()
+				.stream()
+				.collect(Collectors.toMap(
+						AuditEventProperty::getKey,
+						AuditEventProperty::getValue)
+				);
+
+		auditProperties.getProperties()
+				.putAll(properties);
+
+		var fields = event.getFields()
+				.stream()
+				.collect(Collectors.toMap(
+						AuditEventField::getName,
+						field -> new AuditPropertiesField(field.getOldValue(), field.getNewValue())
+				));
+
+		auditProperties.getFields()
+				.putAll(fields);
+
+		return auditProperties;
+	}
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,9 +16,9 @@
 
 package com.backstage.app.audit.model.other;
 
-import com.backstage.app.audit.model.domain.AuditPropertiesField;
-import com.backstage.app.audit.model.domain.AuditPropertiesProperty;
 import com.backstage.app.audit.model.dto.AuditEvent;
+import com.backstage.app.audit.model.dto.AuditEventField;
+import com.backstage.app.audit.model.dto.AuditEventProperty;
 
 import java.time.ZonedDateTime;
 
@@ -73,15 +73,15 @@ public class AuditEventBuilder
 	{
 		if (newValue == null && oldValue != null)
 		{
-			event.getFields().add(new AuditPropertiesField(name, oldValue, null));
+			event.getFields().add(new AuditEventField(name, oldValue, null));
 		}
 		else if (newValue != null && oldValue == null)
 		{
-			event.getFields().add(new AuditPropertiesField(name, null, newValue));
+			event.getFields().add(new AuditEventField(name, null, newValue));
 		}
 		else if (newValue != null && !newValue.equals(oldValue))
 		{
-			event.getFields().add(new AuditPropertiesField(name, oldValue, newValue));
+			event.getFields().add(new AuditEventField(name, oldValue, newValue));
 		}
 
 		return this;
@@ -102,7 +102,7 @@ public class AuditEventBuilder
 
 	public AuditEventBuilder withProperty(String key, String value)
 	{
-		event.getProperties().add(new AuditPropertiesProperty(key, value));
+		event.getProperties().add(new AuditEventProperty(key, value));
 
 		return this;
 	}

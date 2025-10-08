@@ -19,6 +19,7 @@ package com.backstage.app.dict.service;
 import com.backstage.app.dict.common.CommonTest;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictItem;
+import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.exception.migration.MigrationAppliedException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.TestInstance;
@@ -229,6 +230,47 @@ public class CommonClasspathMigrationServiceTest extends CommonTest
 
 		assertEquals("child", child);
 		assertEquals("parent", parent);
+	}
+
+	protected void migrateNotNullWithNullableInsert()
+	{
+		var dictId = withRandom("selfJoin_%s".formatted(TESTABLE_ENGINE_NAME));
+		var script = """
+						create table %1$s
+						(
+							name['name'] text,
+							nullableField['nullableField'] text
+						);
+
+						alter table %1$s alter column nullableField set not null;
+
+						insert into %1$s(name) values('Тест');
+						""".formatted(dictId);
+
+		var migration = new AbstractMap.SimpleEntry<>("notNullWithNullableInsert", script);
+
+		var exception = assertThrows(MigrationAppliedException.class, () -> classpathMigrationService.migrate(migration));
+		assertEquals(FieldValidationException.class, exception.getCause().getClass());
+	}
+
+	protected void migrateDroppedNotNullWithNullableInsert()
+	{
+		var dictId = withRandom("selfJoin_%s".formatted(TESTABLE_ENGINE_NAME));
+		var script = """
+						create table %1$s
+						(
+							name['name'] text,
+							nullableField['nullableField'] text not null
+						);
+
+						alter table %1$s alter column nullableField drop not null;
+
+						insert into %1$s(name) values('Тест');
+						""".formatted(dictId);
+
+		var migration = new AbstractMap.SimpleEntry<>("droppedNotNullInsert", script);
+
+		assertDoesNotThrow(() -> classpathMigrationService.migrate(migration));
 	}
 
 	private Map<String, String> buildCommitMap()

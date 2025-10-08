@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -49,9 +48,9 @@ public class DictDto
 	@Schema(description = "Название разрешения для изменения данных справочника")
 	private String editPermission;
 
-	@Schema(description = "Флаг удаления")
-	private LocalDateTime deleted;
-
 	@Schema(description = "Место хранения справочника")
 	private String engine;
+
+	@Schema(description = "Версия справочника, увеличивается при изменении схемы")
+	private Long version;
 }

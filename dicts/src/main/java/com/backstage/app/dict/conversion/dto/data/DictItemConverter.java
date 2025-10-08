@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -69,8 +69,6 @@ public class DictItemConverter extends AbstractConfigurableConverter<DictItem, D
 		target.setVersion(source.getVersion());
 		target.setCreated(source.getCreated());
 		target.setUpdated(source.getUpdated());
-		target.setDeleted(source.getDeleted());
-		target.setDeletionReason(source.getDeletionReason());
 
 		return target;
 	}

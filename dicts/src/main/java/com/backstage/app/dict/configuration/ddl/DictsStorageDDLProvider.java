@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -50,17 +50,12 @@ public class DictsStorageDDLProvider implements DDLProvider
 	@Override
 	public void update()
 	{
-		var firstInit = engines.stream()
-				.allMatch(it -> !it.dictExists() && !it.versionSchemeExists());
-
-		if (firstInit)
+		if (dictsProperties.getDdl().isEnabled())
 		{
 			var engine = engines.stream()
 					.filter(it -> StringUtils.equalsAny(it.getDictEngine().getName(), dictsProperties.getStorage()))
-					.toList()
-					.stream()
 					.findFirst()
-					.orElseThrow(() -> new EngineException("An engine equal to the engine from the storage property doesn't exists."));
+					.orElseThrow(() -> new EngineException("Cannot find engine with type '%s'.".formatted(dictsProperties.getStorage())));
 
 			engine.createDict();
 			engine.createVersionScheme();

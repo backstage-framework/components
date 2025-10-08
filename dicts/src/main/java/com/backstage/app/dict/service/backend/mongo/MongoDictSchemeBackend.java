@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,8 @@ import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictIndex;
+import com.backstage.app.dict.domain.scheme.DictNativeScheme;
+import com.backstage.app.dict.domain.scheme.FieldNativeScheme;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
@@ -57,6 +59,11 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	}
 
 	@Override
+	public void applyDdl()
+	{
+	}
+
+	@Override
 	public Dict createDictScheme(Dict dict)
 	{
 		var id = dict.getId();
@@ -68,15 +75,14 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 
 		addTransactionData(dict, true);
 
-		addMongoServiceFields(dict.getFields());
+		var mongoDict = dict.copy();
+		addMongoServiceFields(mongoDict.getFields());
 
-		mongoTemplate.createCollection(id, buildCollectionOptions(dict));
+		mongoTemplate.createCollection(id, buildCollectionOptions(mongoDict));
 
 //		TODO: Валидация индексов при создании
-		dict.getIndexes()
+		mongoDict.getIndexes()
 				.forEach(it -> mongoTemplate.indexOps(id).ensureIndex(buildIndex(it)));
-
-		convertMongoServiceFields(dict);
 
 		return dict;
 	}
@@ -86,15 +92,14 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		addTransactionData(updatedDict, true);
 
-		addMongoServiceFields(updatedDict.getFields());
+		var mongoDict = updatedDict.copy();
+		addMongoServiceFields(mongoDict.getFields());
 
 		var params = new LinkedHashMap<String, Object>();
-		params.put("collMod", updatedDict.getId());
-		params.put("validator", buildMongoJsonSchema(updatedDict).toDocument());
+		params.put("collMod", mongoDict.getId());
+		params.put("validator", buildMongoJsonSchema(mongoDict).toDocument());
 
 		mongoTemplate.executeCommand(new Document(params));
-
-		convertMongoServiceFields(updatedDict);
 
 		return updatedDict;
 	}
@@ -179,6 +184,33 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		mongoTemplate.indexOps(dict.getId()).dropIndex(id);
 	}
 
+	@Override
+	public DictNativeScheme getNativeScheme(Dict dict)
+	{
+		var fieldsNativeScheme = dict.getFields()
+				.stream()
+				.map(it -> getFieldNativeScheme(dict.getId(), it))
+				.toList();
+
+		return DictNativeScheme.builder()
+				.dictId(dict.getId())
+				.engine(dict.getEngine())
+				.tableId(dict.getId())
+				.fields(fieldsNativeScheme)
+				.build();
+	}
+
+	private static FieldNativeScheme getFieldNativeScheme(String tableId, DictField field)
+	{
+		return FieldNativeScheme.builder()
+				.fieldId(field.getId())
+				.columnId(field.getId())
+				.fullColumnId("%s.%s".formatted(tableId, field.getId()))
+//						FIXME: Заглушка. Необходимо определить, что считаем целевым типом - bson-тип, внутренние типы mongoDB или что-то третье
+				.nativeType(null)
+				.build();
+	}
+
 	private CollectionOptions buildCollectionOptions(Dict dict)
 	{
 		return CollectionOptions.empty()
@@ -204,7 +236,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		dict.getFields()
 				.stream()
 				.filter(DictField::isRequired)
-				.filter(not(it -> it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON))
+				.filter(not(it -> it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON || it.getType() == DictFieldType.GEO_JSON))
 				.forEach(it -> {
 					var property = getPropertyByDictField(it.getType(), it.getId());
 
@@ -239,9 +271,10 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 				{
 					case INTEGER -> int64(fieldId);
 					case DECIMAL -> decimal128(fieldId);
-					case STRING, DICT, ATTACHMENT, GEO_JSON -> string(fieldId);
+					case STRING, DICT, ATTACHMENT -> string(fieldId);
 					case BOOLEAN -> named(fieldId).ofType(new Type.JsonType("boolean"));
 					case DATE, TIMESTAMP -> date(fieldId);
+					case GEO_JSON -> object(fieldId);
 
 					default -> throw new RuntimeException("unsupported type: %s".formatted(type));
 				};
@@ -253,6 +286,6 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		dictFields.stream()
 				.filter(it -> it.getId().equals(ServiceFieldConstants.ID))
-				.forEach(it -> it.setId(ServiceFieldConstants._ID));
+				.forEach(it -> it.setId(MongoDictBackend._ID));
 	}
 }

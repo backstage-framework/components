@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@
 package com.backstage.app.dict.endpoint;
 
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
+import com.backstage.app.dict.configuration.conditional.ConditionalOnApi;
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.backstage.app.dict.service.DictDataService;
@@ -27,6 +28,7 @@ import com.backstage.app.dict.service.imp.ImportJsonService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@ConditionalOnApi
 @RestController
 @RequestMapping("/api/dicts")
 public class DictDataEndpoint<T extends DictItemDto> extends GenericDictDataEndpoint<DictItemDto>

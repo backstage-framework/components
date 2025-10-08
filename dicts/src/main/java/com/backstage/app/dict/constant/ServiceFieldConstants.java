@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,28 +20,23 @@ import lombok.Getter;
 
 import java.util.Set;
 
-@Deprecated
 public class ServiceFieldConstants
 {
+	public static final String ALL_FIELDS = "*";
+
 	public static final String ID = "id";
-	public static final String _ID = "_id";
 	public static final String HISTORY = "history";
 	public static final String CREATED = "created";
 	public static final String UPDATED = "updated";
-	public static final String DELETED = "deleted";
 	public static final String VERSION = "version";
-	public static final String DELETION_REASON = "deletionReason";
 
 	//	TODO: определиться с допустимостью использования поля id в рамках импортов и создания записей с предопределенным id
 	@Getter
-	private static final Set<String> serviceInsertableFields = Set.of(_ID, /*ID,*/ HISTORY, CREATED, UPDATED, DELETED,
-			DELETION_REASON, VERSION);
+	private static final Set<String> serviceInsertableFields = Set.of(HISTORY, CREATED, UPDATED, VERSION);
 
 	@Getter
-	private static final Set<String> serviceSchemeFields = Set.of(_ID, ID, HISTORY, CREATED, UPDATED, DELETED,
-			DELETION_REASON, VERSION);
+	private static final Set<String> serviceSchemeFields = Set.of(ID, HISTORY, CREATED, UPDATED, VERSION);
 
 	@Getter
-	private static final Set<String> serviceSchemaFieldsWithoutIds = Set.of(HISTORY, CREATED, UPDATED, DELETED,
-			DELETION_REASON, VERSION);
+	private static final Set<String> serviceSchemaFieldsWithoutIds = Set.of(HISTORY, CREATED, UPDATED, VERSION);
 }

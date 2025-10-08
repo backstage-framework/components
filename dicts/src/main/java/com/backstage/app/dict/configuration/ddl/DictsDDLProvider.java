@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,10 +17,15 @@
 package com.backstage.app.dict.configuration.ddl;
 
 import com.backstage.app.database.configuration.ddl.DDLConfiguration;
+import com.backstage.app.dict.constant.ServiceFieldConstants;
+import com.backstage.app.dict.domain.Dict;
+import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.VersionScheme;
 import com.backstage.app.dict.exception.migration.MigrationFileReadException;
 import com.backstage.app.dict.exception.migration.MigrationHasSameVersionException;
 import com.backstage.app.dict.exception.migration.MigrationProcessException;
+import com.backstage.app.dict.service.DictDataService;
+import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import com.backstage.app.dict.service.lock.DictLockInitializer;
 import com.backstage.app.dict.service.lock.DictLockService;
@@ -31,6 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.filefilter.DirectoryFileFilter;
 import org.apache.commons.io.filefilter.FalseFileFilter;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
@@ -39,10 +45,7 @@ import org.springframework.stereotype.Component;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.net.JarURLConnection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Spliterator;
-import java.util.Spliterators;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
@@ -56,7 +59,7 @@ import java.util.stream.StreamSupport;
 @Component
 @Order(DDLConfiguration.DDL_PRECEDENCE_APP)
 @RequiredArgsConstructor
-public class DictsDDLProvider
+public class DictsDDLProvider implements InitializingBean
 {
 	public static final String SEPARATOR = "/";
 	public static final String SQL_EXTENSION = "sql";
@@ -65,7 +68,16 @@ public class DictsDDLProvider
 	private final DictLockInitializer dictLockInitializer;
 	private final ClasspathMigrationService classpathMigrationService;
 
+	private final DictService dictService;
+	private final DictDataService dictDataService;
+
 	private final VersionSchemeBackend versionSchemeBackend;
+
+	@Override
+	public void afterPropertiesSet()
+	{
+		update();
+	}
 
 	//TODO: провести декомпозицию и рефакторинг метода
 	public void update()
@@ -127,15 +139,28 @@ public class DictsDDLProvider
 			{
 				var versions = migrationByName.keySet().stream().collect(Collectors.groupingBy(MigrationUtils::parseVersion, Collectors.mapping(Function.identity(), Collectors.toList())));
 
-				versions.values().stream().filter(it -> it.size() > 1).findFirst().ifPresent(MigrationHasSameVersionException::new);
+				var duplicate = versions.values().stream()
+						.filter(it -> it.size() > 1)
+						.findFirst();
 
-				var existingMigrations = versionSchemeBackend.findAll().stream().collect(Collectors.toMap(VersionScheme::getScript, Function.identity()));
+				if (duplicate.isPresent())
+				{
+					throw new MigrationHasSameVersionException(duplicate.get());
+				}
 
-				var appliedMigrations = migrationByName.entrySet().stream().sorted(MigrationUtils.versionComparator()).filter(entry -> applyMigration(entry, existingMigrations)).toList();
+				var existingMigrations = versionSchemeBackend.findAll().stream()
+						.collect(Collectors.toMap(VersionScheme::getScript, Function.identity()));
 
-				log.info("Применено миграций: {}.", appliedMigrations.size());
-				log.info("Проверено миграций: {}.", migrationByName.size());
+				var appliedMigrations = migrationByName.entrySet().stream()
+						.sorted(MigrationUtils.versionComparator())
+						.filter(entry -> applyMigration(entry, existingMigrations))
+						.toList();
+
+				log.info("Миграций применено: {}, проверено: {}.", appliedMigrations.size(), migrationByName.size());
 			}
+
+			// TODO: убрать при переходе на следующую major версию.
+			applySoftDeleteToHardDeleteMigration();
 		}
 		catch (Exception e)
 		{
@@ -169,5 +194,44 @@ public class DictsDDLProvider
 		return migrations.get(MIGRATIONS_PATH + SEPARATOR + migrationName)
 				.getChecksum()
 				.equals(MigrationUtils.getFileHash(script));
+	}
+
+	private void applySoftDeleteToHardDeleteMigration()
+	{
+		log.info("Применяем миграцию для удаления soft delete записей в справочниках после перехода на hard delete.");
+
+		dictService.getAll()
+				.stream()
+				.filter(this::irrelevantColumnsPresent)
+				.peek(this::deleteIrrelevantItems)
+				.forEach(this::updateDictSchema);
+	}
+
+	private boolean irrelevantColumnsPresent(Dict dict)
+	{
+		var fieldIds = dict.getFields()
+				.stream()
+				.map(DictField::getId)
+				.toList();
+
+		return fieldIds.contains("deleted") && fieldIds.contains("deletionReason");
+	}
+
+	private void deleteIrrelevantItems(Dict dict)
+	{
+		dictDataService.streamByFilter(dict.getId(), List.of("id"), "deleted != null")
+				.forEach(dictItem -> dictDataService.delete(dict.getId(), dictItem.getId()));
+	}
+
+	private void updateDictSchema(Dict dict)
+	{
+		var fields = dict.getFields()
+				.stream()
+				.filter(field -> !ServiceFieldConstants.getServiceSchemeFields().contains(field.getId()))
+				.filter(field -> !field.getId().equals("deleted") && !field.getId().equals("deletionReason"))
+				.collect(Collectors.toList());
+
+		dict.setFields(fields);
+		dictService.update(dict.getId(), dict);
 	}
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -44,10 +44,6 @@ public class PostgresDictItem
 
 	private final Timestamp updated;
 
-	private final Timestamp deleted;
-
-	private final String deletionReason;
-
 	public PostgresDictItem(String dictId, Map<String, Object> postgresDictData, String dictAlias)
 	{
 		this.dictId = dictId;
@@ -63,8 +59,6 @@ public class PostgresDictItem
 
 		this.created = (Timestamp) postgresDictData.get(placeholder(dictAlias, DictItemColumnName.CREATED.getName()));
 		this.updated = (Timestamp) postgresDictData.get(placeholder(dictAlias, DictItemColumnName.UPDATED.getName()));
-		this.deleted = (Timestamp) postgresDictData.get(placeholder(dictAlias, DictItemColumnName.DELETED.getName()));
-		this.deletionReason = (String) postgresDictData.get(placeholder(dictAlias, DictItemColumnName.DELETION_REASON.getName()));
 	}
 
 	private String placeholder(String dictAlias, String column)

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ public interface AttachmentRepository extends CustomJpaRepository<Attachment, St
 	@Query("select distinct a.id from Attachment a left outer join a.bindings ab where ab.attachment is null and a.created < :date")
 	List<String> findExpiredUnbound(@Param("date") LocalDateTime expirationDate, Pageable pageable);
 
-	@Query("select distinct a.id from Attachment a left outer join a.bindings ab where ab.attachment is null")
+	@Query("select count(distinct a.id) from Attachment a left outer join a.bindings ab where ab.attachment is null")
 	Long countUnbound();
 
 	@Query("select sum(a.size) from Attachment a")

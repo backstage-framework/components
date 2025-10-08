@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -69,15 +69,13 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 				.collect(StreamCollectors.toLinkedHashMap(it -> dataWordMap.get(it.getKey()).getQuotedIfKeyword(), Map.Entry::getValue));
 
 		return new PostgresDictItem(
-				reservedKeyword.postgresWordMap(dictId).get(dictId).getQuotedIfKeyword(),
+				reservedKeyword.postgresWord(dictId).getQuotedIfKeyword(),
 				dictItem.getId(),
 				postgresDictData,
 				dictItem.getHistory(),
 				dictItem.getVersion(),
 				timestamp(dictItem.getCreated()),
-				timestamp(dictItem.getUpdated()),
-				timestamp(dictItem.getDeleted()),
-				dictItem.getDeletionReason()
+				timestamp(dictItem.getUpdated())
 		);
 	}
 
@@ -98,7 +96,7 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 			}
 
 			var dict = dictService.getById(dictId);
-			var dataFieldMap = DictService.getDataFieldsByDict(dict)
+			var dataFieldMap = dictService.getDataFieldsByDict(dict)
 					.stream()
 					.collect(Collectors.toMap(it -> it.getId().toLowerCase(), Function.identity()));
 
@@ -122,8 +120,6 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 					.history(source.getHistory())
 					.created(DateUtils.toLocalDateTime(source.getCreated()))
 					.updated(DateUtils.toLocalDateTime(source.getUpdated()))
-					.deleted(DateUtils.toLocalDateTime(source.getDeleted()))
-					.deletionReason(source.getDeletionReason())
 					.build();
 		}
 		catch (Exception e)
@@ -198,6 +194,7 @@ public class PostgresDictDataBackendMapper implements DictDataBackendMapper<Post
 	{
 		try
 		{
+			// FIXME: если сделать массив, то нужна миграция для существующих JSON колонок
 			if (field.getType() == DictFieldType.JSON)
 			{
 				var jsonb = (PGobject) value;

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -43,13 +43,19 @@ public class MongoEngine implements Engine
 	@Override
 	public void createDict()
 	{
-		mongoTemplate.createCollection(Dict.class);
+		if (!dictExists())
+		{
+			mongoTemplate.createCollection(Dict.class);
+		}
 	}
 
 	@Override
 	public void createVersionScheme()
 	{
-		mongoTemplate.createCollection(VersionScheme.class);
+		if (!versionSchemeExists())
+		{
+			mongoTemplate.createCollection(VersionScheme.class);
+		}
 	}
 
 	@Override

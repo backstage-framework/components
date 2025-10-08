@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -30,7 +30,6 @@ import com.backstage.app.utils.StreamCollectors;
 import org.apache.commons.collections4.BidiMap;
 import org.bson.Document;
 import org.bson.types.Decimal128;
-import org.bson.types.ObjectId;
 import org.geojson.GeoJsonObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
@@ -59,7 +58,7 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 	public Document mapTo(String dictId, DictItem dictItem)
 	{
 		var dict = dictService.getById(dictId);
-		var dataFieldsMap = DictService.getDataFieldsByDict(dict)
+		var dataFieldsMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
@@ -72,15 +71,12 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 
 		var created = dictItem.getCreated() == null ? null : serviceDateTime(dictItem.getCreated());
 		var updated = dictItem.getUpdated() == null ? null : serviceDateTime(dictItem.getUpdated());
-		var deleted = dictItem.getDeleted() == null ? null : serviceDateTime(dictItem.getDeleted());
 
-		document.append(ServiceFieldConstants._ID, dictItem.getId());
+		document.append(MongoDictBackend._ID, dictItem.getId());
 		document.append(ServiceFieldConstants.VERSION, dictItem.getVersion());
-		document.append(ServiceFieldConstants.HISTORY, dictItem.getHistory());
+		document.append(ServiceFieldConstants.HISTORY, dictItem.getHistory().stream().map(JsonUtils::toJson).map(Document::parse).toList());
 		document.append(ServiceFieldConstants.CREATED, created);
 		document.append(ServiceFieldConstants.UPDATED, updated);
-		document.append(ServiceFieldConstants.DELETED, deleted);
-		document.append(ServiceFieldConstants.DELETION_REASON, dictItem.getDeletionReason());
 
 		return document;
 	}
@@ -100,7 +96,7 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 		}
 
 		var dict = dictService.getById(dictId);
-		var dataFieldMap = DictService.getDataFieldsByDict(dict)
+		var dataFieldMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
@@ -119,18 +115,14 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 
 		var created = (Date) source.get(ServiceFieldConstants.CREATED);
 		var updated = (Date) source.get(ServiceFieldConstants.UPDATED);
-		var deleted = (Date) source.get(ServiceFieldConstants.DELETED);
-		var deletionReason = (String) source.get(ServiceFieldConstants.DELETION_REASON);
 
 		return DictItem.builder()
-				.id(source.get(ServiceFieldConstants._ID) instanceof String s ? s : ((ObjectId) source.get(ServiceFieldConstants._ID)).toString())
+				.id(source.get(MongoDictBackend._ID).toString())
 				.data(mappedDictData)
 				.version((Long) source.get(ServiceFieldConstants.VERSION))
 				.history((List<Map<String, Object>>) source.get(ServiceFieldConstants.HISTORY))
 				.created(DateUtils.toLocalDateTime(created))
 				.updated(DateUtils.toLocalDateTime(updated))
-				.deleted(DateUtils.toLocalDateTime(deleted))
-				.deletionReason(deleted == null ? null : deletionReason)
 				.build();
 	}
 
@@ -149,6 +141,19 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 		if (field.getType() == DictFieldType.DECIMAL && dictDataItem instanceof BigDecimal value)
 		{
 			return new Decimal128(value);
+		}
+
+		if (field.getType() == DictFieldType.GEO_JSON)
+		{
+			if (field.isMultivalued())
+			{
+				return ((List<?>) dictDataItem).stream()
+						.map(JsonUtils::toJson)
+						.map(Document::parse)
+						.toList();
+			}
+
+			return Document.parse(JsonUtils.toJson(dictDataItem));
 		}
 
 		return dictDataItem;
@@ -206,14 +211,14 @@ public class MongoDictDataBackendMapper implements DictDataBackendMapper<Documen
 			};
 		}
 
-		if (DictFieldType.JSON.equals(fieldType))
+		if (fieldType == DictFieldType.GEO_JSON)
 		{
-			return Collections.unmodifiableMap((Map<?, ?>) value);
-		}
+			if (value instanceof Document document)
+			{
+				return JsonUtils.toObject(document.toJson(), GeoJsonObject.class);
+			}
 
-		if (DictFieldType.GEO_JSON.equals(fieldType))
-		{
-			return value == null ? null : JsonUtils.toObject(value, GeoJsonObject.class);
+			throw new FieldValidationException("Тип поля %s должен быть %s.".formatted(field.getId(), Document.class.getSimpleName()));
 		}
 
 		return value;

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.model.other.date.DateConstants;
+import com.backstage.app.utils.JsonUtils;
 import com.backstage.app.utils.StreamCollectors;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -49,19 +50,14 @@ public class DictItemMappingService
 	{
 		var requiredFields = dict.getFields()
 				.stream()
-				.peek(it -> it.setId(it.getId().equals(ServiceFieldConstants._ID) ? ServiceFieldConstants.ID : it.getId()))
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
-
-		var dictDataFieldIds = dictDataFields.stream()
-				.map(DictField::getId)
-				.collect(Collectors.toSet());
 
 		var result = new HashMap<>(dataItem.getDataItemMap())
 				.entrySet()
 				.stream()
 				.peek(entry -> {
-					var value = mapField(requiredFields.get(entry.getKey()), entry.getValue());
-					entry.setValue(value);
+					var field = requiredFields.get(entry.getKey());
+					entry.setValue(mapField(field, Optional.ofNullable(entry.getValue()).orElse(field.getDefaultValue())));
 				})
 				.collect(StreamCollectors.toLinkedHashMap(Map.Entry::getKey, Map.Entry::getValue));
 
@@ -69,6 +65,10 @@ public class DictItemMappingService
 				.filter(field -> !result.containsKey(field.getId()))
 				.filter(field -> field.getDefaultValue() != null)
 				.forEach(field -> result.put(field.getId(), mapField(field, field.getDefaultValue())));
+
+		var dictDataFieldIds = dictDataFields.stream()
+				.map(DictField::getId)
+				.collect(Collectors.toSet());
 
 		var dictData = result.entrySet()
 				.stream()
@@ -86,7 +86,6 @@ public class DictItemMappingService
 	{
 		var requiredFields = dict.getFields()
 				.stream()
-				.peek(it -> it.setId(it.getId().equals(ServiceFieldConstants._ID) ? ServiceFieldConstants.ID : it.getId()))
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
 		var dictDataFieldIds = dictDataFields.stream()
@@ -163,41 +162,70 @@ public class DictItemMappingService
 
 		if (field.getType() == DictFieldType.DECIMAL && o instanceof String s)
 		{
-			return new BigDecimal(s);
+			try
+			{
+				return new BigDecimal(s);
+			}
+			catch (NumberFormatException e)
+			{
+				throw new RuntimeException("Некорректный формат decimal поля.", e);
+			}
 		}
 
 		if (field.getType() == DictFieldType.JSON && o instanceof String s)
 		{
 			try
 			{
+				if (s.isBlank())
+				{
+					return null;
+				}
+
 				return objectMapper.readValue(s, Map.class);
 			}
 			catch (JsonProcessingException e)
 			{
-				throw new RuntimeException("Некорректный формат json поля.");
+				throw new RuntimeException("Некорректный формат json поля.", e);
 			}
 		}
 
 		if (field.getType() == DictFieldType.GEO_JSON)
 		{
-			if (o instanceof String)
+			if (o instanceof GeoJsonObject)
 			{
 				return o;
 			}
 
-			if (o instanceof GeoJsonObject)
+			if (o instanceof String s)
 			{
 				try
 				{
-					return objectMapper.writeValueAsString(o);
+					if (s.isBlank())
+					{
+						return null;
+					}
+
+					return JsonUtils.toObject(o, GeoJsonObject.class);
 				}
-				catch (JsonProcessingException e)
+				catch (Exception e)
 				{
-					throw new RuntimeException("Некорректный формат GEO_JSON поля.");
+					throw new RuntimeException("Некорректный формат geo_json поля.", e);
 				}
 			}
 
-			throw new RuntimeException("Некорректный формат GEO_JSON поля.");
+			if (o instanceof Map<?, ?>)
+			{
+				try
+				{
+					return JsonUtils.toObject(JsonUtils.toJson(o), GeoJsonObject.class);
+				}
+				catch (Exception e)
+				{
+					throw new RuntimeException("Некорректный формат geo_json поля.", e);
+				}
+			}
+
+			throw new RuntimeException("Некорректный формат geo_json поля.");
 		}
 
 		if (field.getType() != DictFieldType.TIMESTAMP && field.getType() != DictFieldType.DATE)

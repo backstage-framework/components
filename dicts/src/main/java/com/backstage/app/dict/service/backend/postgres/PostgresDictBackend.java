@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEnum;
 import com.backstage.app.dict.exception.dict.DictCreatedException;
-import com.backstage.app.dict.exception.dict.DictDeletedException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.DictUpdatedException;
 import com.backstage.app.dict.exception.dict.enums.EnumCreatedException;
@@ -37,7 +36,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,14 +57,7 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 	{
 		Objects.requireNonNull(id, "dictId не может быть null.");
 
-		var dict = getDict(id);
-
-		if (dict.getDeleted() != null)
-		{
-			throw new DictDeletedException(id);
-		}
-
-		return dict;
+		return getDict(id);
 	}
 
 	@Override
@@ -94,17 +85,9 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 	@Override
 	public void deleteById(String id)
 	{
-		transactionWithoutResult(() -> deleteDict(id), id, DictDeletedException::new);
-	}
+		var sql = "delete from %s.dict where id = :id".formatted(dictsProperties.getDdl().getScheme());
 
-	@Override
-	public void softDelete(String id, LocalDateTime deleted)
-	{
-		var dict = getDict(id);
-
-		addTransactionData(dict, true);
-
-		transactionWithoutResult(() -> softDeleteDict(id, deleted), id, DictDeletedException::new);
+		jdbc.update(sql, new MapSqlParameterSource(DictColumnName.ID.getName(), id));
 	}
 
 	@Override
@@ -118,30 +101,21 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 	@Override
 	public DictEnum createEnum(Dict dict, DictEnum dictEnum)
 	{
-		addTransactionData(null, true);
-
 		return transactionWithResult(() -> createdEnum(dict, dictEnum), dict.getId(), EnumCreatedException::new);
 	}
 
 	@Override
 	public DictEnum updateEnum(Dict dict, DictEnum dictEnum)
 	{
-		addTransactionData(null, true);
-
 		return transactionWithResult(() -> updatedEnum(dict, dictEnum), dict.getId(), dictEnum.getId(), EnumUpdatedException::new);
 	}
 
 	@Override
 	public void deleteEnum(Dict dict, String enumId)
 	{
-		addTransactionData(null, true);
-
 		transactionWithoutResult(() -> deleteEnum(dict), dict.getId(), enumId, EnumDeletedException::new);
 	}
 
-	/**
-	 * Метод получения {@link Dict} для {@link #softDelete} в обход валидации в {@link #getDictById}.
-	 */
 	private Dict getDict(String id)
 	{
 		var sql = "select * from %s.dict where id = :id".formatted(dictsProperties.getDdl().getScheme());
@@ -159,9 +133,10 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		completeClauses(parameterMap, dict);
 
 		var sql = """
-				insert into %s.dict values
-				(:id, :name, :fields::jsonb, :indexes::jsonb, :constraints::jsonb, :enums::jsonb, :view_permission,
-				:edit_permission, :deleted, :engine)
+				insert into %s.dict (id, name, fields, indexes, constraints, enums, view_permission,
+				edit_permission, max_history, engine, version)
+				values (:id, :name, :fields::jsonb, :indexes::jsonb, :constraints::jsonb, :enums::jsonb, :view_permission,
+				:edit_permission, :max_history, :engine, :version)
 				""".formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
@@ -177,9 +152,16 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 
 		var sql = """
 				update %s.dict
-				set name = :name, fields = :fields::jsonb, indexes = :indexes::jsonb, constraints = :constraints::jsonb,
-				enums = :enums::jsonb, view_permission = :view_permission, edit_permission = :edit_permission,
-				deleted = :deleted, engine = :engine
+				set name = :name,
+					fields = :fields::jsonb,
+					indexes = :indexes::jsonb,
+					constraints = :constraints::jsonb,
+					enums = :enums::jsonb,
+					view_permission = :view_permission,
+					edit_permission = :edit_permission,
+					max_history = :max_history,
+					engine = :engine,
+					version = :version
 				where id = :id
 				""".formatted(dictsProperties.getDdl().getScheme());
 
@@ -188,33 +170,16 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		return dict;
 	}
 
-	private void deleteDict(String id)
-	{
-		var sql = "delete from %s.dict where id = :id".formatted(dictsProperties.getDdl().getScheme());
-
-		jdbc.update(sql, new MapSqlParameterSource(DictColumnName.ID.getName(), id));
-	}
-
-	private void softDeleteDict(String id, LocalDateTime deleted)
-	{
-		var parameterMap = new MapSqlParameterSource();
-
-		parameterMap.addValue(DictColumnName.ID.getName(), id);
-		parameterMap.addValue(DictColumnName.DELETED.getName(), deleted);
-
-		var sql = "update %s.dict set deleted = :deleted where id = :id".formatted(dictsProperties.getDdl().getScheme());
-
-		jdbc.update(sql, parameterMap);
-	}
-
 	private DictEnum createdEnum(Dict dict, DictEnum dictEnum)
 	{
 		var parameterMap = new MapSqlParameterSource();
 
 		addParameter(parameterMap, DictColumnName.ID.getName(), dict.getId());
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 
-		var sql = "update %s.dict set enums = :enums::jsonb where id = :id".formatted(dictsProperties.getDdl().getScheme());
+		var sql = "update %s.dict set enums = :enums::jsonb, version = :version where id = :id"
+				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
 
@@ -235,9 +200,11 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		var parameterMap = new MapSqlParameterSource();
 
 		addParameter(parameterMap, DictColumnName.ID.getName(), dict.getId());
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
 
-		var sql = "update %s.dict set enums = :enums::jsonb where id = :id".formatted(dictsProperties.getDdl().getScheme());
+		var sql = "update %s.dict set enums = :enums::jsonb, version = :version where id = :id"
+				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
 
@@ -249,9 +216,11 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		var parameterMap = new MapSqlParameterSource();
 
 		addParameter(parameterMap, DictColumnName.ID.getName(), dict.getId());
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
 
-		var sql = "update %s.dict set enums = :enums::jsonb where id = :id".formatted(dictsProperties.getDdl().getScheme());
+		var sql = "update %s.dict set enums = :enums::jsonb, version = :version where id = :id"
+				.formatted(dictsProperties.getDdl().getScheme());
 
 		jdbc.update(sql, parameterMap);
 	}
@@ -266,7 +235,8 @@ public class PostgresDictBackend extends AbstractPostgresBackend implements Dict
 		addParameter(parameterMap, DictColumnName.ENUMS.getName(), JsonUtils.toJson(dict.getEnums()));
 		addParameter(parameterMap, DictColumnName.VIEW_PERMISSION.getName(), dict.getViewPermission());
 		addParameter(parameterMap, DictColumnName.EDIT_PERMISSION.getName(), dict.getEditPermission());
-		addParameter(parameterMap, DictColumnName.DELETED.getName(), dict.getDeleted());
+		addParameter(parameterMap, DictColumnName.MAX_HISTORY.getName(), dict.getMaxHistory());
 		addParameter(parameterMap, DictColumnName.ENGINE.getName(), dict.getEngine().getName());
+		addParameter(parameterMap, DictColumnName.VERSION.getName(), dict.getVersion());
 	}
 }

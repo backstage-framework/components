@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.List;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 @Slf4j
@@ -44,7 +45,7 @@ public class RemoteServiceUtils
 		}
 	}
 
-	public static <T> T executeAndGetData(Supplier<ApiResponse<T>> service)
+	public static <T, R> R executeAndThen(Supplier<ApiResponse<T>> service, Function<ApiResponse<T>, R> after)
 	{
 		var response = service.get();
 
@@ -54,8 +55,13 @@ public class RemoteServiceUtils
 		}
 		else
 		{
-			return response.getData();
+			return after.apply(response);
 		}
+	}
+
+	public static <T> T executeAndGetData(Supplier<ApiResponse<T>> service)
+	{
+		return executeAndThen(service, ApiResponse::getData);
 	}
 
 	public static <T> List<T> fetchList(Supplier<ApiResponse<List<T>>> service)

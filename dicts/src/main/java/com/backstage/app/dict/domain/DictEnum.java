@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.domain;
 
+import com.backstage.app.cache.utils.proxy.ForceProxy;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -34,6 +35,16 @@ public class DictEnum
 
 	private String name;
 
+	@ForceProxy
 	@Builder.Default
 	private Set<String> values = new HashSet<>();
+
+	public DictEnum copy()
+	{
+		return DictEnum.builder()
+				.id(id)
+				.name(name)
+				.values(new HashSet<>(values))
+				.build();
+	}
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	@Override
 	public DictItem getById(Dict dict, String id, List<DictFieldName> requiredFields)
 	{
-		var query = "%s = '%s'".formatted(ServiceFieldConstants._ID, id);
+		var query = "%s = '%s'".formatted(ServiceFieldConstants.ID, id);
 
 		return getByFilter(dict, requiredFields, queryParser.parse(query), Pageable.unpaged())
 				.getContent()
@@ -99,7 +99,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				.map(it -> "'" + it + "'")
 				.collect(Collectors.joining(", "));
 
-		var filtersQuery = "%s in (%s)".formatted(ServiceFieldConstants._ID, itemIds);
+		var filtersQuery = "%s in (%s)".formatted(ServiceFieldConstants.ID, itemIds);
 
 		return getByFilter(dict, requiredFields, queryParser.parse(filtersQuery), Pageable.unpaged()).getContent();
 	}
@@ -134,9 +134,29 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	}
 
 	@Override
+	public Stream<DictItem> streamByFilter(Dict dict, List<DictFieldName> requiredFields, QueryExpression queryExpression)
+	{
+		var dictId = dict.getId();
+
+		var queryContext = mongoTranslator.process(dict, queryExpression);
+
+		var mongoClause = completedMongoClauses(requiredFields, new HashSet<>(), new Query(),
+				queryContext, new LinkedList<>(), Pageable.unpaged(), dictId);
+
+		if (queryContext.getCriteria() != null)
+		{
+			mongoClause.getQuery().addCriteria(queryContext.getCriteria());
+		}
+
+		// TODO: разобраться с формированием Query тут и в getByFilter.
+		return mongoTemplate.stream(mongoClause.getQuery(), Document.class, dictId)
+				.map(document -> backendMapper.mapFrom(dictId, document));
+	}
+
+	@Override
 	public boolean existsById(Dict dict, String itemId)
 	{
-		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));
+		var query = Query.query(Criteria.where(MongoDictBackend._ID).is(itemId));
 
 		return mongoTemplate.exists(query, dict.getId());
 	}
@@ -184,7 +204,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 
 		var dictId = dict.getId();
 
-		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(itemId));
+		var query = Query.query(Criteria.where(MongoDictBackend._ID).is(itemId));
 
 		update(dict, dictItem, query);
 
@@ -192,21 +212,21 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 	}
 
 	@Override
-	public void delete(Dict dict, DictItem dictItem)
+	public void delete(Dict dict, String itemId)
 	{
 		addTransactionData(dict, false);
 
-		var query = Query.query(Criteria.where(ServiceFieldConstants._ID).is(dictItem.getId()));
+		var query = Query.query(Criteria.where(MongoDictBackend._ID).is(itemId));
 
-		update(dict, dictItem, query);
+		mongoTemplate.remove(query, dict.getId());
 	}
 
 	@Override
-	public void deleteAll(Dict dict, List<DictItem> dictItems)
+	public void deleteAll(Dict dict)
 	{
 		addTransactionData(dict, false);
 
-		dictItems.forEach(it -> update(dict, it, Query.query(Criteria.where(ServiceFieldConstants._ID).is(it.getId()))));
+		mongoTemplate.remove(new Query(), dict.getId());
 	}
 
 	@Override
@@ -224,7 +244,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		queryClause.addSelectFields(requiredFields, query);
 		queryClause.addJoin(requiredFields, joinFields, queryContext, operations, pageable, dictId);
 
-		var mongoPageable = pageable.isUnpaged() ? pageable : buildMongoPageable(pageable);
+		var mongoPageable = pageable.isUnpaged() && !pageable.getSort().isSorted() ? pageable : buildMongoPageable(pageable);
 
 		if (mongoPageable.isPaged())
 		{
@@ -236,6 +256,14 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 			queryClause.addPageable(operations, mongoPageable);
 
 			query.with(mongoPageable);
+		}
+		else if (mongoPageable.getSort().isSorted())
+		{
+			var sort = mongoPageable.getSort();
+			var orders = queryClause.buildSort(sort, joinFields);
+
+			operations.add(Aggregation.sort(sort));
+			query.with(orders);
 		}
 
 		return new MongoClause(query, mongoPageable, joinFields, operations);
@@ -290,6 +318,11 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		}
 	}
 
+	private void delete(String dictId, Query query)
+	{
+		mongoTemplate.remove(query, dictId);
+	}
+
 	private Document getChanges(String dictId, DictItem dictItem, DictItem oldItem)
 	{
 		var document = backendMapper.mapTo(dictId, dictItem);
@@ -297,7 +330,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 
 		return document.entrySet()
 				.stream()
-				.filter(it -> !it.getKey().equals(ServiceFieldConstants._ID))
+				.filter(it -> !it.getKey().equals(MongoDictBackend._ID))
 				.filter(it -> (it.getValue() == null && oldDocument.get(it.getKey()) != null) || (it.getValue() != null && !it.getValue().equals(oldDocument.get(it.getKey()))))
 				.collect(Document::new, (doc, entry) -> doc.append(entry.getKey(), entry.getValue()), Document::putAll);
 	}
@@ -342,16 +375,17 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				requiredFieldIds.forEach(refFields::include);
 			}
 
-			refQuery.addCriteria(Criteria.where(ServiceFieldConstants._ID).in(refIds));
+			refQuery.addCriteria(Criteria.where(MongoDictBackend._ID).in(refIds));
 
 			var refItems = mongoTemplate.find(refQuery, Document.class, dictField.getDictRef().getDictId())
 					.stream()
-					.collect(Collectors.toMap(document -> document.get(ServiceFieldConstants._ID) instanceof String s ? s : document.get(ServiceFieldConstants._ID).toString(), Function.identity()));
+					.collect(Collectors.toMap(document -> document.get(MongoDictBackend._ID).toString(), Function.identity()));
 
 			matchRefsDocument(itemList, dictField.getId(), refItems);
 		}));
 	}
 
+	@SuppressWarnings("unchecked")
 	private List<String> getRefIds(String fieldId, Page<Document> items)
 	{
 		return items.stream()
@@ -362,6 +396,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 				.toList();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void matchRefsDocument(Page<Document> itemList, String fieldId, Map<String, Document> refDocument)
 	{
 		itemList.stream()
@@ -387,7 +422,7 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 		Predicate<String> idMatches = property -> ID_PATTERN.matcher(property).matches();
 		Predicate<String> joinedIdMatches = property -> JOINED_ID_PATTERN.matcher(property).matches();
 
-		Function<String, String> replaceAllId = property -> property.replaceAll(ID_PATTERN.pattern() + "|" + JOINED_ID_PATTERN.pattern(), ServiceFieldConstants._ID);
+		Function<String, String> replaceAllId = property -> property.replaceAll(ID_PATTERN.pattern() + "|" + JOINED_ID_PATTERN.pattern(), MongoDictBackend._ID);
 
 		var isReplaceId = pageable.getSort()
 				.stream()
@@ -404,7 +439,12 @@ public class MongoDictDataBackend extends AbstractMongoBackend implements DictDa
 					.reduce(Sort::and)
 					.orElseThrow(() -> new PrepareMongoPageableException(pageable.getSort().toString()));
 
-			return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), orders);
+			if (pageable.isPaged())
+			{
+				return PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), orders);
+			}
+
+			return Pageable.unpaged(orders);
 		}
 
 		return pageable;

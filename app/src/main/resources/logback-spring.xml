@@ -2,6 +2,11 @@
 <configuration>
 	<springProperty name="customConfig" source="app.logging.logback.custom-config"/>
 	<springProperty name="jsonOutput" source="app.logging.json-output"/>
+	<springProperty name="consoleOutputEnabled" source="app.logging.console.enabled"/>
+	<springProperty name="fileOutputEnabled" source="app.logging.file.enabled"/>
+	<springProperty name="rollingMaxHistory" source="app.logging.file.max-history" defaultValue="100"/>
+	<springProperty name="rollingMaxFileSize" source="app.logging.file.max-size" defaultValue="30MB"/>
+	<springProperty name="rollingTotalSizeCap" source="app.logging.file.total-size-cap" defaultValue="0"/>
 
 	<if condition='p("customConfig").equals("true")'>
 		<then>
@@ -9,8 +14,6 @@
 		</then>
 		<else>
 			<include resource="logback/base.xml"/>
-
-			<logger name="root" level="INFO"/>
 		</else>
 	</if>
 </configuration>

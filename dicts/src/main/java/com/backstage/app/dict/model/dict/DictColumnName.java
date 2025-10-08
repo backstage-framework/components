@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -31,8 +31,9 @@ public enum DictColumnName
 	ENUMS("enums"),
 	VIEW_PERMISSION("view_permission"),
 	EDIT_PERMISSION("edit_permission"),
-	DELETED("deleted"),
-	ENGINE("engine");
+	MAX_HISTORY("max_history"),
+	ENGINE("engine"),
+	VERSION("version");
 
 	private final String name;
 }

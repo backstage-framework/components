@@ -16,8 +16,10 @@
 
 package com.backstage.app.report.model;
 
+import com.backstage.app.report.model.filter.EmptyReportFilter;
 import com.backstage.app.report.model.filter.ReportFilter;
 import com.backstage.app.report.model.filter.SimpleReportFilter;
+import com.backstage.app.report.service.generator.ErrorGenerator;
 import com.backstage.app.report.service.generator.ExampleGenerator;
 import com.backstage.app.report.service.generator.ReportGenerator;
 import lombok.Getter;
@@ -27,7 +29,8 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum ExampleReportType implements ReportType
 {
-	EXAMPLE_1("Пример отчета 1", ReportFileType.XLSX, ExampleGenerator.class, SimpleReportFilter.class);
+	EXAMPLE_1("Пример отчета 1", ReportFileType.XLSX, ExampleGenerator.class, SimpleReportFilter.class),
+	ERROR("Отчёт с ошибкой", ReportFileType.XLSX, ErrorGenerator.class, EmptyReportFilter.class);
 
 	private final String title;
 	private final ReportFileType reportFileType;

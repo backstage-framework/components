@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.backstage.app.attachment.model.domain.AttachmentBinding;
 import com.backstage.app.attachment.repository.AttachmentBindingRepository;
 import com.backstage.app.attachment.repository.AttachmentRepository;
 import com.backstage.app.attachment.service.store.AttachmentStore;
+import com.backstage.app.attachment.utils.AttachmentBindingUtils;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.utils.transactional.TransactionalUtils;
 import jakarta.annotation.PostConstruct;
@@ -103,7 +104,9 @@ public class AttachmentService
 
 	public List<Attachment> getAttachments(@NotNull String type, @NotNull String objectId)
 	{
-		var attachments = attachmentBindingRepository.findAttachmentsByTypeAndObjectId(type, objectId);
+		var attachments = AttachmentBindingUtils.isObjectIdPattern(objectId)
+				? attachmentBindingRepository.findAttachmentsByTypeAndObjectIdLike(type, objectId)
+				: attachmentBindingRepository.findAttachmentsByTypeAndObjectId(type, objectId);
 
 		attachments.forEach(attachment -> serviceAdviceList.forEach(it -> it.handleGetAttachment(attachment.getId())));
 
@@ -128,12 +131,14 @@ public class AttachmentService
 
 	public List<String> getAttachmentIds(@NotNull Enum<?> type, @NotNull String objectId)
 	{
-		return attachmentBindingRepository.findAttachmentIdsByTypeAndObjectId(type.name(), objectId);
+		return getAttachmentIds(type.name(), objectId);
 	}
 
 	public List<String> getAttachmentIds(@NotNull String type, @NotNull String objectId)
 	{
-		return attachmentBindingRepository.findAttachmentIdsByTypeAndObjectId(type, objectId);
+		return AttachmentBindingUtils.isObjectIdPattern(objectId)
+				? attachmentBindingRepository.findAttachmentIdsByTypeAndObjectIdLike(type, objectId)
+				: attachmentBindingRepository.findAttachmentIdsByTypeAndObjectId(type, objectId);
 	}
 
 	@Transactional
@@ -194,7 +199,7 @@ public class AttachmentService
 	@Transactional
 	public void releaseAttachments(@NonNull Collection<String> attachmentIds, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
-		attachmentIds.forEach(id -> attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectId(id, userId, type, objectId));
+		attachmentIds.forEach(id -> releaseAttachment(id, userId, type, objectId));
 
 		attachmentBindingRepository.flush();
 	}
@@ -208,7 +213,14 @@ public class AttachmentService
 	@Transactional
 	public void releaseAttachment(@NonNull String attachmentId, @NonNull String userId, @NonNull String type, @NonNull String objectId)
 	{
-		attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectId(attachmentId, userId, type, objectId);
+		if (AttachmentBindingUtils.isObjectIdPattern(objectId))
+		{
+			attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectIdLike(attachmentId, userId, type, objectId);
+		}
+		else
+		{
+			attachmentBindingRepository.deleteByAttachmentIdAndUserIdAndTypeAndObjectId(attachmentId, userId, type, objectId);
+		}
 
 		attachmentBindingRepository.flush();
 	}
@@ -222,7 +234,14 @@ public class AttachmentService
 	@Transactional
 	public void releaseAttachments(@NotNull String type, @NotNull String objectId)
 	{
-		attachmentBindingRepository.deleteByTypeAndObjectId(type, objectId);
+		if (AttachmentBindingUtils.isObjectIdPattern(objectId))
+		{
+			attachmentBindingRepository.deleteByTypeAndObjectIdLike(type, objectId);
+		}
+		else
+		{
+			attachmentBindingRepository.deleteByTypeAndObjectId(type, objectId);
+		}
 
 		attachmentBindingRepository.flush();
 	}

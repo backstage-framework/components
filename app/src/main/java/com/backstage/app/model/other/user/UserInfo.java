@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,12 +16,13 @@
 
 package com.backstage.app.model.other.user;
 
+import lombok.Builder;
 import lombok.Getter;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
+@Builder
 public class UserInfo implements Principal
 {
 	public static UserInfo ANONYMOUS_USER;
@@ -35,62 +36,30 @@ public class UserInfo implements Principal
 
 	static
 	{
-		ANONYMOUS_USER = new UserInfo();
+		ANONYMOUS_USER = UserInfo.builder()
+				.id(ANONYMOUS_USER_ID)
+				.type(UserType.LOCAL)
+				.email(ANONYMOUS_USER_ID + "@local")
+				.firstName(ANONYMOUS_USER_NAME)
+				.lastName(ANONYMOUS_USER_NAME)
+				.build();
 
-		ANONYMOUS_USER.id = ANONYMOUS_USER_ID;
-		ANONYMOUS_USER.type = UserType.LOCAL;
-		ANONYMOUS_USER.email = ANONYMOUS_USER_ID + "@local";
-		ANONYMOUS_USER.firstName = ANONYMOUS_USER_NAME;
-		ANONYMOUS_USER.lastName = ANONYMOUS_USER_NAME;
-
-		SYSTEM_USER = new UserInfo();
-
-		SYSTEM_USER.id = SYSTEM_USER_ID;
-		SYSTEM_USER.type = UserType.LOCAL;
-		SYSTEM_USER.email = SYSTEM_USER_ID + "@local";
-		SYSTEM_USER.firstName = SYSTEM_USER_NAME;
-		SYSTEM_USER.lastName = SYSTEM_USER_NAME;
+		SYSTEM_USER = UserInfo.builder()
+				.id(SYSTEM_USER_ID)
+				.type(UserType.LOCAL)
+				.email(SYSTEM_USER_ID + "@local")
+				.firstName(SYSTEM_USER_NAME)
+				.lastName(SYSTEM_USER_NAME)
+				.build();
 	}
 
 	private String id;
 
-	private UserType userType;
-
 	private String firstName;
-
-	private String middleName;
 
 	private String lastName;
 
-	private String password;
-
 	private String email;
 
-	private boolean emailVerified;
-
-	private String phone;
-
-	private boolean phoneVerified;
-
-	private Object details;
-
 	private UserType type;
-
-	private LocalDateTime created;
-
-	private LocalDateTime updated;
-
-	private LocalDateTime deleted;
-
-	private LocalDateTime blocked;
-
-	public <T> T getDetails(Class<T> clazz)
-	{
-		if (details != null)
-		{
-			return clazz.cast(details);
-		}
-
-		return null;
-	}
 }

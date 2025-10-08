@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ package com.backstage.app.audit.model.domain;
 import lombok.Getter;
 
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @Getter
 public class AuditProperties implements Serializable
 {
-	private List<AuditPropertiesField> fields = new ArrayList<>();
+	private Map<String, AuditPropertiesField> fields = new HashMap<>();
 
-	private List<AuditPropertiesProperty> properties = new ArrayList<>();
+	private Map<String, String> properties = new HashMap<>();
 }

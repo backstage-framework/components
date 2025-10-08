@@ -21,12 +21,14 @@ import com.backstage.app.attachment.service.AttachmentService;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.common.CommonTest;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
+import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.exception.dict.DictConcurrentUpdateException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldValidationException;
+import com.backstage.app.dict.exception.dictitem.DictItemCreateException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.advice.AttachmentDictDataServiceAdvice;
 import com.backstage.app.exception.ObjectNotFoundException;
@@ -46,6 +48,7 @@ import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,6 +58,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.MediaType;
+import org.springframework.transaction.support.TransactionTemplate;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
@@ -63,6 +67,8 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -79,12 +85,17 @@ public class CommonDictDataServiceTest extends CommonTest
 	protected static String TESTABLE_JSON_DICT_ID;
 	protected static String TESTABLE_ATTACH_DICT_ID;
 	protected static String TESTABLE_GEO_JSON_DICT_ID;
+	protected static String TESTABLE_TRUNCATED_DICT_ID;
+	protected static String TESTABLE_RESERVED_WORDS_DICT_ID;
 
 	@Autowired
 	private AttachmentService attachmentService;
 
 	@Autowired
 	private ObjectMapper mapper;
+
+	@Autowired
+	private TransactionTemplate transactionTemplate;
 
 	@Value("classpath:attachment.png")
 	protected Resource firstFileResource;
@@ -194,6 +205,32 @@ public class CommonDictDataServiceTest extends CommonTest
 						.build());
 
 		TESTABLE_GEO_JSON_DICT_ID = dictService.create(geoJsonDict).getId();
+
+		var truncatedDict = buildDict(storageDictId + "data_truncated");
+
+		TESTABLE_TRUNCATED_DICT_ID = dictService.create(truncatedDict).getId();
+
+		var reserverWordsDict = Dict.builder()
+				.id((storageDictId + "ReserverWords"))
+				.build();
+
+		reserverWordsDict.getFields()
+				.add(DictField.builder()
+						.id("name")
+						.type(DictFieldType.STRING)
+						.required(true)
+						.multivalued(false)
+						.build());
+
+		reserverWordsDict.getFields()
+				.add(DictField.builder()
+						.id("order")
+						.type(DictFieldType.INTEGER)
+						.required(false)
+						.multivalued(false)
+						.build());
+
+		TESTABLE_RESERVED_WORDS_DICT_ID = dictService.create(reserverWordsDict).getId();
 	}
 
 	@BeforeAll
@@ -224,14 +261,52 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var result = dictDataService.getDistinctValuesByFilter(TESTABLE_REF_DICT_ID, TESTABLE_DICT_ID + ".stringField", "");
 
-		assertEquals(result.size(), 6);
+		assertEquals(12, result.size());
 	}
 
 	protected void getDistinctValuesByFilterWithFilter()
 	{
 		var result = dictDataService.getDistinctValuesByFilter(TESTABLE_REF_DICT_ID, TESTABLE_DICT_ID + ".stringField", "integerField != null");
 
-		assertEquals(result.size(), 6);
+		assertEquals(6, result.size());
+	}
+
+	@Test
+	protected void streamByFilter()
+	{
+		var query = "stringField like 'string'";
+
+		try (var stream = dictDataService.streamByFilter(TESTABLE_REF_DICT_ID, List.of("*"), query))
+		{
+			var itemCount = dictDataService.getByFilter(TESTABLE_REF_DICT_ID, List.of("*"), query, PageRequest.of(0, 10)).getTotalElements();
+
+			assertEquals(itemCount, stream.count());
+		}
+	}
+
+	@Test
+	protected void checkReserverWords()
+	{
+		var name = "testName";
+		var order = RandomUtils.secure().randomLong();
+
+		var item = dictDataService.create(DictDataItem.of(TESTABLE_RESERVED_WORDS_DICT_ID, Map.of(
+				"name", name,
+				"order", order
+		)));
+
+		assertEquals(name, item.getData().get("name"));
+		assertEquals(order, item.getData().get("order"));
+
+		order = RandomUtils.secure().randomLong();
+
+		item = dictDataService.update(item.getId(), DictDataItem.of(TESTABLE_RESERVED_WORDS_DICT_ID, Map.of(
+				"name", name,
+				"order", order
+		)), item.getVersion());
+
+		assertEquals(name, item.getData().get("name"));
+		assertEquals(order, item.getData().get("order"));
 	}
 
 	protected void getByFilterWithNullRefField()
@@ -252,7 +327,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
 				"stringField like 'string' and (integerField = 1 or integerField in (2, 5, 8) and integerField != 10 or integerField <= 2 and doubleField > 1.9 and doubleField < 2.1)",
-				PageRequest.of(0, 10));
+				PageRequest.of(0, 9));
 
 		var allMatchStringField = result.getContent()
 				.stream()
@@ -315,7 +390,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"),
 				"stringField like '%%%s' and stringField ilike '%%%s'".formatted(queryValue, queryValue.toUpperCase()),
-				PageRequest.of(0, 10));
+				PageRequest.of(0, 9));
 
 		var allMatchStringField = result.getContent()
 				.stream()
@@ -377,7 +452,7 @@ public class CommonDictDataServiceTest extends CommonTest
 				"stringField = 'stringFieldLogicalExpressionTest' and (doubleField = 2.558 or integerField = 1)",
 				PageRequest.of(0, 10));
 
-		assertEquals(result.getContent().size(), 1);
+		assertEquals(1, result.getContent().size());
 		assertEquals(result.getContent().get(0).getId(), dictItemId);
 	}
 
@@ -438,6 +513,34 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertTrue(actualCreatedFields);
 	}
 
+	//todo убрать передачу ожидаемого значения кол-ва элементов после фикса пагинации для MongoDB
+	protected void getByFilterWithUnpagedSort(int totalElements)
+	{
+		var integerField = createDictHierarchy();
+
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), null,
+						Pageable.unpaged(Sort.by(Sort.Direction.DESC, integerField)))
+				.getContent()
+				.stream()
+				.map(DictItem::getData)
+				.map(map -> (Long) map.get(integerField))
+				.toList();
+
+		assertEquals(totalElements, result.size());
+
+		var actual = Comparators.isInOrder(result, Comparator.reverseOrder());
+
+		assertTrue(actual);
+	}
+
+	protected void getByFilterUnpaged()
+	{
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), null, Pageable.unpaged());
+
+		assertTrue(result.getPageable().isUnpaged());
+		assertEquals(1, result.getTotalPages());
+	}
+
 	protected void getByFilterDictSortDataField()
 	{
 		var sortedDataField = createDictHierarchy();
@@ -470,11 +573,11 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		createDictHierarchy();
 
-		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of(ServiceFieldConstants._ID, ServiceFieldConstants.CREATED),
+		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of(ServiceFieldConstants.CREATED),
 						null, PageRequest.of(0, 20))
 				.getContent()
 				.stream()
-				.map(it -> StringUtils.hasText(it.getId()) && it.getCreated() != null)
+				.map(it -> StringUtils.hasText(it.getId()) && it.getCreated() != null && it.getVersion() != null)
 				.toList();
 
 		result.forEach(Assertions::assertTrue);
@@ -559,7 +662,7 @@ public class CommonDictDataServiceTest extends CommonTest
 		var result = dictDataService.getByFilter(TESTABLE_REF_DICT_ID, List.of("*"), "%s = '%s'".formatted(TESTABLE_DICT_ID, refId), PageRequest.of(0, 10))
 				.getContent();
 
-		assertEquals(result.size(), 1);
+		assertEquals(1, result.size());
 		assertEquals(result.get(0).getId(), createdDitDataItemId);
 		assertEquals(result.get(0).getData().size(), refDataMap.size());
 		assertEquals(result.get(0).getData().get(TESTABLE_DICT_ID), refId);
@@ -649,7 +752,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		assertTrue(dictDataService.existsByFilter(TESTABLE_DICT_ID, "integerField = 1"));
 
-		assertFalse(dictDataService.existsByFilter(TESTABLE_DICT_ID, "integerField = 2"));
+		assertFalse(dictDataService.existsByFilter(TESTABLE_DICT_ID, "integerField = 13"));
 	}
 
 	protected void attachmentBindingWithCreateDictItem()
@@ -701,7 +804,7 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertNotNull(dictItem);
 		assertTrue(fieldAttachmentsIds.contains(secondAttachmentId));
 		assertTrue(fieldAttachmentsIds.contains(thirdAttachmentId));
-		assertEquals(fieldAttachmentsIds.size(), 2);
+		assertEquals(2, fieldAttachmentsIds.size());
 	}
 
 	protected void checkAttachmentReleaseWithDeleteDictItem()
@@ -716,40 +819,16 @@ public class CommonDictDataServiceTest extends CommonTest
 				"attachmentsField", List.of(firstAttachmentId));
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataMap));
+		var dictItemAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, dictItem));
 
-		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
+		assertFalse(dictItemAttachments.isEmpty());
+		assertEquals(firstAttachmentId, dictItemAttachments.get(0).getId());
 
-		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, dictItem.getId());
+		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId());
 
-		assertTrue(attachmentsAfterDelete.isEmpty());
-	}
+		dictItemAttachments = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, AttachmentDictDataServiceAdvice.getAttachmentOwnerId(TESTABLE_ATTACH_DICT_ID, dictItem));
 
-	protected void checkAttachmentBindingWithDeleteDictItem()
-	{
-		var attachmentDataMap = Map.of(
-				"stringField", "string",
-				"integerField", 1L,
-				"doubleField", 2,
-				"timestampField", List.of("2021-08-15T06:00:00.000Z", "2021-08-15T08:00:00.000Z"),
-				"attachmentField", firstAttachmentId,
-				"attachmentsField", List.of(firstAttachmentId),
-				"booleanField", true);
-
-		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_ATTACH_DICT_ID, attachmentDataMap));
-
-		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
-
-		var attachmentsAfterDelete = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + dictItem.getId());
-
-		assertTrue(attachmentsAfterDelete.isEmpty());
-
-		var deletedDictItem = dictDataService.getById(TESTABLE_ATTACH_DICT_ID, dictItem.getId());
-
-		dictDataService.delete(TESTABLE_ATTACH_DICT_ID, dictItem.getId(), false, deletedDictItem.getVersion());
-
-		var attachmentsAfterRestore = attachmentService.getAttachments(AttachmentDictDataServiceAdvice.DICT_ITEM_ATTACHMENT_TYPE, TESTABLE_ATTACH_DICT_ID + "_" + deletedDictItem.getId());
-
-		assertEquals(attachmentsAfterRestore.size(), 1);
+		assertTrue(dictItemAttachments.isEmpty());
 	}
 
 	protected void createDictItem()
@@ -834,18 +913,98 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertEquals(updatedDictItem.getData().get(fieldId), updatedDictDataItem.getDataItemMap().get(fieldId));
 	}
 
-	protected void createCorrectContainsFieldsInHistoryMap()
+	protected void checkHistoryMaxSize()
 	{
 		var dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put(ServiceFieldConstants.ID, "with_id");
+		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
+
+		assertNotNull(dictItem.getHistory());
+		assertTrue(dictItem.getHistory().isEmpty());
+
+		var historyLimit = 10;
+
+		var dict = dictService.getById(TESTABLE_DICT_ID).copy();
+		dict.setMaxHistory(historyLimit);
+
+		dict = dictService.update(TESTABLE_DICT_ID, dict);
+
+		var targetFieldName = "integerField";
+		var counter = 1000;
+
+		for (int i = 0; i < historyLimit + 5; i++)
+		{
+			dataMap = new HashMap<>(dictItem.getData());
+			dataMap.put(targetFieldName, counter++);
+
+			dictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+		}
+
+		assertEquals(historyLimit, dictItem.getHistory().size());
+		assertEquals((Long) dictItem.getData().get(targetFieldName) - 1, ((Integer) dictItem.getHistory().get(9).get(targetFieldName)).longValue());
+
+		dict.setMaxHistory(null);
+
+		for (int i = 0; i < historyLimit + 5; i++)
+		{
+			dataMap = new HashMap<>(dictItem.getData());
+			dataMap.put(targetFieldName, counter++);
+
+			dictItem = dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+		}
+
+		assertEquals(2 * historyLimit + 5, dictItem.getHistory().size());
+	}
+
+	protected void createCorrectContainsFieldsInHistoryMap()
+	{
+		var itemId = "item_id";
+
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put(ServiceFieldConstants.ID, itemId);
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
 
-		var createdFieldResult = dictItem.getHistory().stream().findFirst().map(it -> it.get(ServiceFieldConstants.CREATED)).isPresent();
-		var idFieldResult = dictItem.getHistory().stream().findFirst().map(it -> it.get(ServiceFieldConstants.ID)).isPresent();
+		assertNotNull(dictItem.getHistory());
+		assertTrue(dictItem.getHistory().isEmpty());
 
-		assertTrue(createdFieldResult);
-		assertFalse(idFieldResult);
+		var targetFieldName = "doubleField";
+
+		dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put(targetFieldName, null);
+
+		dictItem = dictDataService.update(itemId, buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+
+		assertNull(dictItem.getData().get(targetFieldName));
+		assertNotNull(dictItem.getHistory());
+		assertFalse(dictItem.getHistory().isEmpty());
+
+		assertEquals(DATA_MAP.get(targetFieldName), dictItem.getHistory().get(0).get(targetFieldName));
+	}
+
+	protected void createCorrectContainsFieldsInHistoryMapForSkippedNullValue()
+	{
+		var itemId = "skipped_null_item_id";
+
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put(ServiceFieldConstants.ID, itemId);
+
+		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, dataMap));
+
+		assertNotNull(dictItem.getHistory());
+		assertTrue(dictItem.getHistory().isEmpty());
+
+		var targetFieldName = "doubleField";
+
+		dataMap = new HashMap<>(DATA_MAP);
+		dataMap.remove(targetFieldName);
+
+		dictItem = dictDataService.update(itemId, buildDictDataItem(TESTABLE_DICT_ID, dataMap), dictItem.getVersion());
+
+		assertNull(dictItem.getData().get(targetFieldName));
+		assertNotNull(dictItem.getHistory());
+		assertFalse(dictItem.getHistory().isEmpty());
+
+		assertEquals(DATA_MAP.get(targetFieldName), dictItem.getHistory().get(0).get(targetFieldName));
 	}
 
 	//TODO: расширить тест когда Json указывается строкой
@@ -883,8 +1042,16 @@ public class CommonDictDataServiceTest extends CommonTest
 		var actual = dictDataService.getByFilter(TESTABLE_GEO_JSON_DICT_ID, List.of("*"), "stringField = 'geoJsonTest'", Pageable.unpaged())
 				.getContent();
 
-		assertEquals(FeatureCollection.class, actual.get(0).getData().get("geoJsonField").getClass());
-		assertEquals(2, ((List<FeatureCollection>) actual.get(0).getData().get("geoJsonMultivaluedField")).size());
+		var geoJsonFeature = actual.get(0).getData().get("geoJsonField");
+		assertInstanceOf(FeatureCollection.class, geoJsonFeature);
+		assertEquals(3, ((FeatureCollection) geoJsonFeature).getFeatures().size());
+
+		var geoJsonFeatures = (List<Map<String, Object>>) actual.get(0).getData().get("geoJsonMultivaluedField");
+		assertEquals(2, geoJsonFeatures.size());
+
+		assertInstanceOf(FeatureCollection.class, geoJsonFeatures.get(0));
+		assertEquals(3, ((FeatureCollection) geoJsonFeatures.get(0)).getFeatures().size());
+		assertEquals(3, ((FeatureCollection) geoJsonFeatures.get(1)).getFeatures().size());
 	}
 
 	protected void createDictItemWithDefaultFields(String dictId)
@@ -985,19 +1152,19 @@ public class CommonDictDataServiceTest extends CommonTest
 		var dataMap = new HashMap<>(DATA_MAP);
 
 		dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put("jsonField", Map.of("lang", "Kotlin", "version", 1.8, "design", "Event Sourcing"));
+		dataMap.put("jsonField", Map.of("lang", "Kotlin", "version", "1.8", "design", "Event Sourcing"));
 		dataMap.put("jsonMultivaluedField", List.of(
-				Map.of("lang", ".Net", "version", 4, "design", "Ambassador"),
-				Map.of("lang", ".Net", "version", 4.8, "design", "Circuit Breaker")
+				Map.of("lang", ".Net", "version", "4", "design", "Ambassador"),
+				Map.of("lang", ".Net", "version", "4.8", "design", "Circuit Breaker")
 		));
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_JSON_DICT_ID, dataMap));
 
 		var updatableMap = new HashMap<>(dictItem.getData());
-		updatableMap.put("jsonField", Map.of("lang", "Kotlin", "version", 1.7, "design", "Event Sourcing"));
+		updatableMap.put("jsonField", Map.of("lang", "Kotlin", "version", "1.7", "design", "Event Sourcing"));
 		updatableMap.put("jsonMultivaluedField", List.of(
-				Map.of("lang", ".Net", "version", 4.1, "design", "Ambassador"),
-				Map.of("lang", "Java", "version", 8, "design", "2PC")
+				Map.of("lang", ".Net", "version", "4.1", "design", "Ambassador"),
+				Map.of("lang", "Java", "version", "8", "design", "2PC")
 		));
 
 		dictDataService.update(dictItem.getId(), buildDictDataItem(TESTABLE_JSON_DICT_ID, updatableMap), dictItem.getVersion());
@@ -1010,12 +1177,15 @@ public class CommonDictDataServiceTest extends CommonTest
 	@SneakyThrows
 	protected void updateDictItemWithGeoJson()
 	{
-		var geo = objectMapper.readValue("{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[55.68154659727316,37.553090921089115],[55.646161942996564,37.58087155165372]]]}}", GeoJsonObject.class);
-		var geoJson = objectMapper.writeValueAsString(geo);
+		var geo1 = objectMapper.readValue("{\"type\":\"Feature\",\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[55.68154659727316,37.553090921089115],[55.646161942996564,37.58087155165372]]]}}", GeoJsonObject.class);
+		var geo1Json = objectMapper.writeValueAsString(geo1);
+
+		var geo2 = objectMapper.readValue("{\"type\":\"FeatureCollection\",\"features\":[{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Point\",\"coordinates\":[37.412284,55.603515]}},{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"Polygon\",\"coordinates\":[[[37.413423,55.604283],[37.41255,55.60361],[37.413995,55.602974],[37.414842,55.603629],[37.413423,55.604283]]]}},{\"type\":\"Feature\",\"properties\":{},\"geometry\":{\"type\":\"LineString\",\"coordinates\":[[37.411999,55.603159],[37.413568,55.602384],[37.41522,55.603516]]}}]}", GeoJsonObject.class);
+		var geo2Json = objectMapper.writeValueAsString(geo2);
 
 		var dataMap = new HashMap<>(DATA_MAP);
-		dataMap.put("geoJsonField", geoJson);
-		dataMap.put("geoJsonMultivaluedField", List.of(geoJson, geoJson));
+		dataMap.put("geoJsonField", geo1Json);
+		dataMap.put("geoJsonMultivaluedField", List.of(geo1Json, geo2Json));
 
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_GEO_JSON_DICT_ID, dataMap));
 
@@ -1034,6 +1204,20 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertEquals(Feature.class, actual.getData().get("geoJsonField").getClass());
 		assertEquals(updatableGeo, actual.getData().get("geoJsonField"));
 		assertEquals(1, ((List<GeoJsonObject>) actual.getData().get("geoJsonMultivaluedField")).size());
+
+		assertNotNull(actual.getHistory().get(0));
+
+		var geoJsonHistoryFeature = (Map<String, Object>) actual.getHistory().get(0).get("geoJsonField");
+
+		assertNotNull(geoJsonHistoryFeature);
+		assertNotNull(geoJsonHistoryFeature.get("type"));
+		assertEquals("Feature", geoJsonHistoryFeature.get("type"));
+
+		geoJsonHistoryFeature = ((List<Map<String, Object>>) actual.getHistory().get(0).get("geoJsonMultivaluedField")).get(0);
+
+		assertNotNull(geoJsonHistoryFeature);
+		assertNotNull(geoJsonHistoryFeature.get("type"));
+		assertEquals("Feature", geoJsonHistoryFeature.get("type"));
 	}
 
 	protected void updateConcurrentExc()
@@ -1053,45 +1237,191 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
 
-		dictDataService.delete(TESTABLE_DICT_ID, dictItem.getId(), true, dictItem.getVersion());
-		assertNotNull(dictDataService.getById(TESTABLE_DICT_ID, dictItem.getId()).getDeleted());
+		dictDataService.delete(TESTABLE_DICT_ID, dictItem.getId());
 
-		var deletedDictItem = dictDataService.getById(TESTABLE_DICT_ID, dictItem.getId());
-
-		dictDataService.delete(TESTABLE_DICT_ID, dictItem.getId(), false, deletedDictItem.getVersion());
-		assertNull(dictDataService.getById(TESTABLE_DICT_ID, dictItem.getId()).getDeleted());
-
+		assertThrows(ObjectNotFoundException.class, () -> dictDataService.getById(TESTABLE_DICT_ID, dictItem.getId()));
 	}
 
-	protected void deleteWithReason(String reason)
+	protected void deleteAllDictItems()
 	{
-		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		dictDataService.create(buildDictDataItem(TESTABLE_TRUNCATED_DICT_ID, DATA_MAP));
 
-		dictDataService.delete(TESTABLE_DICT_ID, dictItem.getId(), true, reason, dictItem.getVersion());
+		dictDataService.deleteAll(TESTABLE_TRUNCATED_DICT_ID);
 
-		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), "deleted != null", Pageable.unpaged())
-				.stream()
-				.filter(item -> Objects.equals(item.getId(), dictItem.getId()))
-				.findFirst()
-				.orElseThrow(() -> new ObjectNotFoundException(DictItem.class, dictItem.getId()));
-
-		assertEquals(reason, result.getDeletionReason());
+		assertEquals(0, dictDataService.countByFilter(TESTABLE_TRUNCATED_DICT_ID, null));
 	}
 
-	protected void deleteWithEmptyReason()
+	protected void concurrentCreateRefDictItemPossible()
 	{
-		var dictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		var refItemId = refDictItem.getId();
 
-		var reason = "";
-		dictDataService.delete(TESTABLE_DICT_ID, dictItem.getId(), true, reason, dictItem.getVersion());
+		var refDataMap = new HashMap<>(DATA_MAP);
+		refDataMap.put(TESTABLE_DICT_ID, refItemId);
 
-		var result = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), "deleted != null", Pageable.unpaged())
-				.stream()
-				.filter(item -> Objects.equals(item.getId(), dictItem.getId()))
-				.findFirst()
-				.orElseThrow(() -> new ObjectNotFoundException(DictItem.class, dictItem.getId()));
+		var latch = new CountDownLatch(1);
 
-		assertNull(result.getDeletionReason());
+		var createThread = new Thread(() ->
+				transactionTemplate.execute(status -> {
+					try
+					{
+						dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+
+						latch.countDown();
+
+						Thread.sleep(1000);
+					}
+					catch (Exception ignored)
+					{
+						//ignored
+					}
+
+					return null;
+				}));
+
+		var secondCreateThread = new Thread(() -> {
+			try
+			{
+				latch.await();
+
+				dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+			}
+			catch (Exception ignored)
+			{
+				//ignored
+			}
+		});
+
+		createThread.start();
+		secondCreateThread.start();
+
+		try
+		{
+			createThread.join();
+			secondCreateThread.join();
+		}
+		catch (InterruptedException ignored)
+		{
+			//ignored
+		}
+
+		assertEquals(14, dictDataService.countByFilter(TESTABLE_REF_DICT_ID, null));
+	}
+
+	protected void createDictItemWithDeletedRefBlocked()
+	{
+		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		var refItemId = refDictItem.getId();
+
+		var refDataMap = new HashMap<>(DATA_MAP);
+		refDataMap.put(TESTABLE_DICT_ID, refItemId);
+
+		var latch = new CountDownLatch(1);
+
+		var deleteThread = new Thread(() ->
+				transactionTemplate.execute(status -> {
+					try
+					{
+						dictDataService.delete(TESTABLE_DICT_ID, refItemId);
+
+						latch.countDown();
+
+						Thread.sleep(1000);
+					}
+					catch (Exception ignored)
+					{
+						//ignored
+					}
+
+					return null;
+				}));
+
+		var createThreadException = new AtomicReference<Throwable>();
+
+		var createThread = new Thread(() -> {
+			try
+			{
+				latch.await();
+
+				dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+			}
+			catch (Exception exception)
+			{
+				createThreadException.set(exception.getCause());
+			}
+		});
+
+		deleteThread.start();
+		createThread.start();
+
+		try
+		{
+			deleteThread.join();
+			createThread.join();
+		}
+		catch (InterruptedException ignored)
+		{
+			//ignored
+		}
+
+		assertFalse(dictDataService.existsById(TESTABLE_DICT_ID, refItemId));
+		assertInstanceOf(DictItemCreateException.class, createThreadException.get());
+		assertEquals(27, dictDataService.countByFilter(TESTABLE_REF_DICT_ID, null));
+	}
+
+	protected void deleteRefDictItemBlocked()
+	{
+		var refDictItem = dictDataService.create(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		var refItemId = refDictItem.getId();
+
+		var refDataMap = new HashMap<>(DATA_MAP);
+		refDataMap.put(TESTABLE_DICT_ID, refItemId);
+
+		var latch = new CountDownLatch(1);
+
+		var createThread = new Thread(() ->
+				transactionTemplate.execute(status -> {
+					try
+					{
+						dictDataService.create(buildDictDataItem(TESTABLE_REF_DICT_ID, refDataMap));
+
+						latch.await();
+					}
+					catch (Exception ignored)
+					{
+						//ignored
+					}
+
+					return null;
+				}));
+
+		var deleteThread = new Thread(() -> {
+			try
+			{
+				dictDataService.delete(TESTABLE_DICT_ID, refItemId);
+			}
+			catch (Exception ignored)
+			{
+				//ignored
+			}
+
+			latch.countDown();
+		});
+
+		createThread.start();
+		deleteThread.start();
+
+		try
+		{
+			createThread.join();
+			deleteThread.join();
+		}
+		catch (InterruptedException ignored)
+		{
+			//ignored
+		}
+
+		assertTrue(dictDataService.existsById(TESTABLE_DICT_ID, refItemId));
 	}
 
 	private Attachment createAttachment(Resource fileResource) throws IOException

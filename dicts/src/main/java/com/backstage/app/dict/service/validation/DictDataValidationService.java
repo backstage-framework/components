@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.exception.dict.DictConcurrentUpdateException;
+import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.UnavailableDictRefException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
@@ -69,6 +70,31 @@ public class DictDataValidationService
 		this.dictDataService = dictDataService;
 		this.objectMapper = objectMapper;
 		this.fieldNameMappingService = fieldNameMappingService;
+	}
+
+	public void validateDeleteAll(Dict dict)
+	{
+		dictService.getAll()
+				.stream()
+				.filter(it -> !it.getId().equals(dict.getId()))
+				.forEach(relatedDict -> validateRelatedDictReferences(dict.getId(), relatedDict));
+	}
+
+	public void validateDelete(Dict dict, String itemId)
+	{
+		var relatedDictIds = dictService.getAll()
+				.stream()
+				.filter(relatedDict -> relatedItemExists(dict, relatedDict, itemId))
+				.map(Dict::getId)
+				.toList();
+
+		if (!relatedDictIds.isEmpty())
+		{
+			throw new DictException(
+					"Невозможно удалить записи из справочника '%s': в других справочниках присутствуют ссылки на запись."
+							.formatted(dict.getId())
+			);
+		}
 	}
 
 	public void validateSelectFields(Dict dict, List<DictFieldName> selectFields)
@@ -324,7 +350,9 @@ public class DictDataValidationService
 		var availableRefDicts = scheme.getFields()
 				.stream()
 				.filter(it -> it.getType() == DictFieldType.DICT)
-				.map(it -> it.getDictRef().getDictId())
+				.map(DictField::getDictRef)
+				.map(DictFieldName::getDictId)
+				.distinct()
 				.map(dictService::getById)
 				.collect(Collectors.toMap(Dict::getId, Function.identity()));
 
@@ -374,5 +402,42 @@ public class DictDataValidationService
 		return fields.stream()
 				.map(DictField::getId)
 				.collect(Collectors.toSet());
+	}
+
+	private void validateRelatedDictReferences(String dictId, Dict relatedDict)
+	{
+		var refFields = DictService.getReferenceFieldMap(relatedDict);
+
+		var refDict = refFields.values()
+				.stream()
+				.filter(field -> field.getDictRef().getDictId().equals(dictId))
+				.map(field -> dictDataService.existsByFilter(relatedDict.getId(), "%s != null".formatted(field.getId())))
+				.findFirst()
+				.orElse(null);
+
+		if (refDict != null)
+		{
+			throw new DictException(
+					"Невозможно удалить все записи из справочника '%s': на него есть ссылки в справочнике '%s'."
+							.formatted(dictId, relatedDict.getId())
+			);
+		}
+	}
+
+	private boolean relatedItemExists(Dict dict, Dict relatedDict, String itemId)
+	{
+		return relatedDict.getFields()
+				.stream()
+				.filter(dictField -> dictField.getDictRef() != null)
+				.filter(dictField -> dict.getId().equals(dictField.getDictRef().getDictId()))
+				.anyMatch(dictField -> dictDataService.existsByFilter(relatedDict.getId(), buildQuery(dictField, itemId)));
+	}
+
+	private String buildQuery(DictField dictField, String itemId)
+	{
+		var operation = dictField.isMultivalued() ? " any['%s']" : " = '%s'";
+		var query = dictField.getId() + operation;
+
+		return query.formatted(itemId);
 	}
 }

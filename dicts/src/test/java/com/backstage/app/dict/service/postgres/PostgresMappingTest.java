@@ -49,18 +49,4 @@ public class PostgresMappingTest extends CommonMappingTest
 	{
 		mapDictFieldName();
 	}
-
-	@Deprecated(forRemoval = true)
-	@Test
-	void map_serviceDictFieldName()
-	{
-		mapServiceDictFieldName();
-	}
-
-	@Deprecated(forRemoval = true)
-	@Test
-	void map_innerDictServiceDictFieldName()
-	{
-		mapInnerDictServiceDictFieldName();
-	}
 }

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import com.backstage.app.api.model.OkResponse;
 import com.backstage.app.dict.api.model.dto.DictDto;
 import com.backstage.app.dict.api.model.dto.data.DictItemDto;
 import com.backstage.app.dict.api.model.dto.data.request.CreateDictItemRequest;
-import com.backstage.app.dict.api.model.dto.data.request.DeleteDictItemRequest;
 import com.backstage.app.dict.api.model.dto.data.request.UpdateDictItemRequest;
 import com.backstage.app.dict.api.model.dto.request.BasicSearchRequest;
 import com.backstage.app.dict.api.model.dto.request.ExportDictRequest;
+import com.backstage.app.dict.api.model.dto.request.SearchDistinctRequest;
 import com.backstage.app.dict.api.model.dto.request.SearchRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -50,8 +50,9 @@ public interface GenericDictDataService<T extends DictItemDto>
 
 	@Schema(description = "Получение записей справочника по фильтру.")
 	@PostMapping("/{dictId}/list")
-	ApiResponse<List<T>> getByFilter(@PathVariable String dictId, @RequestBody SearchRequest request,
-	                                                 @SpringQueryMap Pageable pageable);
+	ApiResponse<List<T>> getByFilter(@PathVariable String dictId,
+	                                 @RequestBody SearchRequest request,
+	                                 @SpringQueryMap Pageable pageable);
 
 	@Schema(description = "Получение списка ИД справочника по фильтру без пагинации.")
 	@PostMapping("/{dictId}/ids")
@@ -60,6 +61,11 @@ public interface GenericDictDataService<T extends DictItemDto>
 	@Schema(description = "Получение записей справочника по списку id.")
 	@PostMapping("/{dictId}/byIds")
 	ApiResponse<List<T>> getByIds(@PathVariable String dictId, @RequestBody List<String> ids);
+
+	@Operation(summary = "Получение уникальных значений полей справочника по фильтру.")
+	@PostMapping("/{dictId}/distinctValues")
+	ApiResponse<List<Object>> getDistinctValuesByFilter(@PathVariable String dictId,
+	                                                    @RequestBody @Valid SearchDistinctRequest request);
 
 	@Schema(description = "Добавление записи в справочник.")
 	@PostMapping("/{dictId}/create")
@@ -71,7 +77,7 @@ public interface GenericDictDataService<T extends DictItemDto>
 
 	@Schema(description = "Удаление записи в справочнике (soft delete).")
 	@PostMapping("/{dictId}/delete")
-	ApiResponse<?> delete(@PathVariable String dictId, @RequestBody DeleteDictItemRequest request);
+	OkResponse delete(@PathVariable String dictId, @RequestParam String itemId);
 
 	@Schema(description = "Проверка существования записи в справочнике по идентификатору.")
 	@PostMapping("/{dictId}/existsById")
@@ -87,11 +93,11 @@ public interface GenericDictDataService<T extends DictItemDto>
 
 	@Operation(summary = "Импорт CSV в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = "text/csv")
-	OkResponse importCsv(@PathVariable String dictId, @RequestBody InputStream inputStream);
+	OkResponse importCsv(@PathVariable String dictId, InputStream inputStream);
 
 	@Operation(summary = "Импорт JSON в справочник.")
 	@PostMapping(value = "/{dictId}/import", consumes = MediaType.APPLICATION_JSON_VALUE)
-	OkResponse importJson(@PathVariable String dictId, @RequestBody InputStream inputStream);
+	OkResponse importJson(@PathVariable String dictId, InputStream inputStream);
 
 	@Operation(summary = "Экспорт элементов справочника.")
 	@PostMapping("/{dictId}/export")

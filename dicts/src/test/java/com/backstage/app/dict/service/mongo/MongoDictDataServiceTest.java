@@ -23,14 +23,13 @@ import com.google.common.collect.Comparators;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.data.domain.PageRequest;
 
 import java.util.Comparator;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Order(TestPipeline.MONGO_DICT_DATA)
 @MongoStorage
@@ -185,12 +184,6 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
-	void check_attachmentBindingDeleteDictItem()
-	{
-		checkAttachmentBindingWithDeleteDictItem();
-	}
-
-	@Test
 	void create()
 	{
 		createDictItem();
@@ -209,9 +202,21 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void check_historyMaxSize()
+	{
+		checkHistoryMaxSize();
+	}
+
+	@Test
 	void create_correctContainsFieldsInHistoryMap()
 	{
 		createCorrectContainsFieldsInHistoryMap();
+	}
+
+	@Test
+	void create_createCorrectContainsFieldsInHistoryMapForSkippedNullValue()
+	{
+		createCorrectContainsFieldsInHistoryMapForSkippedNullValue();
 	}
 
 	@Test
@@ -262,17 +267,10 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 		deleteDictItem();
 	}
 
-	@ParameterizedTest
-	@ValueSource(strings = {"Test reason", "1234"})
-	void delete_withReason(String reason)
-	{
-		deleteWithReason(reason);
-	}
-
 	@Test
-	void delete_withEmptyReason()
+	void deleteAll()
 	{
-		deleteWithEmptyReason();
+		deleteAllDictItems();
 	}
 
 	@Test
@@ -316,6 +314,18 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	void getByFilter_dictSortServiceField()
 	{
 		getByFilterDictSortServiceField();
+	}
+
+	@Test
+	void getByFilter_withUnpagedSort()
+	{
+		getByFilterWithUnpagedSort(31);
+	}
+
+	@Test
+	void getByFilter_unpaged()
+	{
+		getByFilterUnpaged();
 	}
 
 	@Test

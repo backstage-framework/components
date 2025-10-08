@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.model.mongo.query.MongoQuery;
 import com.backstage.app.dict.model.mongo.query.MongoQueryField;
 import com.backstage.app.dict.model.query.TranslationContext;
+import com.backstage.app.dict.service.backend.mongo.MongoDictBackend;
 import com.backstage.app.dict.service.query.ast.*;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.CoreAppStatusCode;
@@ -78,14 +79,18 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 		context.getDict()
 				.getFields()
 				.stream()
-				.filter(it -> it.getId().equalsIgnoreCase(field.name) || Set.of(ServiceFieldConstants.ID, ServiceFieldConstants._ID).contains(field.name))
+				.filter(it -> it.getId().equalsIgnoreCase(field.name) || ServiceFieldConstants.ID.equals(field.name))
 				.findFirst()
 				.orElseThrow(() -> new FieldNotFoundException(context.getDict().getId(), field.name));
 
-		var fieldName = field.name.equals(ServiceFieldConstants.ID) ? ServiceFieldConstants._ID : field.name;
+		var fieldName = field.name.equals(ServiceFieldConstants.ID) ? MongoDictBackend._ID : field.name;
+
+		var dictId = field.dictId == null
+				? context.getDict().getId()
+				: field.dictId;
 
 		return MongoQuery.builder()
-				.field(new MongoQueryField(field.dictId == null ? context.getDict().getId() : field.dictId, fieldName))
+				.field(new MongoQueryField(dictId, fieldName))
 				.build();
 	}
 

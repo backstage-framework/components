@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ package com.backstage.app.dict.service.backend.postgres.clause;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictField;
-import com.backstage.app.dict.model.postgres.backend.PostgresDictItem;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.backend.postgres.PostgresReservedKeyword;
 import com.backstage.app.utils.JsonUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
@@ -34,6 +34,7 @@ import java.sql.Types;
 import java.time.LocalDateTime;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -41,9 +42,13 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class PostgresDictDataInsertClause
 {
+	private final DictService dictService;
+
+	private final PostgresReservedKeyword reservedKeyword;
+
 	public void addInsertClause(String column, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		columns.add(column);
+		columns.add(reservedKeyword.postgresWord(column).getQuotedIfKeyword());
 
 		sqlParameterSource.addValue(sqlParamName(column), value);
 	}
@@ -53,13 +58,22 @@ public class PostgresDictDataInsertClause
 		addInsertClause(columnPlaceholder, jsonValue(value), columns, sqlParameterSource);
 	}
 
-	public void addDictDataInsertClause(Dict dict, PostgresDictItem dictItem, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
+	public void addInsertJsonArrayClause(String columnPlaceholder, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		var fieldMap = DictService.getDataFieldsByDict(dict)
+		PGobject[] pgValue = ((List<?>) value).stream()
+				.map(this::jsonValue)
+				.toArray(PGobject[]::new);
+
+		addInsertClause(columnPlaceholder, pgValue, columns, sqlParameterSource);
+	}
+
+	public void addDictDataInsertClause(Dict dict, Map<String, Object> data, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
+	{
+		var fieldMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
 
-		dictItem.getDictData()
+		data
 				.forEach((column, value) -> {
 					var mapKeyColumn = column.replace("\"", "");
 
@@ -79,10 +93,16 @@ public class PostgresDictDataInsertClause
 	@SuppressWarnings("unchecked")
 	private void completeMultiValue(DictField field, String column, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		// FIXME: работает неправильно, должен быть JSON[].
 		if (DictFieldType.JSON.equals(field.getType()))
 		{
 			completeSingleValue(field, column, value, columns, sqlParameterSource);
+
+			return;
+		}
+
+		if (DictFieldType.GEO_JSON.equals(field.getType()))
+		{
+			addInsertJsonArrayClause(column, value, columns, sqlParameterSource);
 
 			return;
 		}
@@ -107,7 +127,7 @@ public class PostgresDictDataInsertClause
 
 	private void completeSingleValue(DictField field, String column, Object value, LinkedHashSet<String> columns, MapSqlParameterSource sqlParameterSource)
 	{
-		if (DictFieldType.JSON.equals(field.getType()))
+		if (DictFieldType.JSON.equals(field.getType()) || DictFieldType.GEO_JSON.equals(field.getType()))
 		{
 			addInsertJsonClause(column, value, columns, sqlParameterSource);
 
@@ -124,8 +144,6 @@ public class PostgresDictDataInsertClause
 
 	protected String sqlParamName(String column)
 	{
-		column = column.replaceAll("\"", "");
-
 		return column + "Val";
 	}
 

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 
 package com.backstage.app.dict.service.ddl.ast.expression.table.operation;
 
-import com.backstage.app.dict.service.ddl.ast.value.StringValue;
+import com.backstage.app.dict.service.ddl.ast.value.Value;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -26,5 +26,5 @@ public class SetTableParameterOperation implements TableOperation
 {
 	private final TableParameter parameter;
 
-	private final StringValue parameterValue;
+	private final Value<?> parameterValue;
 }

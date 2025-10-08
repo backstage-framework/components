@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -52,9 +52,9 @@ public class PostgresDictFieldNameMapper
 		var wordDictId = Optional.ofNullable(fieldName.getDictId())
 				.map(reservedKeyword::postgresWordMap)
 				.map(it -> it.get(fieldName.getDictId()))
-				.orElse(reservedKeyword.postgresWordMap(dictId).get(dictId));
+				.orElse(reservedKeyword.postgresWord(dictId));
 
-		var wordFieldId = reservedKeyword.postgresWordMap(fieldName.getFieldId()).get(fieldName.getFieldId());
+		var wordFieldId = reservedKeyword.postgresWord(fieldName.getFieldId());
 
 		return new PostgresDictFieldName(wordDictId, wordFieldId);
 	}

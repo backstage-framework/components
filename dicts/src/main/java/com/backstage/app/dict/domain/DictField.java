@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -47,4 +47,20 @@ public class DictField
 	private Number maxSize;
 
 	private Object defaultValue;
+
+	public DictField copy()
+	{
+		return DictField.builder()
+				.id(this.id)
+				.name(this.name)
+				.type(this.type)
+				.dictRef(this.dictRef)
+				.enumId(this.enumId)
+				.multivalued(this.multivalued)
+				.required(this.required)
+				.minSize(this.minSize)
+				.maxSize(this.maxSize)
+				.defaultValue(this.defaultValue)
+				.build();
+	}
 }

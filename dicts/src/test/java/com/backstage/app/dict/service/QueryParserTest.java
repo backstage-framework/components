@@ -22,6 +22,7 @@ import com.backstage.app.dict.service.query.QueryParser;
 import com.backstage.app.dict.service.query.ast.Constant;
 import com.backstage.app.dict.service.query.ast.InQueryExpression;
 import com.backstage.app.dict.service.query.ast.LogicQueryExpression;
+import com.backstage.app.dict.service.query.ast.Predicate;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -69,6 +70,34 @@ class QueryParserTest extends CommonTest
 		var actual = LogicQueryExpression.Type.AND;
 
 		assertSame(expected, actual);
+	}
+
+	@Test
+	public void parse_isNotNullTest()
+	{
+		var expression = queryParser.parse("field1 is not null");
+
+		assertTrue(expression instanceof Predicate);
+
+		var predicate = ((Predicate) expression);
+
+		assertEquals(Predicate.Type.NEQ, predicate.type);
+		assertEquals("field1", predicate.left.name);
+		assertEquals(null, predicate.right.getValue());
+	}
+
+	@Test
+	public void parse_isNullTest()
+	{
+		var expression = queryParser.parse("field1 is null");
+
+		assertTrue(expression instanceof Predicate);
+
+		var predicate = ((Predicate) expression);
+
+		assertEquals(Predicate.Type.EQ, predicate.type);
+		assertEquals("field1", predicate.left.name);
+		assertEquals(null, predicate.right.getValue());
 	}
 
 	@Test

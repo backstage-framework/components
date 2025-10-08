@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2024 the original author or authors.
+ *    Copyright 2019-2025 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -17,9 +17,9 @@
 package com.backstage.app.dict.service.backend.mongo.clause;
 
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
-import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.model.mongo.query.MongoQuery;
+import com.backstage.app.dict.service.backend.mongo.MongoDictBackend;
 import com.backstage.app.dict.service.backend.mongo.MongoEngine;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.domain.Pageable;
@@ -102,7 +102,7 @@ public class MongoDictDataQueryClause
 
 		var singleSort = orders.stream()
 				.map(Sort.Order::getProperty)
-				.allMatch(it -> it.startsWith(ServiceFieldConstants._ID));
+				.allMatch(it -> it.startsWith(MongoDictBackend._ID));
 
 		if (orders.isSorted() && singleSort)
 		{
@@ -110,9 +110,9 @@ public class MongoDictDataQueryClause
 		}
 
 		return orders.stream()
-				.filter(Predicate.not(it -> it.getProperty().startsWith(ServiceFieldConstants._ID)))
+				.filter(Predicate.not(it -> it.getProperty().startsWith(MongoDictBackend._ID)))
 				.collect(Collectors.collectingAndThen(Collectors.toList(), Sort::by))
-				.and(Sort.by(Sort.Direction.ASC, ServiceFieldConstants._ID));
+				.and(Sort.by(Sort.Direction.ASC, MongoDictBackend._ID));
 	}
 
 	public void addPageable(List<AggregationOperation> operations, Pageable mongoPageable)
@@ -130,7 +130,7 @@ public class MongoDictDataQueryClause
 							.addField(foreignFieldAlias)
 							.withValue(ConvertOperators.ToObjectId.toObjectId("$" + field))
 							.build();
-					var lookup = Aggregation.lookup(field, foreignFieldAlias, ServiceFieldConstants._ID, field + LOOKUP_SUFFIX);
+					var lookup = Aggregation.lookup(field, foreignFieldAlias, MongoDictBackend._ID, field + LOOKUP_SUFFIX);
 
 					downstream.accept(foreignId);
 					downstream.accept(lookup);
