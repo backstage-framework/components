@@ -1,3 +1,7 @@
+## 5.2.2 - 2025-10-08
+### Cache
+- Отделили конфигурацию EhCache от JCache.
+
 ## 5.2.1 - 2025-10-02
 ### Dependency Upgrades
 - EclipseLink 4.0.8
