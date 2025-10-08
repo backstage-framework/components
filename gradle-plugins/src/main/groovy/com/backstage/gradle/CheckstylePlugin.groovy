@@ -25,8 +25,6 @@ import java.nio.charset.StandardCharsets
 
 class CheckstylePlugin implements Plugin<Project>
 {
-	def checkStyleVersion = "10.25.0"
-
 	def checkstyleTaskName = "checkstyleMain"
 	def propertyName = "sourceFiles"
 
@@ -44,11 +42,10 @@ class CheckstylePlugin implements Plugin<Project>
 		project.extensions.configure(CheckstyleExtension, { ext ->
 			ext.ignoreFailures = false
 			ext.maxWarnings = 0
-			ext.toolVersion = checkStyleVersion
+			ext.toolVersion = "10.25.0"
 		})
 
-		project.configurations.checkstyle.dependencies.add(project.dependencies.create("com.backstage:checkstyle:1.0.3"))
-		project.configurations.checkstyle.dependencies.add(project.dependencies.create("com.puppycrawl.tools:checkstyle:$checkStyleVersion"))
+		project.configurations.checkstyle.dependencies.add(project.dependencies.create("com.backstage:checkstyle:1.0.4"))
 
 		project.tasks.register("checkstyleApplyConfig").configure {
 			doFirst {
