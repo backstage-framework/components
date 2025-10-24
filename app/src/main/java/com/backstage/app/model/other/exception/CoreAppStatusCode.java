@@ -39,7 +39,7 @@ public enum CoreAppStatusCode implements AppStatusCode
 
 	REMOTE_SERVICE_ERROR(600, "При обращении к сервису произошла ошибка.");
 
-	private final Integer range = AppStatusCode.MODULE_RANGE_APP;
+	private final Integer range = AppStatusCode.MODULE_RANGE_CORE;
 
 	private final Integer code;
 

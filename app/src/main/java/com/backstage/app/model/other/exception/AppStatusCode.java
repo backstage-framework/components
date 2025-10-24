@@ -20,12 +20,12 @@ import org.springframework.http.HttpStatusCode;
 
 public interface AppStatusCode
 {
-	Integer MODULE_RANGE_APP = 0;
-	Integer MODULE_RANGE_ATTACHMENTS = 1000;
-	Integer MODULE_RANGE_DICTS = 2000;
-	Integer MODULE_RANGE_REPORT = 3000;
+	Integer MODULE_RANGE_CORE = 0;
+	Integer MODULE_RANGE_ATTACHMENTS = 100;
+	Integer MODULE_RANGE_DICTS = 200;
+	Integer MODULE_RANGE_REPORT = 300;
 
-	Integer MODULE_RANGE_USER_APP = 10000;
+	Integer MODULE_RANGE_USER_APP = 1000;
 
 	default Integer getRange()
 	{
