@@ -16,6 +16,7 @@
 
 package com.backstage.app.utils;
 
+import lombok.experimental.UtilityClass;
 import org.springframework.data.domain.*;
 
 import java.util.ArrayList;
@@ -24,6 +25,7 @@ import java.util.List;
 import java.util.ListIterator;
 import java.util.function.Consumer;
 
+@UtilityClass
 @SuppressWarnings("unchecked")
 public class DataUtils
 {
@@ -84,5 +86,10 @@ public class DataUtils
 		{
 			pageConsumer.accept(paginateList(list, PageRequest.of(page, pageSize)));
 		}
+	}
+
+	public static int getPageCount(long elementCount, int pageSize)
+	{
+		return (int) Math.ceil((double) elementCount / (double) pageSize);
 	}
 }

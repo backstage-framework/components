@@ -26,6 +26,7 @@ catalog {
 		version("apachePOI", "$apachePOIVersion")
 		version("jersey", "$jerseyVersion")
 		version("minio", "$minioVersion")
+		version("jooq", "$jooqVersion")
 	}
 }
 
