@@ -29,7 +29,7 @@ public enum CoreAppStatusCode implements AppStatusCode
 	ILLEGAL_INPUT(3, "Некорректные входные данные.", HttpStatus.BAD_REQUEST),
 	ILLEGAL_DATA_FORMAT(4, "Некорректный формат данных.", HttpStatus.BAD_REQUEST),
 	OBJECT_NOT_FOUND(5, "Указанный объект не найден.", HttpStatus.NOT_FOUND),
-	CAPTCHA_CHECK_ERROR(6, "Ошибка проверки капчи."),
+	CAPTCHA_CHECK_ERROR(6, "Ошибка проверки CAPTCHA.", HttpStatus.FORBIDDEN),
 
 	SERIALIZE_ERROR(30, "Ошибка сериализации обьекта."),
 	DESERIALIZE_ERROR(31, "Ошибка десериализации обьекта."),

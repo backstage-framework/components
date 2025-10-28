@@ -17,39 +17,54 @@
 package com.backstage.app.api.controller;
 
 import com.backstage.app.api.TestMvcApplication;
+import com.backstage.app.api.configuration.properties.ApiProperties;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.DynamicPropertyRegistry;
+import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = SimpleTestController.class)
 @ContextConfiguration(classes = {TestMvcApplication.class})
-class GlobalMvcExceptionHandlerTest
+class GlobalMvcExceptionHandlerUnknownError500Test
 {
 	@Autowired
 	private MockMvc mvc;
 
+	@Autowired
+	private ApiProperties apiProperties;
+
 	@Test
-	void shouldReturnDefaultMessage() throws Exception
+	void testExceptionThrow() throws Exception
 	{
-		mvc.perform(get("/test/ping"))
-				.andDo(print()).andExpect(status().isOk())
-				.andExpect(content().string(containsString("pong")));
+		mvc.perform(get("/test/exception"))
+				.andDo(print()).andExpect(status().isInternalServerError())
+				.andExpect(content().string(containsString("java.lang.Exception")))
+				.andExpect(content().string(containsString("exceptionCode")));
 	}
 
 	@Test
-	void testAppExceptionThrow() throws Exception
+	void testExceptionThrowWithoutStack() throws Exception
 	{
-		mvc.perform(get("/test/appException"))
+		apiProperties.setStackTraceOnError(false);
+
+		mvc.perform(get("/test/exception"))
 				.andDo(print())
-				.andExpect(status().isBadRequest())
-				.andExpect(content().string(containsString("exceptionCode")));
+				.andExpect(status().isInternalServerError())
+				.andExpect(content().string(containsString("exceptionCode")))
+				.andExpect(jsonPath("$.stackTrace").doesNotExist());
+	}
+
+	@DynamicPropertySource
+	static void apiProperties(DynamicPropertyRegistry registry)
+	{
+		registry.add(ApiProperties.HTTP_OK_ON_UNKNOWN_ERROR_PROPERTY, () -> "false");
 	}
 }

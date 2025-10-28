@@ -31,6 +31,7 @@ public class ApiProperties
 	public static final String OPENAPI_ACTIVATION_PROPERTY = "app.api.openapi.enabled";
 	public static final String SWAGGER_ACTIVATION_PROPERTY = "app.api.swagger.enabled";
 	public static final String EXCEPTION_HANDLER_ACTIVATION_PROPERTY = "app.api.exceptionHandler";
+	public static final String HTTP_OK_ON_UNKNOWN_ERROR_PROPERTY = "app.api.httpOkOnUnknownError";
 
 	@Getter
 	@Setter
@@ -73,4 +74,13 @@ public class ApiProperties
 	 * @see GlobalMvcExceptionHandler
 	 */
 	private boolean exceptionHandler = true;
+
+	/**
+	 * В случае ошибки CoreAppStatusCode.UNKNOWN_ERROR устанавливает HTTP статус ответу - 200. Такое поведение
+	 * полезно для случаев, когда хочется отделять любые ошибки бизнес-логики от технических ошибок, не связанных с кодом приложения.
+	 * При значении false устанавливает код HTTP 500.
+	 *
+	 * @see GlobalMvcExceptionHandler
+	 */
+	private boolean httpOkOnUnknownError = true;
 }

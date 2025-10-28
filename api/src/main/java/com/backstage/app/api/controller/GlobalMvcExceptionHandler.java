@@ -30,6 +30,7 @@ import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.access.AccessDeniedException;
@@ -188,6 +189,9 @@ public class GlobalMvcExceptionHandler
 
 	private Object buildResponseEntity(ApiResponse<?> apiResponse)
 	{
-		return ResponseEntity.status(apiResponse.getHttpStatusCode()).body(apiResponse);
+		var httpStatusCode = (apiProperties.isHttpOkOnUnknownError() && Objects.equals(apiResponse.getStatus(), CoreAppStatusCode.UNKNOWN_ERROR.getCode())
+				? HttpStatus.OK : apiResponse.getHttpStatusCode());
+
+		return ResponseEntity.status(httpStatusCode).body(apiResponse);
 	}
 }

@@ -52,7 +52,7 @@ public class SimpleTestController
 	}
 
 	@GetMapping("/appException")
-	public ResponseEntity<?> appException() throws Exception
+	public ResponseEntity<?> appException()
 	{
 		throw new AppException(CoreAppStatusCode.ILLEGAL_INPUT);
 	}
