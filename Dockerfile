@@ -1,6 +1,6 @@
-ARG JDK_VERSION=21-jdk-slim
+ARG JDK_VERSION=21-jdk
 
-FROM openjdk:$JDK_VERSION
+FROM eclipse-temurin:$JDK_VERSION
 
 COPY . /tmp
 WORKDIR /tmp
