@@ -1,3 +1,7 @@
+## 5.2.7 - 2025-11-14
+### Dicts
+- Исправили ошибку создания TaskExecutor при использовании плагина dicts-codegen и Camunda.
+
 ## 5.2.6 - 2025-10-24
 ### Dependency Upgrades
 - Spring Boot 3.5.7
