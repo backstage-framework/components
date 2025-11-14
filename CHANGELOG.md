@@ -1,4 +1,16 @@
 ## 5.2.7 - 2025-11-14
+### Dependency Upgrades
+- Spring Doc 2.8.14
+- jOOQ 3.19.28
+- Groovy 4.0.29
+- Nashorn 15.7
+- Flyway 11.17.0
+- ClickHouse JDBC 0.9.4
+- PostGIS 2025.1.1
+- Geolatte 1.10
+- Commons-IO 2.21.0
+- Commons-codec 1.20.0
+
 ### Dicts
 - Исправили ошибку создания TaskExecutor при использовании плагина dicts-codegen и Camunda.
 
