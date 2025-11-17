@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.service.backend.mongo;
 
+import com.backstage.app.dict.configuration.annotation.DictsMongoTemplate;
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEngine;
@@ -32,6 +33,7 @@ public class MongoEngine implements Engine
 {
 	public static final String MONGO = "mongo";
 
+	@DictsMongoTemplate
 	private final MongoTemplate mongoTemplate;
 
 	@Override

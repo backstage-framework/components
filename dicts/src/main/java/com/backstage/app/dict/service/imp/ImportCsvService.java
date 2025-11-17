@@ -136,7 +136,7 @@ public class ImportCsvService implements ImportService
 		return switch (targetType)
 		{
 			case BOOLEAN -> Boolean.parseBoolean(stringValue);
-			case INTEGER -> Long.parseLong(stringValue);
+			case SERIAL, INTEGER -> Long.parseLong(stringValue);
 			case DECIMAL -> new BigDecimal(stringValue);
 			case ATTACHMENT -> StringUtils.isBlank(stringValue) ? null : stringValue;
 			case STRING, DICT, DATE, TIMESTAMP, JSON, ENUM, GEO_JSON -> stringValue;

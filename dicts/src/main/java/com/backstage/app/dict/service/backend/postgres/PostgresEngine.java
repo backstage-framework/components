@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.service.backend.postgres;
 
+import com.backstage.app.dict.configuration.annotation.DictsPostgresJdbcTemplate;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.service.backend.Engine;
@@ -35,6 +36,7 @@ public class PostgresEngine implements Engine
 
 	private final DictsProperties dictsProperties;
 
+	@DictsPostgresJdbcTemplate
 	private final NamedParameterJdbcTemplate jdbcTemplate;
 
 	@Override

@@ -210,7 +210,7 @@ public class DictDataValidationService
 		{
 			switch (dictField.getType())
 			{
-				case INTEGER -> {
+				case SERIAL, INTEGER -> {
 					if (checkNumberValue((Long) value, (Integer) dictField.getMinSize(), (Integer) dictField.getMaxSize()))
 					{
 						throw new FieldValidationException("Превышена допустимые ограничения числа: %s.".formatted(dictField.getId()));

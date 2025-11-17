@@ -52,6 +52,8 @@ import static org.springframework.data.mongodb.core.schema.JsonSchemaProperty.*;
 @ConditionalOnEngine(MongoEngine.MONGO)
 public class MongoDictSchemeBackend extends AbstractMongoBackend implements DictSchemeBackend
 {
+	private final MongoSequenceService mongoSequenceService;
+
 	@Override
 	public Engine getEngine()
 	{
@@ -64,7 +66,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	}
 
 	@Override
-	public Dict createDictScheme(Dict dict)
+	public void createDictScheme(Dict dict)
 	{
 		var id = dict.getId();
 
@@ -84,11 +86,10 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		mongoDict.getIndexes()
 				.forEach(it -> mongoTemplate.indexOps(id).ensureIndex(buildIndex(it)));
 
-		return dict;
 	}
 
 	@Override
-	public Dict updateDictScheme(Dict updatedDict)
+	public void updateDictScheme(Dict updatedDict)
 	{
 		addTransactionData(updatedDict, true);
 
@@ -101,7 +102,6 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 
 		mongoTemplate.executeCommand(new Document(params));
 
-		return updatedDict;
 	}
 
 	@Override
@@ -137,6 +137,12 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	public DictField renameDictField(Dict dict, String oldFieldId, DictField field)
 	{
 		addTransactionData(dict, true);
+
+		if (field.getType() == DictFieldType.SERIAL)
+		{
+			restartSerialField(dict.getId(), field.getId(), mongoSequenceService.getSequenceValue(dict.getId(), oldFieldId) + 1);
+			restartSerialField(dict.getId(), oldFieldId, 1L);
+		}
 
 		if (!oldFieldId.equals(field.getId()))
 		{
@@ -198,6 +204,12 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 				.tableId(dict.getId())
 				.fields(fieldsNativeScheme)
 				.build();
+	}
+
+	@Override
+	public void restartSerialField(String dictId, String fieldId, Long startWithValue)
+	{
+		mongoSequenceService.setSequenceValue(dictId, fieldId, startWithValue);
 	}
 
 	private static FieldNativeScheme getFieldNativeScheme(String tableId, DictField field)
@@ -269,7 +281,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		return switch (type)
 				{
-					case INTEGER -> int64(fieldId);
+					case SERIAL, INTEGER -> int64(fieldId);
 					case DECIMAL -> decimal128(fieldId);
 					case STRING, DICT, ATTACHMENT -> string(fieldId);
 					case BOOLEAN -> named(fieldId).ofType(new Type.JsonType("boolean"));

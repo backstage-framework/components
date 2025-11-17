@@ -53,6 +53,24 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	protected void check_streamByFilter()
+	{
+		streamByFilter();
+	}
+
+	@Test
+	protected void check_checkSerialField()
+	{
+		checkSerialField();
+	}
+
+	@Test
+	protected void check_checkReserverWords()
+	{
+		checkReserverWords();
+	}
+
+	@Test
 	void getByFilterWithNullRefFieldCorrect()
 	{
 		getByFilterWithNullRefField();

@@ -48,7 +48,6 @@ import org.geojson.FeatureCollection;
 import org.geojson.GeoJsonObject;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -87,6 +86,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	protected static String TESTABLE_GEO_JSON_DICT_ID;
 	protected static String TESTABLE_TRUNCATED_DICT_ID;
 	protected static String TESTABLE_RESERVED_WORDS_DICT_ID;
+	protected static String TESTABLE_SERIAL_TYPE_DICT_ID;
 
 	@Autowired
 	private AttachmentService attachmentService;
@@ -231,6 +231,18 @@ public class CommonDictDataServiceTest extends CommonTest
 						.build());
 
 		TESTABLE_RESERVED_WORDS_DICT_ID = dictService.create(reserverWordsDict).getId();
+
+		var serialTypeDict = buildDict(storageDictId + "serial");
+
+		serialTypeDict.getFields()
+				.add(DictField.builder()
+						.id("serialField")
+						.name("Поле с автоинкрементом")
+						.type(DictFieldType.SERIAL)
+						.required(false)
+						.build());
+
+		TESTABLE_SERIAL_TYPE_DICT_ID = dictService.create(serialTypeDict).getId();
 	}
 
 	@BeforeAll
@@ -271,7 +283,6 @@ public class CommonDictDataServiceTest extends CommonTest
 		assertEquals(6, result.size());
 	}
 
-	@Test
 	protected void streamByFilter()
 	{
 		var query = "stringField like 'string'";
@@ -284,7 +295,51 @@ public class CommonDictDataServiceTest extends CommonTest
 		}
 	}
 
-	@Test
+	protected void checkSerialField()
+	{
+		int count = RandomUtils.secure().randomInt(10, 30);
+
+		for (int i = 0; i < count; i++)
+		{
+			var item = dictDataService.create(DictDataItem.of(TESTABLE_SERIAL_TYPE_DICT_ID, DATA_MAP));
+
+			assertEquals(i + 1L, item.getData().get("serialField"));
+		}
+
+		dictService.restartSerialField(TESTABLE_SERIAL_TYPE_DICT_ID, "serialField", 1L);
+
+		for (int i = 0; i < count; i++)
+		{
+			var item = dictDataService.create(DictDataItem.of(TESTABLE_SERIAL_TYPE_DICT_ID, DATA_MAP));
+
+			assertEquals(i + 1L, item.getData().get("serialField"));
+		}
+
+		dictService.renameField(TESTABLE_SERIAL_TYPE_DICT_ID, "serialField", "serialField2", null);
+
+		for (int i = count; i < count + RandomUtils.secure().randomLong(10, 30); i++)
+		{
+			var item = dictDataService.create(DictDataItem.of(TESTABLE_SERIAL_TYPE_DICT_ID, DATA_MAP));
+
+			assertEquals(i + 1L, item.getData().get("serialField2"));
+		}
+
+		var dict = dictService.getById(TESTABLE_SERIAL_TYPE_DICT_ID).copy();
+		dict.getFields().add(DictField.builder()
+				.id("serialField")
+				.type(DictFieldType.SERIAL)
+				.build());
+
+		dictService.update(TESTABLE_SERIAL_TYPE_DICT_ID, dict);
+
+		for (int i = 0; i < count; i++)
+		{
+			var item = dictDataService.create(DictDataItem.of(TESTABLE_SERIAL_TYPE_DICT_ID, DATA_MAP));
+
+			assertEquals(i + 1L, item.getData().get("serialField"));
+		}
+	}
+
 	protected void checkReserverWords()
 	{
 		var name = "testName";

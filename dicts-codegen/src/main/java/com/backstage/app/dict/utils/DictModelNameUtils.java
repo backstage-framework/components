@@ -106,7 +106,7 @@ public class DictModelNameUtils
 		{
 			case DICT, STRING, ATTACHMENT -> TypeNames.STRING;
 			// FIXME: убедиться, что возвращается long
-			case INTEGER -> TypeNames.LONG;
+			case SERIAL, INTEGER -> TypeNames.LONG;
 			case BOOLEAN -> TypeNames.BOOLEAN;
 			case DATE -> TypeNames.LOCAL_DATE;
 			case TIMESTAMP -> TypeNames.LOCAL_DATE_TIME;

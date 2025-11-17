@@ -1,3 +1,9 @@
+## 5.2.8 - 2025-11-14
+### Dicts
+- Добавили тип поля SERIAL с автоматическим увеличением значения при вставке для всех поддерживаемых бэкэндов.
+- Добавили возможность сбрасывать счётчик в SERIAL полях через метод restartSerialField в DictService.
+- Добавили возможность сбрасывать счётчик в SERIAL полях через миграции `alter table someDict alter column counter restart with 1`.
+
 ## 5.2.7 - 2025-11-14
 ### Dependency Upgrades
 - Spring Doc 2.8.14

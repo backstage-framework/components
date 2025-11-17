@@ -326,6 +326,7 @@ public class CommonDictTargetSchemeServiceTest extends CommonTest
 		var singleType = switch (field.getType())
 		{
 			case INTEGER -> "bigint";
+			case SERIAL -> "bigserial";
 			case DECIMAL -> "numeric";
 			case STRING, DICT, ENUM, ATTACHMENT -> "text"; //TODO: рассмотреть varchar с max ограничением символов на уровне движка БД
 			case BOOLEAN -> "boolean";
