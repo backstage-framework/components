@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.service.backend.mongo;
 
+import com.backstage.app.dict.configuration.annotation.DictsMongoTemplate;
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.model.dict.DictTransactionItem;
 import com.backstage.app.dict.service.backend.DictBackend;
@@ -37,6 +38,7 @@ public class MongoDictTransactionBackend extends AbstractMongoBackend implements
 	private final DictBackend dictBackend;
 	private final MongoDictSchemeBackend mongoSchemeBackend;
 
+	@DictsMongoTemplate
 	private final MongoTemplate mongoTemplate;
 
 	public Engine getEngine()

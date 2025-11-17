@@ -26,9 +26,9 @@ public interface DictSchemeBackend extends Backend
 {
 	void applyDdl();
 
-	Dict createDictScheme(Dict dict);
+	void createDictScheme(Dict dict);
 
-	Dict updateDictScheme(Dict updatedDict);
+	void updateDictScheme(Dict updatedDict);
 
 	void renameDictSchemeById(String dictId, String renamedDictId);
 
@@ -47,4 +47,6 @@ public interface DictSchemeBackend extends Backend
 	void deleteIndex(Dict dict, String id);
 
 	DictNativeScheme getNativeScheme(Dict dict);
+
+	void restartSerialField(String dictId, String fieldId, Long startWithValue);
 }

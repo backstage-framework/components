@@ -140,12 +140,12 @@ public class DictItemMappingService
 
 	private Object mapSingleField(DictField field, Object o)
 	{
-		if (field.getType() == DictFieldType.INTEGER && o instanceof Double d)
+		if ((field.getType() == DictFieldType.SERIAL || field.getType() == DictFieldType.INTEGER) && o instanceof Double d)
 		{
 			return d.longValue();
 		}
 
-		if (field.getType() == DictFieldType.INTEGER && o instanceof Integer i)
+		if ((field.getType() == DictFieldType.SERIAL || field.getType() == DictFieldType.INTEGER) && o instanceof Integer i)
 		{
 			return i.longValue();
 		}

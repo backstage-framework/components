@@ -27,12 +27,11 @@ import com.backstage.app.dict.service.backend.DictDataBackendMapper;
 import com.backstage.app.utils.DateUtils;
 import com.backstage.app.utils.JsonUtils;
 import com.backstage.app.utils.StreamCollectors;
+import lombok.RequiredArgsConstructor;
 import org.apache.commons.collections4.BidiMap;
 import org.bson.Document;
 import org.bson.types.Decimal128;
 import org.geojson.GeoJsonObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
@@ -43,31 +42,42 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Component
+@RequiredArgsConstructor
 @ConditionalOnEngine(MongoEngine.MONGO)
 public class MongoDictDataBackendMapper implements DictDataBackendMapper<Document>
 {
-	private final DictService dictService;
+	private final MongoSequenceService mongoSequenceService;
 
-	@Autowired
-	public MongoDictDataBackendMapper(@Lazy DictService dictService)
-	{
-		this.dictService = dictService;
-	}
+	private final DictService dictService;
 
 	@Override
 	public Document mapTo(String dictId, DictItem dictItem)
 	{
 		var dict = dictService.getById(dictId);
-		var dataFieldsMap = dictService.getDataFieldsByDict(dict)
+		var dataFieldMap = dictService.getDataFieldsByDict(dict)
 				.stream()
 				.collect(Collectors.toMap(DictField::getId, Function.identity()));
+
+		var updatedFieldIds = new HashSet<>(dataFieldMap.size());
 
 		var document = dictItem.getData()
 				.entrySet()
 				.stream()
+				.filter(entry -> dataFieldMap.containsKey(entry.getKey()))
 				.collect(Document::new,
-						(doc, entry) -> doc.append(entry.getKey(), mapDocumentItem(entry.getValue(), dataFieldsMap.get(entry.getKey()))),
+						(doc, entry) -> {
+							updatedFieldIds.add(entry.getKey());
+
+							doc.append(entry.getKey(), mapDocumentItem(entry.getValue(), dataFieldMap.get(entry.getKey())));
+						},
 						Document::putAll);
+
+		if (updatedFieldIds.size() < dataFieldMap.size())
+		{
+			dataFieldMap.values().stream()
+					.filter(field -> field.getType() == DictFieldType.SERIAL)
+					.forEach(field -> document.append(field.getId(), mongoSequenceService.getNextSequenceValue(dictId, field.getId())));
+		}
 
 		var created = dictItem.getCreated() == null ? null : serviceDateTime(dictItem.getCreated());
 		var updated = dictItem.getUpdated() == null ? null : serviceDateTime(dictItem.getUpdated());

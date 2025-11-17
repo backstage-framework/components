@@ -86,7 +86,7 @@ public class ExportSqlService implements ExportService
 		DataType<?> type = switch (field.getType())
 		{
 			case BOOLEAN -> SQLDataType.BOOLEAN;
-			case INTEGER -> SQLDataType.BIGINT;
+			case SERIAL, INTEGER -> SQLDataType.BIGINT;
 			case DATE -> SQLDataType.DATE;
 			case TIMESTAMP -> SQLDataType.TIMESTAMPWITHTIMEZONE;
 			case DECIMAL -> SQLDataType.DECIMAL;

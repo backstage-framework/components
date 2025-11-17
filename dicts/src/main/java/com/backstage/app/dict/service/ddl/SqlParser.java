@@ -24,10 +24,7 @@ import com.backstage.app.dict.service.ddl.ast.expression.table.CreateIndexExpres
 import com.backstage.app.dict.service.ddl.ast.expression.table.CreateTable;
 import com.backstage.app.dict.service.ddl.ast.expression.table.DeleteIndexExpression;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.*;
-import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.AlterTableColumn;
-import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetDefaultValueColumnOperation;
-import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetNotNullColumnOperation;
-import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetParameterColumnOperation;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.*;
 import com.backstage.app.dict.service.ddl.ast.value.*;
 import com.backstage.app.dict.service.query.ast.Predicate;
 import org.jparsec.Parser;
@@ -43,7 +40,7 @@ public class SqlParser
 			"insert", "into", "values",
 			"update", "set", "where",
 			"create", "table", "index", "unique", "on", "not", "null", "references", "constraint",
-			"alter", "add", "drop", "column", "rename", "to",
+			"alter", "add", "drop", "column", "rename", "to", "restart", "with",
 			"delete", "from",
 			"copy",
 			"true", "false",
@@ -172,6 +169,7 @@ public class SqlParser
 					phrase("drop", "not", "null").retn(new SetNotNullColumnOperation(false)),
 					phrase("set", "not", "null").retn(new SetNotNullColumnOperation(true)),
 					phrase("set", "default").next(VALUE).map(SetDefaultValueColumnOperation::new),
+					phrase("restart", "with").next(DECIMAL_VALUE).map(RestartSerialColumnOperation::new),
 					Parsers.sequence(
 							term("set").next(COLUMN_PARAMETER),
 							term("=").next(VALUE),

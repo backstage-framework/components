@@ -34,6 +34,7 @@ import com.backstage.app.dict.service.ddl.ast.expression.table.CreateTable;
 import com.backstage.app.dict.service.ddl.ast.expression.table.DeleteIndexExpression;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.*;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.AlterTableColumn;
+import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.RestartSerialColumnOperation;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetNotNullColumnOperation;
 import com.backstage.app.dict.service.ddl.ast.expression.table.operation.column.SetParameterColumnOperation;
 import com.backstage.app.dict.service.ddl.ast.value.*;
@@ -478,6 +479,10 @@ public class Interpreter
 			}
 
 			field.setRequired(setNotNullColumnOperation.isNotNull());
+		}
+		else if (operation instanceof RestartSerialColumnOperation restartSerialColumnOperation)
+		{
+			dictService.restartSerialField(dictId, fieldId, restartSerialColumnOperation.getValue().asInt().longValue());
 		}
 	}
 

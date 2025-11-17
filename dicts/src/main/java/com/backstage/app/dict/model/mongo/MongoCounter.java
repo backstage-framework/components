@@ -14,23 +14,18 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.domain;
+package com.backstage.app.dict.model.mongo;
 
+import jakarta.persistence.Id;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
-public enum DictFieldType
+@Setter
+public class MongoCounter
 {
-	INTEGER,
-	SERIAL,
-	DECIMAL,
-	STRING,
-	BOOLEAN,
-	DICT,
-	DATE,
-	TIMESTAMP,
-	JSON,
-	ENUM,
-	ATTACHMENT,
-	GEO_JSON
+	@Id
+	private String id;
+
+	private long seq;
 }

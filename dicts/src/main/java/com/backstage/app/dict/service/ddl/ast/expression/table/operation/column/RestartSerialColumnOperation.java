@@ -14,23 +14,15 @@
  *    limitations under the License.
  */
 
-package com.backstage.app.dict.api.domain;
+package com.backstage.app.dict.service.ddl.ast.expression.table.operation.column;
 
+import com.backstage.app.dict.service.ddl.ast.value.DecimalValue;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 @Getter
-public enum DictFieldType
+@RequiredArgsConstructor
+public class RestartSerialColumnOperation extends AlterTableColumnOperation
 {
-	INTEGER,
-	SERIAL,
-	DECIMAL,
-	STRING,
-	BOOLEAN,
-	DICT,
-	DATE,
-	TIMESTAMP,
-	JSON,
-	ENUM,
-	ATTACHMENT,
-	GEO_JSON
+	private final DecimalValue value;
 }

@@ -16,6 +16,8 @@
 
 package com.backstage.app.utils;
 
+import lombok.SneakyThrows;
+
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
@@ -45,7 +47,7 @@ public class TaskUtils
 		return result;
 	}
 
-	public static void executeWithTryCount(int tryCount, long delay, VoidTask task) throws Exception
+	public static void executeWithTryCount(int tryCount, long delay, VoidTask task)
 	{
 		executeWithTryCount(tryCount, delay,
 				() -> {
@@ -54,12 +56,13 @@ public class TaskUtils
 				}, (c, e) -> true);
 	}
 
-	public static <T> T executeWithTryCount(int tryCount, long delay, Supplier<T> task) throws Exception
+	public static <T> T executeWithTryCount(int tryCount, long delay, Supplier<T> task)
 	{
 		return executeWithTryCount(tryCount, delay, task, (c, e) -> true);
 	}
 
-	public static <T> T executeWithTryCount(int tryCount, long delay, Supplier<T> task, BiFunction<Integer, Throwable, Boolean> errorHandler) throws Exception
+	@SneakyThrows
+	public static <T> T executeWithTryCount(int tryCount, long delay, Supplier<T> task, BiFunction<Integer, Throwable, Boolean> errorHandler)
 	{
 		int c = 0;
 
