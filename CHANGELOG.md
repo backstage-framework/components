@@ -1,3 +1,7 @@
+## 5.2.11 - 2025-12-11
+### Dependency Upgrades
+- Jooq 3.19.29
+
 ## 5.2.10 - 2025-12-05
 ### Dependency Upgrades
 - Minio 8.6.0
