@@ -1,3 +1,10 @@
+## 5.2.12 - 2025-12-26
+### Dependency Upgrades
+- Spring Boot 3.5.9
+- Spring Cloud 4.3.1
+- Flyway 11.20.0
+- Apache POI 5.5.1
+
 ## 5.2.11 - 2025-12-11
 ### Dependency Upgrades
 - Jooq 3.19.29
