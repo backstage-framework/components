@@ -807,7 +807,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	{
 		assertTrue(dictDataService.existsByFilter(TESTABLE_DICT_ID, "integerField = 1"));
 
-		assertFalse(dictDataService.existsByFilter(TESTABLE_DICT_ID, "integerField = 13"));
+		assertFalse(dictDataService.existsByFilter(TESTABLE_DICT_ID, "integerField = 132"));
 	}
 
 	protected void attachmentBindingWithCreateDictItem()
