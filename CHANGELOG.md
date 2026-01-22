@@ -2,9 +2,6 @@
 ### Dependency Upgrades
 - Jooq 3.20.10
 
-### Dicts
-- Актуализированы тесты
-
 ## 5.2.12 - 2025-12-26
 ### Dependency Upgrades
 - Spring Boot 3.5.9
@@ -18,7 +15,7 @@
 
 ## 5.2.10 - 2025-12-05
 ### Dependency Upgrades
-- Minio 8.6.0
+- MinIO 8.6.0
 
 ## 5.2.9 - 2025-11-21
 ### Dependency Upgrades
