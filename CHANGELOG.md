@@ -1,3 +1,12 @@
+## 5.2.14 - 2026-01-29
+### Dependency Upgrades
+- Spring Boot 3.5.10
+- Spring Doc 2.8.15
+- EclipseLink 4.0.9
+- Flyway 11.20.2
+- ClickHouse JDBC 0.9.6
+- PostgreSQL JDBC 42.7.8
+
 ## 5.2.13 - 2026-01-12
 ### Dependency Upgrades
 - Jooq 3.20.10
@@ -66,7 +75,7 @@
 ### Dependency Upgrades
 - EclipseLink 4.0.8
 - Flyway 11.13.2
-- Postgresql JDBC 42.7.8
+- PostgreSQL JDBC 42.7.8
 - Guava 33.5.0-jre
 
 ## 5.2.0 - 2025-09-18
@@ -125,7 +134,7 @@
 - Spring Boot 3.4.7
 - Spring Doc 2.8.9
 - Flyway 11.9.1
-- Postgresql JDBC 42.7.7
+- PostgreSQL JDBC 42.7.7
 - Groovy 4.0.27
 
 ## 5.1.67 - 2025-06-23
@@ -331,7 +340,7 @@
 - Spring Cloud 4.1.4
 - EclipseLink 4.0.5
 - Flyway 11.2.0
-- Postgresql JDBC 42.7.5
+- PostgreSQL JDBC 42.7.5
 - ClickHouse JDBC 0.7.2
 - MinIO 8.5.17
 - Commons-codec 1.17.2
@@ -362,7 +371,7 @@
 - Spring Doc 2.6.0
 - EclipseLink 4.0.3
 - Flyway 11.1.0
-- Postgresql JDBC 42.7.4
+- PostgreSQL JDBC 42.7.4
 - ClickHouse JDBC 0.7.1-patch1
 - Groovy 4.0.24
 - MinIO 8.5.13
@@ -707,7 +716,7 @@
 ### Dependency Upgrades
 - Удалён Apache BeanUtils
 - Flyway 10.11.0
-- Postgresql JDBC 42.7.3
+- PostgreSQL JDBC 42.7.3
 - ClickHouse JDBC 0.6.0-patch3
 - Guava 33.1.0-jre
 - Commons-IO 2.16.1
