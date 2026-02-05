@@ -1,3 +1,7 @@
+## 5.2.15 - 2026-02-05
+### Database
+ - Ограничили количество idle соединений для ddlDataSource и noTimeoutDataSource по умолчанию.
+
 ## 5.2.14 - 2026-01-29
 ### Dependency Upgrades
 - Spring Boot 3.5.10
