@@ -1,3 +1,13 @@
+## 5.2.16 - 2026-02-12
+### Dependency Upgrades
+- Groovy 4.0.30
+- Flyway 11.20.3
+- jOOQ 3.20.11
+- PostgreSQL JDBC 42.7.10
+- Commons-collections4 4.5.0
+- Commons-codec 1.21.0
+- Commons-text 1.15.0
+
 ## 5.2.15 - 2026-02-05
 ### Database
  - Ограничили количество idle соединений для ddlDataSource и noTimeoutDataSource по умолчанию.

@@ -35,7 +35,7 @@ dependencies {
 
 	api "org.jooq:jooq:$jooqVersion"
 	api "org.jparsec:jparsec:3.1"
-	api "org.apache.commons:commons-collections4:4.4"
+	api "org.apache.commons:commons-collections4:$commonsCollections4Version"
 	api "org.apache.commons:commons-csv:$commonsCSVVersion"
 	api "org.apache.commons:commons-text:$commonsTextVersion"
 
