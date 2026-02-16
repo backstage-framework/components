@@ -34,6 +34,7 @@ class DependencyVersionsPlugin implements Plugin<Project> {
 			eclipseLinkVersion        : [group: "org.eclipse.persistence", artifact: "eclipselink"],
 			flywayVersion             : [group: "org.flywaydb", artifact: "flyway-core"],
 			flywayClickhouseVersion   : [group: "org.flywaydb", artifact: "flyway-database-clickhouse"],
+			geojsonVersion            : [group: "de.grundid.opendatalab", artifact: "geojson-jackson"],
 			groovyVersion             : [group: "org.apache.groovy", artifact: "groovy"],
 			guavaVersion              : [group: "com.google.guava", artifact: "guava"],
 			jooqVersion               : [group: "org.jooq", artifact: "jooq"],
