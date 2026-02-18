@@ -23,30 +23,32 @@ import org.gradle.api.Project
 
 class DependencyVersionsPlugin implements Plugin<Project> {
 	def libraries = [
-			apachePOIVersion          : [group: "org.apache.poi", artifact: "poi"],
-			camundaVersion            : [group: "org.camunda.bpm", artifact: "camunda-engine"],
-			clickhouseJdbcVersion     : [group: "com.clickhouse", artifact: "clickhouse-jdbc"],
-			commonsIOVersion          : [group: "commons-io", artifact: "commons-io"],
-			commonsCodecVersion       : [group: "commons-codec", artifact: "commons-codec"],
-			commonsCollections4Version: [group: "org.apache.commons", artifact: "commons-collections4"],
-			commonsTextVersion        : [group: "org.apache.commons", artifact: "commons-text"],
-			commonsCSVVersion         : [group: "org.apache.commons", artifact: "commons-csv"],
-			eclipseLinkVersion        : [group: "org.eclipse.persistence", artifact: "eclipselink"],
-			flywayVersion             : [group: "org.flywaydb", artifact: "flyway-core"],
-			flywayClickhouseVersion   : [group: "org.flywaydb", artifact: "flyway-database-clickhouse"],
-			geojsonVersion            : [group: "de.grundid.opendatalab", artifact: "geojson-jackson"],
-			groovyVersion             : [group: "org.apache.groovy", artifact: "groovy"],
-			guavaVersion              : [group: "com.google.guava", artifact: "guava"],
-			jooqVersion               : [group: "org.jooq", artifact: "jooq"],
-			nashornVersion            : [group: "org.openjdk.nashorn", artifact: "nashorn-core"],
-			minioVersion              : [group: "io.minio", artifact: "minio"],
-			postgresqlJdbcVersion     : [group: "org.postgresql", artifact: "postgresql"],
-			postgisVersion            : [group: "net.postgis", artifact: "postgis-jdbc"],
-			springBootVersion         : [group: "org.springframework.boot", artifact: "spring-boot"],
-			springCloudVersion        : [group: "org.springframework.cloud", artifact: "spring-cloud-starter-openfeign"],
-			springDocVersion          : [group: "org.springdoc", artifact: "springdoc-openapi-starter-webmvc-ui"],
+			apachePOIVersion            : [group: "org.apache.poi", artifact: "poi"],
+			camundaVersion              : [group: "org.camunda.bpm", artifact: "camunda-engine"],
+			clickhouseJdbcVersion       : [group: "com.clickhouse", artifact: "clickhouse-jdbc"],
+			commonsIOVersion            : [group: "commons-io", artifact: "commons-io"],
+			commonsCodecVersion         : [group: "commons-codec", artifact: "commons-codec"],
+			commonsCollections4Version  : [group: "org.apache.commons", artifact: "commons-collections4"],
+			commonsTextVersion          : [group: "org.apache.commons", artifact: "commons-text"],
+			commonsCSVVersion           : [group: "org.apache.commons", artifact: "commons-csv"],
+			eclipseLinkVersion          : [group: "org.eclipse.persistence", artifact: "eclipselink"],
+			flywayVersion               : [group: "org.flywaydb", artifact: "flyway-core"],
+			flywayClickhouseVersion     : [group: "org.flywaydb", artifact: "flyway-database-clickhouse"],
+			geojsonVersion              : [group: "de.grundid.opendatalab", artifact: "geojson-jackson"],
+			groovyVersion               : [group: "org.apache.groovy", artifact: "groovy"],
+			guavaVersion                : [group: "com.google.guava", artifact: "guava"],
+			jetbrainsAnnotationsVersion : [group: "org.jetbrains", artifact: "annotations"],
+			jooqVersion                 : [group: "org.jooq", artifact: "jooq"],
+			jparsecVersion              : [group: "org.jparsec", artifact: "jparsec"],
+			nashornVersion              : [group: "org.openjdk.nashorn", artifact: "nashorn-core"],
+			minioVersion                : [group: "io.minio", artifact: "minio"],
+			postgresqlJdbcVersion       : [group: "org.postgresql", artifact: "postgresql"],
+			postgisVersion              : [group: "net.postgis", artifact: "postgis-jdbc"],
+			springBootVersion           : [group: "org.springframework.boot", artifact: "spring-boot"],
+			springCloudVersion          : [group: "org.springframework.cloud", artifact: "spring-cloud-starter-openfeign"],
+			springDocVersion            : [group: "org.springdoc", artifact: "springdoc-openapi-starter-webmvc-ui"],
 
-			jupiterVersion            : [group: "org.junit.jupiter", artifact: "junit-jupiter-api"],
+			jupiterVersion              : [group: "org.junit.jupiter", artifact: "junit-jupiter-api"],
 	]
 
 	@Override
@@ -161,7 +163,7 @@ class DependencyVersionsPlugin implements Plugin<Project> {
 					}
 					catch (Exception e)
 					{
-						println "⚠️  Failed to load metadata: $metadataUrl"
+						println "⚠️  Failed to load metadata: $metadataUrl. Reason: ${e.toString()}"
 
 						return
 					}
@@ -173,14 +175,15 @@ class DependencyVersionsPlugin implements Plugin<Project> {
 					def compatibleVersions = allVersions.findAll { v ->
 						def ver = parseVersion(v)
 
-						if ((!majorAvailable && ver[0] > currentMajor) || (majorAvailable && compareVersions(majorAvailable, ver)))
+						if ((v.contains("-jre") || !v.contains("-")) && ver)                   // убираем rc / beta / SNAPSHOT
 						{
-							majorAvailable = ver
-						}
+							if ((!majorAvailable && ver[0] > currentMajor) || (majorAvailable && compareVersions(majorAvailable, ver)))
+							{
+								majorAvailable = ver
+							}
 
-						(v.contains("jre") || !v.contains("-")) &&                    // убираем rc / beta / SNAPSHOT
-								ver &&
-								ver[0] == currentMajor
+							ver[0] == currentMajor
+						}
 					}
 
 					if (majorAvailable)

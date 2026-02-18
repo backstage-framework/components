@@ -36,7 +36,7 @@ dependencies {
 	api "org.apache.commons:commons-lang3"
 	api "commons-io:commons-io:$commonsIOVersion"
 	api "commons-codec:commons-codec:$commonsCodecVersion"
-	api "org.jetbrains:annotations:24.1.0"
+	api "org.jetbrains:annotations:$jetbrainsAnnotationsVersion"
 
 	// TODO: перенос в api
 	compileOnly "org.freemarker:freemarker"
