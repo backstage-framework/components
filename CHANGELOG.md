@@ -1,3 +1,7 @@
+## 5.2.19 - 2026-02-26
+### Dependency Upgrades
+- PostgreSQL JDBC 42.7.5 (откат из-за критической несовместимости с Pgpool-II)
+
 ## 5.2.18 - 2026-02-20
 ### Dependency Upgrades
 - Spring Boot 3.5.11
