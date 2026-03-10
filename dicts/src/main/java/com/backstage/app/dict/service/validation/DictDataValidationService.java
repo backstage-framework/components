@@ -172,6 +172,7 @@ public class DictDataValidationService
 				.filter(field -> !ServiceFieldConstants.getServiceInsertableFields().contains(field.getId()))
 				.peek(dictField -> checkCast(dictId, dictField, dictData.get(dictField.getId()), userId))
 				.filter(DictField::isRequired)
+				.filter(field -> field.getType() != DictFieldType.SERIAL)
 				.filter(field -> field.getDefaultValue() == null)
 				.filter(dictField -> !dictData.containsKey(dictField.getId()) || dictData.get(dictField.getId()) == null)
 				.findAny()
