@@ -239,7 +239,7 @@ public class CommonDictDataServiceTest extends CommonTest
 						.id("serialField")
 						.name("Поле с автоинкрементом")
 						.type(DictFieldType.SERIAL)
-						.required(false)
+						.required(true)
 						.build());
 
 		TESTABLE_SERIAL_TYPE_DICT_ID = dictService.create(serialTypeDict).getId();

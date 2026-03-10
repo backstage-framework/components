@@ -248,7 +248,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		dict.getFields()
 				.stream()
 				.filter(DictField::isRequired)
-				.filter(not(it -> it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON || it.getType() == DictFieldType.GEO_JSON))
+				.filter(not(it -> it.getType() == DictFieldType.SERIAL || it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON || it.getType() == DictFieldType.GEO_JSON))
 				.forEach(it -> {
 					var property = getPropertyByDictField(it.getType(), it.getId());
 
