@@ -59,7 +59,7 @@ class CheckstylePlugin implements Plugin<Project>
 
 			if (project.hasProperty(propertyName))
 			{
-				var commaSeparatedSources = project.property(propertyName) as String
+				def commaSeparatedSources = project.property(propertyName) as String
 
 				if (commaSeparatedSources?.trim())
 				{
@@ -72,14 +72,14 @@ class CheckstylePlugin implements Plugin<Project>
 										: name
 							})
 
-					var projectSourceFiles = sourceFileNames.collect({ project.file(it)} ).findAll({ it.exists() })
+					def projectSourceFiles = sourceFileNames.collect({ project.file(it)} ).findAll({ it.exists() })
 
 					if (projectSourceFiles.size() != sourceFileNames.size() && project.rootProject)
 					{
 						projectSourceFiles += sourceFileNames.collect({ project.rootProject.file(it)} ).findAll({ it.exists() && isProjectFile(project, it as File) })
 					}
 
-					var sourceFileCollection = project.objects.fileCollection().from(projectSourceFiles)
+					def sourceFileCollection = project.objects.fileCollection().from(projectSourceFiles)
 
 					setClasspath(sourceFileCollection)
 					setSource(sourceFileCollection.asFileTree)
@@ -148,11 +148,11 @@ class CheckstylePlugin implements Plugin<Project>
 	 */
 	private static File findInitializedGitDir(Project project)
 	{
-		var searchedDir = project.getRootDir()
+		def searchedDir = project.getRootDir()
 
 		while (searchedDir != null)
 		{
-			var initializedGitDir = new File(searchedDir, ".git")
+			def initializedGitDir = new File(searchedDir, ".git")
 
 			if (initializedGitDir.exists())
 			{
