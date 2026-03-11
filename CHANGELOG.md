@@ -7,11 +7,11 @@
 - Исправили работу признака обязательности для полей с типом SERIAL.
 
 ## 5.2.19 - 2026-02-26
-### Dependency Upgrades
+### Dependency upgrades
 - PostgreSQL JDBC 42.7.5 (откат из-за критической несовместимости с Pgpool-II)
 
 ## 5.2.18 - 2026-02-20
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.5.11
 
 ## 5.2.17 - 2026-02-16
@@ -19,7 +19,7 @@
 - Убрали из конфигурации Logback условия с использованием библиотеки Janino, вместо неё используются встроенный в новую версию Logback язык выражений.
 
 ## 5.2.16 - 2026-02-12
-### Dependency Upgrades
+### Dependency upgrades
 - Groovy 4.0.30
 - Flyway 11.20.3
 - jOOQ 3.20.11
@@ -33,7 +33,7 @@
  - Ограничили количество idle соединений для ddlDataSource и noTimeoutDataSource по умолчанию.
 
 ## 5.2.14 - 2026-01-29
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.5.10
 - Spring Doc 2.8.15
 - EclipseLink 4.0.9
@@ -42,26 +42,26 @@
 - PostgreSQL JDBC 42.7.8
 
 ## 5.2.13 - 2026-01-12
-### Dependency Upgrades
+### Dependency upgrades
 - Jooq 3.20.10
 
 ## 5.2.12 - 2025-12-26
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.5.9
 - Spring Cloud 4.3.1
 - Flyway 11.20.0
 - Apache POI 5.5.1
 
 ## 5.2.11 - 2025-12-11
-### Dependency Upgrades
+### Dependency upgrades
 - Jooq 3.19.29
 
 ## 5.2.10 - 2025-12-05
-### Dependency Upgrades
+### Dependency upgrades
 - MinIO 8.6.0
 
 ## 5.2.9 - 2025-11-21
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.5.8
 
 ## 5.2.8 - 2025-11-14
@@ -71,7 +71,7 @@
 - Добавили возможность сбрасывать счётчик в SERIAL полях через миграции `alter table someDict alter column counter restart with 1`.
 
 ## 5.2.7 - 2025-11-14
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Doc 2.8.14
 - jOOQ 3.19.28
 - Groovy 4.0.29
@@ -87,7 +87,7 @@
 - Исправили ошибку создания TaskExecutor при использовании плагина dicts-codegen и Camunda.
 
 ## 5.2.6 - 2025-10-24
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.5.7
 
 ## 5.2.5 - 2025-10-15
@@ -95,7 +95,7 @@
 - В DataUtils добавили метод getPageCount для расчёта общего количества страниц при указанном размере страницы.
 
 ## 5.2.4 - 2025-10-13
-### Dependency Upgrades
+### Dependency upgrades
 - Camunda 7.23.0
 
 ### BPM
@@ -106,7 +106,7 @@
 - Отделили конфигурацию EhCache от JCache.
 
 ## 5.2.1 - 2025-10-02
-### Dependency Upgrades
+### Dependency upgrades
 - EclipseLink 4.0.8
 - Flyway 11.13.2
 - PostgreSQL JDBC 42.7.8
@@ -116,7 +116,7 @@
 ### Breaking changes
 - Поддерживается только JDK 21+.
 
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.5.5
 - Spring Cloud 4.3.0
 - Spring Doc 2.8.13
@@ -128,12 +128,12 @@
 - Добавили алиас taskExecutor к applicationTaskExecutor для совместимости ранее разработанных приложений с Spring Boot 3.5+.
 
 ## 5.1.74 - 2025-09-01
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.4.9
 - Spring Doc 2.8.11
 
 ## 5.1.73 - 2025-08-04
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.4.8
 - Spring Cloud 4.2.2
 - Spring Doc 2.8.9
@@ -164,7 +164,7 @@
 - Изменили блокировки при работе c DictItem в бэкенде PostgreSQL. Теперь ожидаем освобождения блокировки связанных записей при создании/обновлении и проверяем их фактическое наличие.
 
 ## 5.1.68 - 2025-06-26
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.4.7
 - Spring Doc 2.8.9
 - Flyway 11.9.1
@@ -197,7 +197,7 @@
 - Доработали кодогенерацию названий справочников, полей и идентификаторов enum.
 
 ## 5.1.60 - 2025-05-23
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.4.6
 
  ### Dicts
@@ -207,7 +207,7 @@
 - Идентификаторы enum теперь генерируются в формате UPPER_UNDERSCORE.
 
 ## 5.1.59 - 2025-05-21
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Doc 2.8.8
 - EclipseLink 4.0.6
 - jOOQ 3.19.23
@@ -236,7 +236,7 @@
 - Выделили Mongo-специфику при работе с полями идентификаторов в соответствующий backend.
 
 ## 5.1.53 - 2025-04-25
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.4.5
 - Spring Cloud 4.2.1
 - Spring Doc 2.8.6
@@ -275,7 +275,7 @@
 - Переход на полное удаление элементов справочников вместо soft-delete.
 
 ## 5.1.42 - 2025-03-26
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.3.10
 - jOOQ 3.19.21
 - Flyway 11.4.1
@@ -301,7 +301,7 @@
 - Исправили обновление not null ограничений в атрибутах справочников для бэкэнда PostgreSQL.
 
 ## 5.1.29 - 2025-02-28
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.3.9
 - jOOQ 3.19.20
 - Flyway 11.3.3
@@ -348,7 +348,7 @@
 - Исправили ошибки конвертации GeoJSON в DTO и обратно.
 
 ## 5.1.10 - 2025-02-05
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.3.8
 
 ### Api
@@ -370,7 +370,7 @@
 - Добавили метод получения идентификаторов записей справочника по фильтру в сервисы кодогенерации.
 
 ## 5.1.6 - 2025-01-23
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Cloud 4.1.4
 - EclipseLink 4.0.5
 - Flyway 11.2.0
@@ -400,7 +400,7 @@
 - Восстановили добавление констант для встроенных полей при генерации клиентов dicts.
 
 ## 5.1.0 - 2024-12-24
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.3.7
 - Spring Doc 2.6.0
 - EclipseLink 4.0.3
@@ -498,7 +498,7 @@
 - Реализован биндинг параметров при генерации sql запросов (insert, update) в бэкэнде PostgreSQL.
 
 ## 5.0.35 - 2024-07-16
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Cloud 4.1.3
 - Groovy 4.0.22
 - MinIO 8.5.11
@@ -528,7 +528,7 @@
 - Существенно ускорили метод dictService.getById.
 
 ## 5.0.29 - 2024-07-05
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.2.7
 
 ### Cache
@@ -541,7 +541,7 @@
 - Добавлена возможность определять минимальный и максимальный размер поля при изменении таблицы в миграциях.
 
 ## 5.0.27 - 2024-06-11
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.2.6
 
 ### All
@@ -561,7 +561,7 @@
 - Разделили AttachmentUtils на HttpUtils и MimeTypeUtils, которые теперь являются частью модуля app.
 
 ## 5.0.23 - 2024-05-28
-### Dependency Upgrades
+### Dependency upgrades
 - EclipseLink 4.0.3
 
 ### All
@@ -586,7 +586,7 @@
 - Перенос изменений 4.7.25 - 4.7.26.
 
 ## 5.0.13 - 2024-04-25
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.2.5
 - Удалена ссылка на версию Spring Social
 
@@ -594,7 +594,7 @@
 - Перенос изменений 4.7.19 - 4.7.24.
 
 ## 5.0.11 - 2024-04-16
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.2.4
 - Spring Cloud 4.1.1
 - Groovy 4.0.21
@@ -627,7 +627,7 @@
 - Перенос изменений 4.7.9.
 
 ## 5.0.6 - 2024-03-14
-### Dependency Upgrades
+### Dependency upgrades
 - Groovy 4.0.19
 - Camunda 7.21.0-alpha3
 
@@ -643,7 +643,7 @@
 - Перенос изменений 4.7.4 - 4.7.5.
 
 ## 5.0.3 - 2024-02-27
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.2.3
 - Camunda 7.21.0-alpha3
 - MinIO 8.5.8
@@ -667,7 +667,7 @@
 Стартер bpm-jpbm временно не поставляется, начиная с 5.x версии из-за ограничений со стороны вендора.
 Вместо bpm-jpbm рекомендуется использовать bpm-camunda.
 
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 3.2.2
 - Spring Cloud 4.1.0
 - Spring Doc 2.3.0
@@ -703,7 +703,7 @@
 - Добавлена логика определения схемы на основании конфигурации для таблицы audit при работе через jdbcTemplate.
 
 ## 4.7.34 - 2024-05-28
-### Dependency Upgrades
+### Dependency upgrades
 - Flyway 10.12.0
 - MinIO 8.5.10
 - ClickHouse JDBC 0.6.0-patch5
@@ -747,7 +747,7 @@
 - Исправили загрузку схем процессов из БД для Camunda.
 
 ## 4.7.22 - 2024-04-18
-### Dependency Upgrades
+### Dependency upgrades
 - Удалён Apache BeanUtils
 - Flyway 10.11.0
 - PostgreSQL JDBC 42.7.3
@@ -810,7 +810,7 @@
 - Исправили ошибку при попытке определения динамической конфигурации схемы БД для случаев, когда в RelationDescriptor отсутствуют связанные таблицы.
 
 ## 4.7.8 - 2024-03-14
-### Dependency Upgrades
+### Dependency upgrades
 - Groovy 3.0.21
 - Guava 33.0.0-jre
 - Apache POI 5.2.5
@@ -840,7 +840,7 @@
 - Перенос изменений 4.6.32 - 4.6.38.
 
 ## 4.7.1 - 2023-11-29
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.18
 
 ## 4.7.0 - 2023-11-21
@@ -870,7 +870,7 @@
 - Исправлен DDL конфиг ClickHouse.
 
 ## 4.6.58 - 2024-03-05
-### Dependency Upgrades
+### Dependency upgrades
 - EclipseLink 2.7.14
 
 ### All
@@ -975,7 +975,7 @@
 - Исправили работу со справочниками в случае когда мета-информация и айтемы находятся в разных storage.
 
 ## 4.6.31 - 2023-11-29
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.18.
 
 ## 4.6.30 - 2023-11-29
@@ -996,7 +996,7 @@
 - Убрана жесткая зависимость от database.
 
 ## 4.6.26 - 2023-11-21
-### Dependency Upgrades
+### Dependency upgrades
 - Flyway 9.22.3
 - MinIO 8.5.7
 - Flyway 9.22.3
@@ -1047,7 +1047,7 @@
 - Исправлено получение DictItem из Postgres storage, у которых имена колонок начинались с цифры.
 
 ## 4.6.16 - 2023-10-24
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.17
 
 ## 4.6.15 - 2023-10-24
@@ -1097,7 +1097,7 @@
 - Добавлен SpringApplicationUtils для включения Startup Actuator Endpoint при запуске.
 
 ## 4.6.6 - 2023-10-03
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.16
 - Flyway 9.22.2
 - Feign Jackson 12.5
@@ -1137,7 +1137,7 @@
 - Расширили интерфейс ReportService для вызова генерации отчетов с передачей ReportType.
 
 ## 4.5.32 - 2023-09-07
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.15
 - EclipseLink 2.7.13
 - Groovy 3.0.19
@@ -1191,7 +1191,7 @@
 - Однотипная доработка для DefaultEntityManagerFactoryCustomizer.
 
 ## 4.5.22 - 2023-07-26
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.14
 - Spring Cloud 3.1.7
 
@@ -1214,7 +1214,7 @@
 - Изменена обязательность поля objectId в audit.
 
 ## 4.5.18 - 2023-06-27
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.13
 - MinIO 8.4.6
 - Guava 32.0.1-jre
@@ -1247,7 +1247,7 @@
 - Добавлен принудительный маппинг Date к LocalDate или LocalDateTime при получении DictItem.
 
 ## 4.5.11 - 2023-05-30
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.12
 - Spring Cloud 3.1.5
 - Groovy 3.0.17
@@ -1308,7 +1308,7 @@
 - Доработан метод kill JbpmProcessEngine.
 
 ## 4.4.43 - 2023-03-27
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.10
 - Gradle Plugins 1.0.62
 
@@ -1317,7 +1317,7 @@
 - Расширили паттерны дат для Constant в QueryParser, теперь доступна возможность приведения строки к дате и дате-времени в запросах по фильтру ("timestampField in ('2020-03-01'::date, '2020-03-01+03:00'::date)", "timestampField in ('2020-03-01'::timestamp, '2020-03-01+03:00'::timestamp)").
 
 ## 4.4.40 - 2023-03-16
-### Dependency Upgrades
+### Dependency upgrades
 - EclipseLink 2.7.11
 - Groovy 3.0.16
 - Gradle Plugins 1.0.60
@@ -1330,7 +1330,7 @@
 - Дали возможность переопределять ObjectWriter в AbstractJsonConverter.
 
 ## 4.4.38 - 2023-03-13
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.9
 - Spring Cloud 3.1.5
 - Gradle Plugins 1.0.59
@@ -1347,7 +1347,7 @@
 - Добавлен параметр конфигурации `app.bpm.defaultTerminatingEndEventScope` для управления поведением по умолчанию для узлов терминирующего завершения внутри подпроцессов.
 
 ## 4.4.34 - 2023-01-25
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.8
 
 ## 4.4.31 - 2023-01-20
@@ -1355,7 +1355,7 @@
 - Исправили фильтрацию по полям decimal.
 
 ## 4.4.30 - 2023-01-19
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.7
 - Spring Doc 1.6.14
 - Flyway 9.10.2
@@ -1370,7 +1370,7 @@
 - Добавлен индекс на колонку instance_id таблицы process.
 
 ## 4.4.24 - 2022-12-20
-### Dependency Upgrades
+### Dependency upgrades
 - jBPM 7.73.0.Final
 
 ### App
@@ -1384,7 +1384,7 @@
 - Расширены тесты, добавлены проверки миграции между разными ревизиями одного процесса.
 
 ## 4.4.16 - 2022-12-07
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.6
 - Spring Doc 1.6.13
 - Flyway 9.8.2
@@ -1404,7 +1404,7 @@
 - Исправлен экспорт схем процессов для случая, когда в редакторе в поле версия было установлено значение "0", принудительно меняем версию на "1.0".
 
 ## 4.4.7 - 2022-11-14
-### Dependency Upgrades
+### Dependency upgrades
 - MinIO 8.4.5
 
 ### App
@@ -1431,7 +1431,7 @@
 - Добавлена возможность корректного проксирования объектов с глубиной наследования >2. Тесты для ProxyModel.
 
 ## 4.3.33 - 2022-10-20
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.4
 - Spring Cloud 3.1.4
 - Spring Doc 1.6.11
@@ -1472,7 +1472,7 @@
 
 ## 4.3.12 - 2022-08-05
 
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.3
 - Spring Doc 1.6.11
 - Groovy 3.0.12
@@ -1481,7 +1481,7 @@
 ## 4.3.0 - 2022-06-28
 - Перешли на Spring Boot 2.7.x.
 
-### Dependency Upgrades
+### Dependency upgrades
 - Spring Boot 2.7.1
 - Spring Cloud 3.1.3
 - jBPM 7.71.0.Final
@@ -1507,5 +1507,5 @@
 ### Documentation
 - Расширили документацию.
 
-### Dependency Upgrades
+### Dependency upgrades
 - Зависимость с версией.
