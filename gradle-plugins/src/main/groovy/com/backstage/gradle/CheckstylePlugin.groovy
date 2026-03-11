@@ -28,13 +28,6 @@ class CheckstylePlugin implements Plugin<Project>
 	def checkstyleTaskName = "checkstyleMain"
 	def propertyName = "sourceFiles"
 
-	def preCommitHook = """#!/bin/sh
-
-		echo "Performing pre-commit code style check..."
-
-		modifiedFiles=\$(git diff --cached --name-only --diff-filter=ACMR | tr '\\n' ',')
-		./gradlew ${checkstyleTaskName} -P${propertyName}=\${modifiedFiles%?}"""
-
 	void apply(Project project)
 	{
 		project.pluginManager.apply(org.gradle.api.plugins.quality.CheckstylePlugin)
@@ -70,7 +63,15 @@ class CheckstylePlugin implements Plugin<Project>
 
 				if (commaSeparatedSources?.trim())
 				{
-					var sourceFileNames = commaSeparatedSources.split(",").flatten()
+					def projectDirName = project.rootDir.name
+					def sourceFileNames = commaSeparatedSources.split(",")
+							.collect({ name ->
+								name = name.trim()
+								name.startsWith(projectDirName + "/")
+										? name.substring(projectDirName.length() + 1)
+										: name
+							})
+
 					var projectSourceFiles = sourceFileNames.collect({ project.file(it)} ).findAll({ it.exists() })
 
 					if (projectSourceFiles.size() != sourceFileNames.size() && project.rootProject)
@@ -86,10 +87,10 @@ class CheckstylePlugin implements Plugin<Project>
 			}
 		}
 
-		var hooksDir = new File(project.getRootDir(), ".git/hooks")
+		def hooksDir = new File(findInitializedGitDir(project), "hooks")
 		hooksDir.mkdirs()
 
-		var preCommitHookFile = new File(hooksDir, "pre-commit")
+		def preCommitHookFile = new File(hooksDir, "pre-commit")
 
 		// Всегда поддерживаем актуальную версию скрипта.
 		if (preCommitHookFile.exists())
@@ -108,6 +109,19 @@ class CheckstylePlugin implements Plugin<Project>
 		preCommitHookFile.setReadable(true)
 		preCommitHookFile.setWritable(true, true)
 		preCommitHookFile.setExecutable(true)
+
+		def projectRootDir = project.rootDir.absolutePath
+
+		def preCommitHook = """
+		#!/bin/sh
+
+		echo "Performing pre-commit code style check..."
+
+		modifiedFiles=\$(git -C "${projectRootDir}" diff --cached --name-only --diff-filter=ACMR | tr '\\n' ',')
+
+		cd "${projectRootDir}"
+		./gradlew ${checkstyleTaskName} -P${propertyName}=\$modifiedFiles
+		"""
 
 		preCommitHookFile.withOutputStream { stream ->
 			stream.write(preCommitHook.getBytes(StandardCharsets.UTF_8))
@@ -128,5 +142,26 @@ class CheckstylePlugin implements Plugin<Project>
 
 		return false
 	}
-}
 
+	/**
+	 * Осуществляем поиск инициализированного репозитория (.git) из корня gradle проекта выше по каталогам.
+	 */
+	private static File findInitializedGitDir(Project project)
+	{
+		var searchedDir = project.getRootDir()
+
+		while (searchedDir != null)
+		{
+			var initializedGitDir = new File(searchedDir, ".git")
+
+			if (initializedGitDir.exists())
+			{
+				return initializedGitDir
+			}
+
+			searchedDir = searchedDir.getParentFile()
+		}
+
+		return new File(project.getRootDir(), ".git")
+	}
+}
