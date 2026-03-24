@@ -207,6 +207,7 @@ public class DictItemModelGenerator
 			{
 				var fieldType = dictField.getType();
 
+				// Исключаем SERIAL поля для скрытия их использования при создании/обновлении записи
 				if (fieldType == DictFieldType.SERIAL)
 				{
 					return;
