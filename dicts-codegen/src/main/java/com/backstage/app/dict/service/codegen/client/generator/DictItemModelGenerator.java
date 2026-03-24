@@ -205,7 +205,15 @@ public class DictItemModelGenerator
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
 			if (!DEFAULT_FIELDS.contains(dictField.getId()))
 			{
-				if (dictField.getType() == DictFieldType.ENUM)
+				var fieldType = dictField.getType();
+
+				// Исключаем SERIAL поля для скрытия их использования при создании/обновлении записи
+				if (fieldType == DictFieldType.SERIAL)
+				{
+					return;
+				}
+
+				if (fieldType == DictFieldType.ENUM)
 				{
 					methodSpec.addStatement("dataMap.put($L, ($L() != null) ? $L().getValue() : null)", DictModelNameUtils.constantName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name));
 				}
