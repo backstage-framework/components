@@ -21,8 +21,6 @@ import org.gradle.api.Project
 import org.gradle.api.plugins.quality.Checkstyle
 import org.gradle.api.plugins.quality.CheckstyleExtension
 
-import java.nio.charset.StandardCharsets
-
 class CheckstylePlugin implements Plugin<Project>
 {
 	def checkstyleTaskName = "checkstyleMain"
@@ -110,22 +108,20 @@ class CheckstylePlugin implements Plugin<Project>
 		preCommitHookFile.setWritable(true, true)
 		preCommitHookFile.setExecutable(true)
 
-		def projectRootDir = project.rootDir.absolutePath
+		def projectRootDir = project.rootDir.absolutePath.replace('\\', '/')
 
 		def preCommitHook = """
-		#!/bin/sh
+			#!/bin/sh
 
-		echo "Performing pre-commit code style check..."
+			echo "Performing pre-commit code style check..."
 
-		modifiedFiles=\$(git -C "${projectRootDir}" diff --cached --name-only --diff-filter=ACMR | tr '\\n' ',')
+			modifiedFiles=\$(git -C "${projectRootDir}" diff --cached --name-only --diff-filter=ACMR | tr '\\n' ',')
 
-		cd "${projectRootDir}"
-		./gradlew ${checkstyleTaskName} -P${propertyName}=\$modifiedFiles
-		"""
+			cd "${projectRootDir}"
+			./gradlew ${checkstyleTaskName} -P${propertyName}=\$modifiedFiles
+			"""
 
-		preCommitHookFile.withOutputStream { stream ->
-			stream.write(preCommitHook.getBytes(StandardCharsets.UTF_8))
-		}
+		preCommitHookFile.write(normalizeScript(preCommitHook), 'UTF-8')
 	}
 
 	private static boolean isProjectFile(Project project, File file)
@@ -163,5 +159,14 @@ class CheckstylePlugin implements Plugin<Project>
 		}
 
 		return new File(project.getRootDir(), ".git")
+	}
+
+	/**
+	 * Нормализует переносы строк для кроссплатформенной совместимости.
+	 */
+	private static String normalizeScript(String script)
+	{
+		return script.replaceAll(/\r?\n/, '\n')
+				.trim() + '\n'
 	}
 }
