@@ -1,3 +1,12 @@
+## 5.2.24 - 2026-04-13
+### Dependency upgrades
+- Spring Boot 3.5.13
+- Spring Cloud 4.3.2
+- Spring Doc 2.8.17
+- Groovy 4.0.31
+- jOOQ 3.21.1
+- ClickHouse JDBC 0.9.8
+
 ## 5.2.23 - 2026-03-26
 ### Gradle plugins
 - Нормализовали pre-commit hook плагина checkstyle для кроссплатформенной совместимости.
