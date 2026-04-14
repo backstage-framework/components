@@ -52,8 +52,7 @@ public class InMemoryReportService extends AbstractReportService
 		}
 	}
 
-	@Override
-	protected void sendMessage(ReportMessage message)
+	protected void executeReportGeneratingMessage(ReportMessage message)
 	{
 		reportQueueService.executeReportGeneratingMessage(message);
 	}

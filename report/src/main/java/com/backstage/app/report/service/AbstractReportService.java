@@ -47,7 +47,7 @@ public abstract class AbstractReportService implements ReportService
 
 	protected abstract ReportStore getReportStore();
 
-	protected abstract void sendMessage(ReportMessage message);
+	protected abstract void executeReportGeneratingMessage(ReportMessage message);
 
 	@Override
 	public ReportTask generate(ReportType type)

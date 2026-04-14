@@ -55,7 +55,7 @@ public class AttachmentReportService extends AbstractReportService
 	}
 
 	@Override
-	protected void sendMessage(ReportMessage message)
+	protected void executeReportGeneratingMessage(ReportMessage message)
 	{
 		TransactionalUtils.doAfterCommit(() -> reportQueueService.executeReportGeneratingMessage(message));
 	}
