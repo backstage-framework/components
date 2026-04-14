@@ -47,6 +47,8 @@ public abstract class AbstractReportService implements ReportService
 
 	protected abstract ReportStore getReportStore();
 
+	protected abstract void sendMessage(ReportMessage message);
+
 	@Override
 	public ReportTask generate(ReportType type)
 	{
@@ -126,7 +128,7 @@ public abstract class AbstractReportService implements ReportService
 		var report = reportStore.create(message.getReportFileName(), message.getMimeType(), new byte[]{});
 		reportStore.linkReportWithObject(report.getId(), REPORT_ATTACHMENT_BINDING_KEY, task.getId());
 
-		reportQueueService.executeReportGeneratingMessage(message);
+		sendMessage(message);
 
 		var reportType = message.getReportFilter()
 				.getReportType();
