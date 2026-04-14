@@ -52,6 +52,11 @@ public class InMemoryReportService extends AbstractReportService
 		}
 	}
 
+	protected void executeReportGeneratingMessage(ReportMessage message)
+	{
+		reportQueueService.executeReportGeneratingMessage(message);
+	}
+
 	public void generate(ReportMessage message)
 	{
 		var reportType = message.getReportFilter()
