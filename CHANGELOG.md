@@ -1,3 +1,12 @@
+## 5.2.25 - 2026-05-06
+### Dependency upgrades
+- Spring Boot 3.5.14
+- PostgreSQL JDBC 42.7.11
+- jOOQ 3.21.3
+- Guava 33.6.0-jre
+- Commons-IO 2.22.0
+- Commons-codec 1.22.0
+
 ## 5.2.24 - 2026-04-13
 ### Dependency upgrades
 - Spring Boot 3.5.13
@@ -60,7 +69,7 @@
 
 ## 5.2.13 - 2026-01-12
 ### Dependency upgrades
-- Jooq 3.20.10
+- jOOQ 3.20.10
 
 ## 5.2.12 - 2025-12-26
 ### Dependency upgrades
@@ -71,7 +80,7 @@
 
 ## 5.2.11 - 2025-12-11
 ### Dependency upgrades
-- Jooq 3.19.29
+- jOOQ 3.19.29
 
 ## 5.2.10 - 2025-12-05
 ### Dependency upgrades
