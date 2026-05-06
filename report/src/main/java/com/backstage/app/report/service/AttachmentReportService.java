@@ -20,6 +20,7 @@ import com.backstage.app.report.model.ReportMessage;
 import com.backstage.app.report.service.store.AttachmentReportStore;
 import com.backstage.app.report.service.store.ReportStore;
 import com.backstage.app.utils.transactional.TransactionalExecutor;
+import com.backstage.app.utils.transactional.TransactionalUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,6 +52,12 @@ public class AttachmentReportService extends AbstractReportService
 
 			transactionalExecutor.execute(() -> updateReportTask(message.getTaskId(), false, null, null));
 		}
+	}
+
+	@Override
+	protected void executeReportGeneratingMessage(ReportMessage message)
+	{
+		TransactionalUtils.doAfterCommit(() -> reportQueueService.executeReportGeneratingMessage(message));
 	}
 
 	public void generate(ReportMessage message)
