@@ -1,3 +1,7 @@
+## 5.2.27 - 2026-05-20
+### Dependency upgrades
+- Groovy 5.0.6
+
 ## 5.2.26 - 2026-05-06
 ### Dependency upgrades
 - Spring Boot 3.5.14
