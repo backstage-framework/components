@@ -1,3 +1,8 @@
+## 5.2.28 - 2026-06-11
+### Dependency upgrades
+- Spring Boot 3.5.15
+- jOOQ 3.21.5
+
 ## 5.2.27 - 2026-05-20
 ### Dependency upgrades
 - Groovy 5.0.6
