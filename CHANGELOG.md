@@ -1,3 +1,7 @@
+## 5.2.29 - 2026-06-18
+### Gradle plugins
+- Нормализовали путь к persistence.xml в плагине JpaModelGenPlugin для работоспособности на разных ОС.
+
 ## 5.2.28 - 2026-06-11
 ### Dependency upgrades
 - Spring Boot 3.5.15

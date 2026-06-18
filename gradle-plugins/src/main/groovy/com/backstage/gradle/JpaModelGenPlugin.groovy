@@ -35,8 +35,14 @@ class JpaModelGenPlugin implements Plugin<Project>
 				println ':modelgen'
 			}
 
-			options.compilerArgs +=
-					['-ApersistenceXml=' + extension.persistenceXmlPath.get().asFile.toString()]
+			def xmlFile = extension.persistenceXmlPath.get().asFile
+
+			def relativePath = project.projectDir.toPath()
+					.relativize(xmlFile.toPath())
+					.toString()
+					.replace('\\', '/')
+
+			options.compilerArgs += ['-ApersistenceXml=' + relativePath]
 		}
 	}
 }
