@@ -1,3 +1,10 @@
+## 5.2.29 - 2026-07-01
+### Dependency upgrades
+- Spring Boot 3.5.16
+- Spring Cloud 4.3.3
+- jOOQ 3.21.6
+- PostgreSQL JDBC 42.7.12
+
 ## 5.2.28 - 2026-06-11
 ### Dependency upgrades
 - Spring Boot 3.5.15
