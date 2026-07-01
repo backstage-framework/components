@@ -1,9 +1,13 @@
-## 5.2.29 - 2026-07-01
+## 5.2.30 - 2026-07-01
 ### Dependency upgrades
 - Spring Boot 3.5.16
 - Spring Cloud 4.3.3
 - jOOQ 3.21.6
 - PostgreSQL JDBC 42.7.12
+
+## 5.2.29 - 2026-06-18
+### Gradle plugins
+- Нормализовали путь к persistence.xml в плагине JpaModelGenPlugin для работоспособности на разных ОС.
 
 ## 5.2.28 - 2026-06-11
 ### Dependency upgrades
