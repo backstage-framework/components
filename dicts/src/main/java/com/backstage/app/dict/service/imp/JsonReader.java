@@ -16,15 +16,12 @@
 
 package com.backstage.app.dict.service.imp;
 
-import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 @Slf4j
@@ -36,15 +33,6 @@ public class JsonReader
 
 	public <T> T readFromStream(InputStream inputStream, TypeReference<T> type)
 	{
-		try
-		{
-			return mapper.readValue(inputStream, type);
-		}
-		catch (IOException e)
-		{
-			log.error("Ошибка чтения из потока.", e);
-
-			throw new AppException(ApiStatusCodeImpl.UNKNOWN_ERROR, e);
-		}
+		return mapper.readValue(inputStream, type);
 	}
 }

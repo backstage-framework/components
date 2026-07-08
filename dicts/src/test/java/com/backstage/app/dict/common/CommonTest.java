@@ -28,21 +28,20 @@ import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.DictTransactionBackend;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import com.backstage.app.dict.service.migration.ClasspathMigrationService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.context.ContextConfiguration;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.util.*;
 
-@SpringBootTest
+@WebMvcTest
 @ContextConfiguration(initializers = {AppDataSourceInitializer.class, MongoInitializer.class})
-@Import({JacksonAutoConfiguration.class, MongoConfiguration.class})
+@Import({MongoConfiguration.class})
 public class CommonTest
 {
 	public static final String MONGO_DICT_ID = "mgDict";

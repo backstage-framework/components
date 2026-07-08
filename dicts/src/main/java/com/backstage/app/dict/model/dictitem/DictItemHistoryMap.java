@@ -17,7 +17,7 @@
 package com.backstage.app.dict.model.dictitem;
 
 import com.backstage.app.dict.api.configuration.jackson.MapTypedValueSerializer;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import tools.jackson.databind.annotation.JsonSerialize;
 
 import java.util.HashMap;
 import java.util.Map;

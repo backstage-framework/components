@@ -16,20 +16,20 @@
 
 package com.backstage.app.report.service;
 
-import com.backstage.app.report.model.ReportStatus;
-import com.backstage.app.report.service.task.ReportTaskManager;
-import com.backstage.app.report.service.task.ReportTaskService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.backstage.app.report.AbstractTests;
 import com.backstage.app.report.model.ExampleReportType;
 import com.backstage.app.report.model.ReportMessage;
+import com.backstage.app.report.model.ReportStatus;
 import com.backstage.app.report.model.filter.SimpleReportFilter;
+import com.backstage.app.report.service.task.ReportTaskManager;
+import com.backstage.app.report.service.task.ReportTaskService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.concurrent.TimeUnit;
 
@@ -141,6 +141,6 @@ public class ReportServiceTests extends AbstractTests
 	{
 		var wrongSerializedReportMessage = "{\"reportFilter\":{\"reportType\":\"EXAMPLE_XLS_1\"}}";
 
-		assertThrows(JsonProcessingException.class, () -> objectMapper.readValue(wrongSerializedReportMessage, ReportMessage.class));
+		assertThrows(JacksonException.class, () -> objectMapper.readValue(wrongSerializedReportMessage, ReportMessage.class));
 	}
 }

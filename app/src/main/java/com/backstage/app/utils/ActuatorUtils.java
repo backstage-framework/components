@@ -18,9 +18,9 @@ package com.backstage.app.utils;
 
 import com.backstage.app.service.health.AbstractHealthIndicatorComponent;
 import lombok.experimental.UtilityClass;
-import org.springframework.boot.actuate.health.CompositeHealthContributor;
-import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.context.metrics.buffering.BufferingApplicationStartup;
+import org.springframework.boot.health.contributor.CompositeHealthContributor;
+import org.springframework.boot.health.contributor.HealthContributor;
 
 import java.util.Map;
 import java.util.stream.Collectors;

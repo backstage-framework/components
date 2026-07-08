@@ -38,7 +38,7 @@ public class CaptchaService
 
 	public boolean check(String token)
 	{
-		var url = UriComponentsBuilder.fromHttpUrl(captchaProperties.getApi())
+		var url = UriComponentsBuilder.fromUriString(captchaProperties.getApi())
 				.queryParam("secret", captchaProperties.getSecret())
 				.queryParam("response", token).build().toString();
 

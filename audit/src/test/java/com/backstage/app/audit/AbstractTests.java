@@ -17,11 +17,8 @@
 package com.backstage.app.audit;
 
 import org.junit.ClassRule;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
@@ -29,7 +26,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestApplication.class, initializers = {AbstractTests.Initializer.class})
-@ImportAutoConfiguration(classes = {JmsAutoConfiguration.class, JacksonAutoConfiguration.class})
 public abstract class AbstractTests
 {
 	@ClassRule

@@ -20,7 +20,7 @@ import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.jobs.model.dto.JobTrigger;
 import com.backstage.app.jobs.model.dto.other.JobResult;
 import com.backstage.app.jobs.model.dto.param.JobParams;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import io.swagger.v3.core.converter.AnnotatedType;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.core.converter.ResolvedSchema;

@@ -24,14 +24,13 @@ dependencies {
 
 	api "org.springframework.boot:spring-boot-starter-actuator"
 	api "org.springframework.boot:spring-boot-starter"
-	api "org.springframework.boot:spring-boot-starter-aop"
+	api "org.springframework.boot:spring-boot-starter-aspectj"
 	api "org.springframework.boot:spring-boot-starter-validation"
 	api "org.springframework.boot:spring-boot-starter-security"
 
 	compileOnly "org.springframework.boot:spring-boot-starter-data-redis"
 
-	api "com.fasterxml.jackson.core:jackson-databind"
-	api "com.fasterxml.jackson.core:jackson-annotations"
+	api "tools.jackson.core:jackson-databind"
 	api "com.google.guava:guava:$guavaVersion"
 	api "org.apache.commons:commons-lang3"
 	api "commons-io:commons-io:$commonsIOVersion"

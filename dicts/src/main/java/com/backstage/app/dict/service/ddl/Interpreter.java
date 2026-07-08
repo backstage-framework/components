@@ -43,13 +43,13 @@ import com.backstage.app.dict.service.imp.ImportJsonService;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.SecurityUtils;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.io.FilenameUtils;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -532,7 +532,7 @@ public class Interpreter
 
 					item.put(fieldIds.get(i), map);
 				}
-				catch (JsonProcessingException e)
+				catch (JacksonException e)
 				{
 					throw new RuntimeException("Некорректный формат json поля.");
 				}

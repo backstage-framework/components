@@ -40,7 +40,7 @@ dependencies {
 	api "org.apache.commons:commons-text:$commonsTextVersion"
 
 	testImplementation project(":attachments")
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 	testImplementation "org.springframework.boot:spring-boot-starter-data-mongodb"
 
 	testImplementation "org.ehcache:ehcache"

@@ -35,7 +35,7 @@ import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.model.other.date.DateConstants;
 import com.backstage.app.model.other.user.UserInfo;
 import com.backstage.app.utils.StreamCollectors;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableMap;
 import lombok.SneakyThrows;

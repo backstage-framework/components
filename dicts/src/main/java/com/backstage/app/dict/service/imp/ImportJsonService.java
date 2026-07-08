@@ -25,10 +25,10 @@ import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictPermissionService;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.utils.SecurityUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.type.TypeReference;
 
 import java.io.InputStream;
 import java.util.HashMap;

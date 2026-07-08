@@ -23,7 +23,7 @@ import lombok.Cleanup;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.activemq.command.ActiveMQDestination;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.jms.core.JmsTemplate;
 import org.springframework.stereotype.Component;
 

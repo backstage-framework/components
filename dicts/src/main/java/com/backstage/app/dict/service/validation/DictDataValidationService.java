@@ -34,14 +34,14 @@ import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
 import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.model.other.date.DateConstants;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.geojson.GeoJsonObject;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -265,9 +265,9 @@ public class DictDataValidationService
 						{
 							objectMapper.readValue(s, Map.class);
 						}
-						catch (JsonProcessingException ex)
+						catch (JacksonException ex)
 						{
-							throw new FieldValidationException("Некорретный формат json поля: %s.".formatted(dictField.getId()));
+							throw new FieldValidationException("Некорректный формат json поля: %s.".formatted(dictField.getId()));
 						}
 					}
 					else

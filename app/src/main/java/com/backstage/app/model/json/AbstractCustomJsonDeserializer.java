@@ -18,14 +18,13 @@ package com.backstage.app.model.json;
 
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.ObjectCodec;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationContext;
-import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationContext;
+import tools.jackson.databind.JsonNode;
+import tools.jackson.databind.ValueDeserializer;
 
-import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.Spliterator;
 import java.util.Spliterators;
@@ -37,19 +36,19 @@ import java.util.stream.StreamSupport;
  *
  * @param <T> - десериализуемый обьект
  */
-public abstract class AbstractCustomJsonDeserializer<T> extends JsonDeserializer<T>
+public abstract class AbstractCustomJsonDeserializer<T> extends ValueDeserializer<T>
 {
 	private static final int TYPE_TOKEN = 0;
 	private static final int VALUE_TOKEN = 1;
 
-	private ObjectCodec mainCodec;
+	private ObjectReadContext objectReadContext;
 
 	@Override
-	public T deserialize(JsonParser p, DeserializationContext ctxt) throws IOException
+	public T deserialize(JsonParser p, DeserializationContext ctxt)
 	{
 		var json = (JsonNode) p.readValueAsTree();
 
-		this.mainCodec = p.getCodec();
+		this.objectReadContext = ctxt;
 
 		return extractedValue(json);
 	}
@@ -82,7 +81,7 @@ public abstract class AbstractCustomJsonDeserializer<T> extends JsonDeserializer
 
 	protected Object readMultiValue(JsonNode value)
 	{
-		var spliterator = Spliterators.spliteratorUnknownSize(value.get(TYPE_TOKEN).elements(), Spliterator.ORDERED);
+		var spliterator = Spliterators.spliteratorUnknownSize(value.get(TYPE_TOKEN).iterator(), Spliterator.ORDERED);
 
 		return StreamSupport.stream(spliterator, false)
 				.filter(JsonNode::isArray)
@@ -94,7 +93,7 @@ public abstract class AbstractCustomJsonDeserializer<T> extends JsonDeserializer
 	{
 		var clazz = extractClass(value);
 
-		try (JsonParser parser = value.get(VALUE_TOKEN).traverse(mainCodec))
+		try (JsonParser parser = value.get(VALUE_TOKEN).traverse(objectReadContext))
 		{
 			return parser.readValueAs(new TypeReference<>() {
 				public Type getType()
@@ -102,10 +101,6 @@ public abstract class AbstractCustomJsonDeserializer<T> extends JsonDeserializer
 					return clazz;
 				}
 			});
-		}
-		catch (IOException e)
-		{
-			throw new AppException(ApiStatusCodeImpl.DESERIALIZE_ERROR, e);
 		}
 	}
 

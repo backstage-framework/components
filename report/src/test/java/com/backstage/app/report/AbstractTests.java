@@ -17,13 +17,10 @@
 package com.backstage.app.report;
 
 import org.junit.ClassRule;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.autoconfigure.jms.JmsAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.PostgreSQLContainer;
 
@@ -31,7 +28,6 @@ import java.time.LocalDate;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTests.Initializer.class})
-@Import({JacksonAutoConfiguration.class, JmsAutoConfiguration.class})
 public class AbstractTests
 {
 	protected static final LocalDate FROM = LocalDate.of(2000, 1, 1);

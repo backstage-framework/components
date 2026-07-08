@@ -24,12 +24,11 @@ import com.backstage.app.api.configuration.properties.ApiProperties;
 import com.backstage.app.configuration.properties.AppProperties;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
 import org.springframework.context.annotation.Import;
 
 @Import({ApiProperties.class, AppProperties.class, MultipleOpenApiSupportConfiguration.class, SpringDocConfiguration.class, SpringDocConfigProperties.class, SpringDocWebMvcConfiguration.class})
 @SpringBootConfiguration
-@ImportAutoConfiguration(exclude = SecurityAutoConfiguration.class)
+@ImportAutoConfiguration(exclude = org.springframework.boot.security.autoconfigure.SecurityAutoConfiguration.class)
 public class TestSwaggerApplication
 {
 }

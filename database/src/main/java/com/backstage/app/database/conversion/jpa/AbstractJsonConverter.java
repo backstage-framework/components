@@ -16,15 +16,14 @@
 
 package com.backstage.app.database.conversion.jpa;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.ObjectWriter;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.eclipse.persistence.mappings.DatabaseMapping;
 import org.eclipse.persistence.mappings.converters.Converter;
 import org.eclipse.persistence.sessions.Session;
 import org.postgresql.util.PGobject;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectWriter;
 
 public abstract class AbstractJsonConverter<T> implements Converter
 {
@@ -87,8 +86,8 @@ public abstract class AbstractJsonConverter<T> implements Converter
 
 	protected void createObjectMapper()
 	{
-		mapper = new ObjectMapper()
+		mapper = new ObjectMapper().rebuild()
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-				.registerModule(new JavaTimeModule());
+				.build();
 	}
 }

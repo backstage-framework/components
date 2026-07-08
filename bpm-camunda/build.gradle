@@ -28,7 +28,7 @@ dependencies {
 
 	api "org.camunda.bpm.springboot:camunda-bpm-spring-boot-starter:$camundaVersion"
 
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion"
 

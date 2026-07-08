@@ -19,19 +19,18 @@ package com.backstage.bpm;
 import org.camunda.bpm.spring.boot.starter.CamundaBpmAutoConfiguration;
 import org.camunda.bpm.spring.boot.starter.CamundaBpmConfiguration;
 import org.junit.ClassRule;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
 import org.springframework.boot.autoconfigure.task.TaskSchedulingAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@SpringBootTest
+@WebMvcTest
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTests.Initializer.class})
-@Import({JacksonAutoConfiguration.class, TaskSchedulingAutoConfiguration.class, CamundaBpmAutoConfiguration.class, CamundaBpmConfiguration.class})
+@Import({TaskSchedulingAutoConfiguration.class, CamundaBpmAutoConfiguration.class, CamundaBpmConfiguration.class})
 public abstract class AbstractTests
 {
 	@ClassRule

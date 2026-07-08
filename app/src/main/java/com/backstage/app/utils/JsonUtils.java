@@ -18,11 +18,11 @@ package com.backstage.app.utils;
 
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Supplier;
 import org.springframework.stereotype.Component;
+import tools.jackson.core.JacksonException;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.util.List;
 import java.util.Map;
@@ -38,7 +38,7 @@ public class JsonUtils
 		{
 			return mapperSupplier.get().writeValueAsString(value);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new AppException(ApiStatusCodeImpl.SERIALIZE_ERROR,
 					"При сериализации объекта '%s', произошла ошибка: %s".formatted(value, e));
@@ -51,7 +51,7 @@ public class JsonUtils
 		{
 			return mapperSupplier.get().readValue(value.toString(), new TypeReference<>() { });
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new AppException(ApiStatusCodeImpl.DESERIALIZE_ERROR,
 					"При десериализации объекта '%s', произошла ошибка: %s".formatted(value, e));
@@ -71,7 +71,7 @@ public class JsonUtils
 
 			return mapper.readValue(value.toString(), mapper.constructType(clazz));
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new AppException(ApiStatusCodeImpl.DESERIALIZE_ERROR,
 					"При десериализации объекта '%s', произошла ошибка: %s".formatted(value, e));
@@ -84,7 +84,7 @@ public class JsonUtils
 		{
 			return mapperSupplier.get().readValue(value.toString(), typeReference);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new AppException(ApiStatusCodeImpl.DESERIALIZE_ERROR,
 					"При десериализации объекта '%s', произошла ошибка: %s".formatted(value, e));

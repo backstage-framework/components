@@ -28,7 +28,7 @@ dependencies {
 	api project(":jms")
 	api project(":database")
 
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 
 	testImplementation "org.testcontainers:testcontainers:$testContainersVersion"
 	testImplementation "org.testcontainers:postgresql:$testContainersVersion"

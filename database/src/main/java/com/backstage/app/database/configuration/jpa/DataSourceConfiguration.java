@@ -20,8 +20,8 @@ import com.backstage.app.configuration.conditional.ConditionalOnMissingQualified
 import com.backstage.app.database.configuration.annotation.AppDataSource;
 import com.backstage.app.database.configuration.annotation.DDLDataSource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.jdbc.DataSourceProperties;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.jdbc.autoconfigure.DataSourceProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
@@ -39,7 +39,7 @@ public class DataSourceConfiguration
 {
 	@Bean
 	@ConfigurationProperties(prefix = "app.datasource")
-	public DataSourceProperties dataSourceProperties()
+	public org.springframework.boot.jdbc.autoconfigure.DataSourceProperties dataSourceProperties()
 	{
 		return new DataSourceProperties();
 	}

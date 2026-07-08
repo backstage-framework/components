@@ -33,7 +33,7 @@ dependencies {
 
 	compileOnly "org.apache.httpcomponents.client5:httpclient5"
 
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 
     testImplementation "org.testcontainers:testcontainers:$testContainersVersion"
     testImplementation "org.testcontainers:postgresql:$testContainersVersion"

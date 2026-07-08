@@ -17,7 +17,7 @@
 package com.backstage.app.dict.api.configuration.jackson;
 
 import com.backstage.app.model.json.AbstractCustomJsonSerializer;
-import com.fasterxml.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonGenerator;
 
 import java.util.Map;
 

@@ -16,7 +16,7 @@
 
 package com.backstage.app.service.health;
 
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 
 import java.time.LocalDateTime;
 

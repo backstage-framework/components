@@ -18,7 +18,7 @@ package com.backstage.app.audit.conversion.jpa;
 
 import com.backstage.app.audit.model.domain.AuditProperties;
 import com.backstage.app.database.conversion.jpa.AbstractMutableJsonConverter;
-import com.fasterxml.jackson.core.type.TypeReference;
+import tools.jackson.core.type.TypeReference;
 
 public class AuditPropertiesConverter extends AbstractMutableJsonConverter<AuditProperties>
 {

@@ -18,11 +18,15 @@ package com.backstage.app.dict.api.model.dto;
 
 import com.backstage.app.dict.api.domain.DictFieldType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Schema(description = "Описание поля справочника")
 public class DictFieldDto
 {

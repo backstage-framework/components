@@ -21,8 +21,6 @@ import com.backstage.app.api.model.ApiResponse;
 import com.backstage.app.api.utils.ExceptionHandlerUtils;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import jakarta.validation.ConstraintViolationException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -38,6 +36,8 @@ import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.exc.InvalidFormatException;
 
 import java.util.Objects;
 import java.util.Optional;
@@ -152,7 +152,7 @@ public class GlobalMvcExceptionHandler
 		{
 			var path = cause.getPath()
 					.stream()
-					.map(JsonMappingException.Reference::getFieldName)
+					.map(JacksonException.Reference::getPropertyName)
 					.filter(Objects::nonNull)
 					.collect(Collectors.joining("."));
 

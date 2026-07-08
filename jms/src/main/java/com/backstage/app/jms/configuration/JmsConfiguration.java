@@ -19,10 +19,6 @@ package com.backstage.app.jms.configuration;
 import com.backstage.app.jms.configuration.conditional.ConditionalOnJms;
 import com.backstage.app.jms.configuration.properties.JmsProperties;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.MapperFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.jms.ConnectionFactory;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,10 +37,15 @@ import org.springframework.jms.config.JmsListenerContainerFactory;
 import org.springframework.jms.connection.CachingConnectionFactory;
 import org.springframework.jms.connection.JmsTransactionManager;
 import org.springframework.jms.core.JmsTemplate;
-import org.springframework.jms.support.converter.MappingJackson2MessageConverter;
+import org.springframework.jms.support.converter.JacksonJsonMessageConverter;
 import org.springframework.jms.support.converter.MessageConverter;
 import org.springframework.jms.support.converter.MessageType;
 import org.springframework.transaction.PlatformTransactionManager;
+import tools.jackson.databind.DefaultTyping;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.MapperFeature;
+import tools.jackson.databind.json.JsonMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 import java.util.Optional;
 
@@ -157,14 +158,18 @@ public class JmsConfiguration
 
 	private MessageConverter jacksonMessageConverter()
 	{
-		var objectMapper = new ObjectMapper()
+		var ptv = BasicPolymorphicTypeValidator.builder()
+				.allowIfBaseType(Object.class)
+				.build();
+
+		var jsonMapper = new JsonMapper()
+				.rebuild()
 				.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false)
 				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
-				.enableDefaultTyping(ObjectMapper.DefaultTyping.JAVA_LANG_OBJECT, JsonTypeInfo.As.PROPERTY)
-				.registerModule(new JavaTimeModule());
+				.activateDefaultTyping(ptv, DefaultTyping.JAVA_LANG_OBJECT, JsonTypeInfo.As.PROPERTY)
+				.build();
 
-		var converter = new MappingJackson2MessageConverter();
-		converter.setObjectMapper(objectMapper);
+		var converter = new JacksonJsonMessageConverter(jsonMapper);
 		converter.setTargetType(MessageType.TEXT);
 		converter.setTypeIdPropertyName("jmsObjectTypeId");
 

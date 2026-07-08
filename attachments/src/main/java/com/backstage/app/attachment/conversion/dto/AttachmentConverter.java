@@ -77,7 +77,7 @@ public class AttachmentConverter extends AbstractConverter<Attachment, Attachmen
 		if (attachmentProperties.getBaseUrl() != null)
 		{
 			targets.forEach(target -> {
-				target.setUrl(UriComponentsBuilder.fromHttpUrl(attachmentProperties.getBaseUrl())
+				target.setUrl(UriComponentsBuilder.fromUriString(attachmentProperties.getBaseUrl())
 						.path(DEFAULT_ATTACHMENT_PATH)
 						.queryParam("id", target.getId())
 						.toUriString());

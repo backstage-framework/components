@@ -19,10 +19,10 @@ package com.backstage.app.database.configuration;
 import com.backstage.app.database.configuration.properties.PartmanProperties;
 import com.backstage.app.database.partman.PartitionConfigHealthIndicator;
 import com.backstage.app.database.partman.PartitionListHealthIndicator;
-import org.springframework.boot.actuate.health.CompositeHealthContributor;
-import org.springframework.boot.actuate.health.HealthContributor;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.boot.health.contributor.CompositeHealthContributor;
+import org.springframework.boot.health.contributor.HealthContributor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 

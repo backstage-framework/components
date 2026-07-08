@@ -20,7 +20,7 @@ import com.backstage.bpm.model.ExportedWorkflow;
 import com.backstage.bpm.service.process.ProcessService;
 import com.backstage.bpm.service.workflow.ClasspathWorkflowProvider;
 import com.backstage.bpm.service.workflow.WorkflowService;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.databind.ObjectMapper;
 import lombok.Cleanup;
 import lombok.SneakyThrows;
 import org.junit.jupiter.api.*;

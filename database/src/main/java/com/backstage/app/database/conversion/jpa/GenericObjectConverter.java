@@ -16,10 +16,11 @@
 
 package com.backstage.app.database.conversion.jpa;
 
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.DefaultTyping;
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.ObjectMapper;
+import tools.jackson.databind.jsontype.BasicPolymorphicTypeValidator;
 
 public class GenericObjectConverter extends AbstractMutableJsonConverter<Object>
 {
@@ -31,8 +32,9 @@ public class GenericObjectConverter extends AbstractMutableJsonConverter<Object>
 	@Override
 	protected void createObjectMapper()
 	{
-		mapper = new ObjectMapper()
-				.activateDefaultTyping(BasicPolymorphicTypeValidator.builder().build(), ObjectMapper.DefaultTyping.EVERYTHING)
-				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+		mapper = new ObjectMapper().rebuild()
+				.activateDefaultTyping(BasicPolymorphicTypeValidator.builder().build(), DefaultTyping.NON_FINAL_AND_ENUMS)
+				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+				.build();
 	}
 }

@@ -25,8 +25,6 @@ import com.backstage.bpm.model.TaskFilter;
 import com.backstage.bpm.repository.TaskRepository;
 import com.backstage.bpm.service.script.ScriptEngine;
 import com.backstage.bpm.service.workflow.WorkflowService;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -39,6 +37,8 @@ import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.sql.Types;
 import java.time.LocalDateTime;
@@ -263,7 +263,7 @@ public class TaskManager
 
 			return new PageImpl<>(items);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new BpmException("failed to parse task filter", e);
 		}

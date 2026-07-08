@@ -29,7 +29,7 @@ dependencies {
 	api "org.apache.poi:poi:$apachePOIVersion"
 	api "org.apache.poi:poi-ooxml:$apachePOIVersion"
 
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 
 	testImplementation "org.testcontainers:testcontainers:$testContainersVersion"
 	testImplementation "org.testcontainers:postgresql:$testContainersVersion"

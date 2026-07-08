@@ -5,8 +5,8 @@ import com.backstage.app.dict.api.model.dto.data.DictItemRemoteDto;
 import com.backstage.app.dict.common.CommonTest;
 import com.backstage.app.dict.conversion.dto.data.DictItemConverter;
 import com.backstage.app.dict.domain.DictItem;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -61,7 +61,7 @@ class DictItemConverterSerializationTest extends CommonTest
 		{
 			return objectMapper.writeValueAsString(dictItem);
 		}
-		catch (JsonProcessingException e)
+		catch (JacksonException e)
 		{
 			throw new RuntimeException(e);
 		}

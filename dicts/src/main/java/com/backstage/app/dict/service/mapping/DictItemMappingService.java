@@ -25,11 +25,11 @@ import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.model.other.date.DateConstants;
 import com.backstage.app.utils.JsonUtils;
 import com.backstage.app.utils.StreamCollectors;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.geojson.GeoJsonObject;
 import org.springframework.stereotype.Service;
+import tools.jackson.core.JacksonException;
+import tools.jackson.databind.ObjectMapper;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -183,7 +183,7 @@ public class DictItemMappingService
 
 				return objectMapper.readValue(s, Map.class);
 			}
-			catch (JsonProcessingException e)
+			catch (JacksonException e)
 			{
 				throw new RuntimeException("Некорректный формат json поля.", e);
 			}

@@ -21,7 +21,7 @@ import com.backstage.app.service.health.AbstractHealthIndicator;
 import com.google.common.collect.ImmutableMap;
 import org.apache.activemq.broker.BrokerService;
 import org.apache.commons.io.FileUtils;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 import org.springframework.stereotype.Component;
 
 @Component

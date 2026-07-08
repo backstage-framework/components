@@ -29,7 +29,7 @@ dependencies {
 	api "org.springdoc:springdoc-openapi-starter-webmvc-ui:$springDocVersion"
 	api "org.springframework.data:spring-data-commons"
 
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion"
 }

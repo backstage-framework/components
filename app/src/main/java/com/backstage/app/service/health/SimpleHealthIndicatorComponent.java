@@ -17,7 +17,7 @@
 package com.backstage.app.service.health;
 
 import lombok.Getter;
-import org.springframework.boot.actuate.health.Health;
+import org.springframework.boot.health.contributor.Health;
 
 import java.time.LocalDateTime;
 import java.util.HashMap;

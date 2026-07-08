@@ -19,9 +19,9 @@ package com.backstage.app.dict.service.backend.postgres.rowmapper;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.model.dict.DictColumnName;
-import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.jdbc.core.RowMapper;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

@@ -19,6 +19,7 @@ package com.backstage.app.dict.service.backend.mongo;
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.domain.Dict;
 import com.backstage.app.dict.domain.DictEnum;
+import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.service.backend.DictBackend;
@@ -26,10 +27,12 @@ import com.backstage.app.dict.service.backend.Engine;
 import com.backstage.app.exception.AppException;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import lombok.RequiredArgsConstructor;
+import org.bson.types.Decimal128;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Component
 @RequiredArgsConstructor
@@ -50,13 +53,16 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 		Objects.requireNonNull(id, "dictId не может быть null.");
 
 		return mongoDictRepository.findById(id)
+				.map(this::normalize)
 				.orElseThrow(() -> new DictNotFoundException(id));
 	}
 
 	@Override
 	public List<Dict> getAllDicts()
 	{
-		return mongoDictRepository.findAll();
+		return mongoDictRepository.findAll()
+				.stream().map(this::normalize)
+				.collect(Collectors.toList());
 	}
 
 	@Override
@@ -126,7 +132,20 @@ public class MongoDictBackend extends AbstractMongoBackend implements DictBacken
 
 	private Dict save(Dict dict)
 	{
-		return mongoDictRepository.save(dict);
+		return normalize(mongoDictRepository.save(dict));
+	}
+
+	private Dict normalize(Dict dict)
+	{
+		for (DictField field : dict.getFields())
+		{
+			if (field.getDefaultValue() instanceof Decimal128 decimal128)
+			{
+				field.setDefaultValue(decimal128.bigDecimalValue());
+			}
+		}
+
+		return dict;
 	}
 
 	private void validate(Dict dict)

@@ -36,7 +36,7 @@ public class BuildHttpUrlMethod implements TemplateMethodModelEx, ModelMethod
 			throw new TemplateModelException("no arguments specified");
 		}
 
-		UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(arguments.get(0).toString());
+		UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(arguments.get(0).toString());
 
 		for (int i = 1; i < arguments.size(); i++)
 		{

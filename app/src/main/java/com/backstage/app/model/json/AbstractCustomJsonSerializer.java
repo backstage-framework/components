@@ -16,15 +16,12 @@
 
 package com.backstage.app.model.json;
 
-import com.backstage.app.exception.AppException;
-import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonToken;
-import com.fasterxml.jackson.core.type.WritableTypeId;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.SerializerProvider;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.core.JsonToken;
+import tools.jackson.core.type.WritableTypeId;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ValueSerializer;
 
-import java.io.IOException;
 import java.util.Collection;
 
 /**
@@ -35,10 +32,10 @@ import java.util.Collection;
  *
  * @param <T> - сериализуемый обьект.
  */
-public abstract class AbstractCustomJsonSerializer<T> extends JsonSerializer<T>
+public abstract class AbstractCustomJsonSerializer<T> extends ValueSerializer<T>
 {
 	@Override
-	public void serialize(T value, JsonGenerator gen, SerializerProvider serializers) throws IOException
+	public void serialize(T value, JsonGenerator gen, SerializationContext ctxt)
 	{
 		gen.writeStartObject();
 
@@ -69,55 +66,34 @@ public abstract class AbstractCustomJsonSerializer<T> extends JsonSerializer<T>
 
 	protected void writeMultiValue(JsonGenerator gen, String fieldName, Collection<?> collection)
 	{
-		try
-		{
-			gen.writeArrayFieldStart(fieldName);
-			gen.writeTypePrefix(typePrefix(collection));
+		gen.writeArrayPropertyStart(fieldName);
+		gen.writeTypePrefix(typePrefix(collection));
 
-			collection.forEach(it -> writeValueWithTypePrefix(gen, it));
+		collection.forEach(it -> writeValueWithTypePrefix(gen, it));
 
-			gen.writeEndArray();
-			gen.writeEndArray();
-		}
-		catch (IOException e)
-		{
-			throw new AppException(ApiStatusCodeImpl.SERIALIZE_ERROR, e);
-		}
+		gen.writeEndArray();
+		gen.writeEndArray();
 	}
 
 	protected void writeSingleValue(JsonGenerator gen, String fieldName, Object value)
 	{
-		try
-		{
-			gen.writeFieldName(fieldName);
+		gen.writeName(fieldName);
 
-			writeValueWithTypePrefix(gen, value);
-		}
-		catch (IOException e)
-		{
-			throw new AppException(ApiStatusCodeImpl.SERIALIZE_ERROR, e);
-		}
+		writeValueWithTypePrefix(gen, value);
 	}
 
 	private void writeValueWithTypePrefix(JsonGenerator gen, Object value)
 	{
-		try
+		if (value == null)
 		{
-			if (value == null)
-			{
-				gen.writeNull();
+			gen.writeNull();
 
-				return;
-			}
+			return;
+		}
 
-			gen.writeTypePrefix(typePrefix(value));
-			gen.writeObject(value);
-			gen.writeEndArray();
-		}
-		catch (IOException e)
-		{
-			throw new AppException(ApiStatusCodeImpl.SERIALIZE_ERROR, e);
-		}
+		gen.writeTypePrefix(typePrefix(value));
+		gen.writePOJO(value);
+		gen.writeEndArray();
 	}
 
 	private WritableTypeId typePrefix(Object value)

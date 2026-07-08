@@ -18,7 +18,7 @@ package com.backstage.app.database.model;
 
 import jakarta.persistence.Cacheable;
 import org.eclipse.persistence.annotations.Cache;
-import org.eclipse.persistence.config.CacheIsolationType;
+import org.eclipse.persistence.annotations.CacheIsolationType;
 
 /**
  * Используется для упрощения отключения кэша JPA.

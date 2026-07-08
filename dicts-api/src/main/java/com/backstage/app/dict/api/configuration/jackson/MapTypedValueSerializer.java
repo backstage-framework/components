@@ -16,11 +16,10 @@
 
 package com.backstage.app.dict.api.configuration.jackson;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.std.StdSerializer;
+import tools.jackson.core.JsonGenerator;
+import tools.jackson.databind.SerializationContext;
+import tools.jackson.databind.ser.std.StdSerializer;
 
-import java.io.IOException;
 import java.util.Collection;
 
 public class MapTypedValueSerializer extends StdSerializer<Object>
@@ -31,23 +30,23 @@ public class MapTypedValueSerializer extends StdSerializer<Object>
 	}
 
 	@Override
-	public void serialize(Object value, JsonGenerator gen, SerializerProvider provider) throws IOException
+	public void serialize(Object value, JsonGenerator gen, SerializationContext ctxt)
 	{
 		if (value instanceof Collection<?> collection)
 		{
 			if (!collection.isEmpty())
 			{
-				var collectionType = provider.getTypeFactory().constructCollectionType(collection.getClass(), collection.iterator().next().getClass());
-				var serializer = provider.findTypedValueSerializer(collectionType, true, null);
+				var collectionType = ctxt.getTypeFactory().constructCollectionType(collection.getClass(), collection.iterator().next().getClass());
+				var serializer = ctxt.findTypedValueSerializer(collectionType, true);
 
-				serializer.serialize(value, gen, provider);
+				serializer.serialize(value, gen, ctxt);
 
 				return;
 			}
 		}
 
-		var serializer = provider.findTypedValueSerializer(value.getClass(), true, null);
+		var serializer = ctxt.findTypedValueSerializer(value.getClass(), true);
 
-		serializer.serialize(value, gen, provider);
+		serializer.serialize(value, gen, ctxt);
 	}
 }

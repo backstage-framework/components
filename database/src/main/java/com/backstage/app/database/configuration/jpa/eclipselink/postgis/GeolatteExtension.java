@@ -27,7 +27,7 @@ import org.eclipse.persistence.sessions.SessionEventAdapter;
 import org.geolatte.geom.*;
 
 import java.lang.reflect.Field;
-import java.util.Vector;
+import java.util.List;
 
 public class GeolatteExtension extends SessionEventAdapter
 {
@@ -41,7 +41,7 @@ public class GeolatteExtension extends SessionEventAdapter
 		for (final var entry : descriptorMap.entrySet())
 		{
 			final ClassDescriptor desc = entry.getValue();
-			final Vector<DatabaseMapping> mappings = desc.getMappings();
+			final List<DatabaseMapping> mappings = desc.getMappings();
 
 			for (final DatabaseMapping mapping : mappings)
 			{

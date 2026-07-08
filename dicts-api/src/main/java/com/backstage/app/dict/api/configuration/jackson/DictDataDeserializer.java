@@ -17,7 +17,7 @@
 package com.backstage.app.dict.api.configuration.jackson;
 
 import com.backstage.app.model.json.AbstractCustomJsonDeserializer;
-import com.fasterxml.jackson.databind.JsonNode;
+import tools.jackson.databind.JsonNode;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -28,8 +28,7 @@ public class DictDataDeserializer extends AbstractCustomJsonDeserializer<Map<Str
 	{
 		var result = new HashMap<String, Object>();
 
-		json.fields()
-				.forEachRemaining(it -> result.put(it.getKey(), extractValueByFieldName(it.getKey(), json)));
+		json.properties().forEach(it -> result.put(it.getKey(), extractValueByFieldName(it.getKey(), json)));
 
 		return result;
 	}

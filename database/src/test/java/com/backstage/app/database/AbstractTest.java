@@ -17,21 +17,16 @@
 package com.backstage.app.database;
 
 import org.junit.ClassRule;
-import org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.util.TestPropertyValues;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
-import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.testcontainers.clickhouse.ClickHouseContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
 
-@SpringBootTest
-@EnableWebMvc
+@WebMvcTest
 @ContextConfiguration(classes = TestApp.class, initializers = {AbstractTest.Initializer.class})
-@Import({JacksonAutoConfiguration.class})
 public class AbstractTest
 {
 	public static final String POSTGRES_IMAGE_NAME = "postgres:16";
