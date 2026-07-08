@@ -33,8 +33,8 @@ public class DictItemServiceGenerator
 {
 	public TypeSpec generate(JavaFile model)
 	{
-		var modelSpec = model.typeSpec;
-		var modelClassName = ClassName.get(model.packageName, modelSpec.name);
+		var modelSpec = model.typeSpec();
+		var modelClassName = ClassName.get(model.packageName(), modelSpec.name());
 
 		return TypeSpec.classBuilder(getServiceClassName(model))
 				.addModifiers(Modifier.PUBLIC)
@@ -70,7 +70,7 @@ public class DictItemServiceGenerator
 
 	protected String getServiceClassName(JavaFile model)
 	{
-		return model.typeSpec.name + "Service";
+		return model.typeSpec().name() + "Service";
 	}
 
 	protected Class<?> getBaseType()

@@ -35,11 +35,11 @@ public class DictItemEndpointGenerator
 {
 	public TypeSpec generate(JavaFile service, JavaFile model)
 	{
-		var modelSpec = model.typeSpec;
-		var modelClassName = ClassName.get(model.packageName, modelSpec.name);
-		var serviceSpec = service.typeSpec;
-		var serviceClassName = ClassName.get(model.packageName, serviceSpec.name);
-		var className = modelSpec.name + "Endpoint";
+		var modelSpec = model.typeSpec();
+		var modelClassName = ClassName.get(model.packageName(), modelSpec.name());
+		var serviceSpec = service.typeSpec();
+		var serviceClassName = ClassName.get(model.packageName(), serviceSpec.name());
+		var className = modelSpec.name() + "Endpoint";
 
 		return TypeSpec.classBuilder(className)
 				.addModifiers(Modifier.PUBLIC)

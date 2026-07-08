@@ -103,8 +103,8 @@ public class DictItemModelGenerator
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
 			if (!DEFAULT_FIELDS.contains(dictField.getId()))
 			{
-				methodSpec.addParameter(fieldSpec.type, fieldSpec.name);
-				methodSpec.addStatement("this.$N = $N", fieldSpec.name, fieldSpec.name);
+				methodSpec.addParameter(fieldSpec.type(), fieldSpec.name());
+				methodSpec.addStatement("this.$N = $N", fieldSpec.name(), fieldSpec.name());
 			}
 		});
 
@@ -122,11 +122,11 @@ public class DictItemModelGenerator
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
 			if (DEFAULT_FIELDS.contains(dictField.getId()))
 			{
-				methodSpec.addStatement("this.$N = dictItem.$L()", fieldSpec, DictModelNameUtils.getterName(fieldSpec.name));
+				methodSpec.addStatement("this.$N = dictItem.$L()", fieldSpec, DictModelNameUtils.getterName(fieldSpec.name()));
 			}
 			else if (dictField.getType() == DictFieldType.ENUM)
 			{
-				methodSpec.addStatement("this.$N = $T.fromValue(($T) dictItem.getData().get($N))", fieldSpec, ClassName.bestGuess(DictModelNameUtils.className(dictField.getEnumId())), String.class, DictModelNameUtils.constantName(fieldSpec.name));
+				methodSpec.addStatement("this.$N = $T.fromValue(($T) dictItem.getData().get($N))", fieldSpec, ClassName.bestGuess(DictModelNameUtils.className(dictField.getEnumId())), String.class, DictModelNameUtils.constantName(fieldSpec.name()));
 			}
 			else
 			{
@@ -135,8 +135,8 @@ public class DictItemModelGenerator
 					suppressWarnings.setTrue();
 
 					methodSpec.addStatement("this.$N = new $T<>(($T) $T.requireNonNullElse(dictItem.getData().get($N), $T.of()))",
-							fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type, ClassName.get(Objects.class),
-							DictModelNameUtils.constantName(fieldSpec.name), ClassName.get(List.class));
+							fieldSpec, ClassName.get(ArrayList.class), fieldSpec.type(), ClassName.get(Objects.class),
+							DictModelNameUtils.constantName(fieldSpec.name()), ClassName.get(List.class));
 				}
 				else
 				{
@@ -145,7 +145,7 @@ public class DictItemModelGenerator
 						suppressWarnings.setTrue();
 					}
 
-					methodSpec.addStatement("this.$N = ($T) dictItem.getData().get($N)", fieldSpec, fieldSpec.type, DictModelNameUtils.constantName(fieldSpec.name));
+					methodSpec.addStatement("this.$N = ($T) dictItem.getData().get($N)", fieldSpec, fieldSpec.type(), DictModelNameUtils.constantName(fieldSpec.name()));
 				}
 			}
 		});
@@ -185,7 +185,7 @@ public class DictItemModelGenerator
 
 				methodBuilder
 						.returns(returnTypeName)
-						.addStatement("return itemService.$L($L())", methodName, DictModelNameUtils.getterName(fieldSpec.name));
+						.addStatement("return itemService.$L($L())", methodName, DictModelNameUtils.getterName(fieldSpec.name()));
 
 				result.add(methodBuilder.build());
 			}
@@ -215,11 +215,11 @@ public class DictItemModelGenerator
 
 				if (fieldType == DictFieldType.ENUM)
 				{
-					methodSpec.addStatement("dataMap.put($L, ($L() != null) ? $L().getValue() : null)", DictModelNameUtils.constantName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name));
+					methodSpec.addStatement("dataMap.put($L, ($L() != null) ? $L().getValue() : null)", DictModelNameUtils.constantName(fieldSpec.name()), DictModelNameUtils.getterName(fieldSpec.name()), DictModelNameUtils.getterName(fieldSpec.name()));
 				}
 				else
 				{
-					methodSpec.addStatement("dataMap.put($L, $L())", DictModelNameUtils.constantName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name));
+					methodSpec.addStatement("dataMap.put($L, $L())", DictModelNameUtils.constantName(fieldSpec.name()), DictModelNameUtils.getterName(fieldSpec.name()));
 				}
 			}
 		});
@@ -240,7 +240,7 @@ public class DictItemModelGenerator
 				.addAnnotation(ClassName.get("lombok", "Getter"))
 				.addAnnotation(ClassName.get("lombok", "RequiredArgsConstructor"))
 				.addModifiers(Modifier.PUBLIC, Modifier.STATIC)
-				.addField(String.class, valueParameterSpec.name, Modifier.PRIVATE, Modifier.FINAL)
+				.addField(String.class, valueParameterSpec.name(), Modifier.PRIVATE, Modifier.FINAL)
 				.addMethod(MethodSpec.methodBuilder("fromValue")
 						.returns(className)
 						.addModifiers(Modifier.PUBLIC, Modifier.STATIC)
@@ -251,7 +251,7 @@ public class DictItemModelGenerator
 						.addAnnotation(Override.class)
 						.returns(String.class)
 						.addModifiers(Modifier.PUBLIC)
-						.addStatement("return $L", valueParameterSpec.name)
+						.addStatement("return $L", valueParameterSpec.name())
 						.build());
 
 		if (dictEnum.getName() != null)

@@ -36,6 +36,7 @@ public class DictModelNameUtils
 	@UtilityClass
 	public class TypeNames
 	{
+		public TypeName OBJECT = TypeName.get(Object.class);
 		public ClassName STRING = ClassName.get("java.lang", "String");
 		public ClassName INTEGER = ClassName.get(Integer.class);
 		public ClassName LONG = ClassName.get(Long.class);
@@ -45,7 +46,7 @@ public class DictModelNameUtils
 		public ClassName LOCAL_DATE_TIME = ClassName.get(LocalDateTime.class);
 		public ClassName LIST = ClassName.get("java.util", "List");
 		public ClassName MAP = ClassName.get("java.util", "Map");
-		public TypeName JSON = ParameterizedTypeName.get(MAP, STRING, TypeName.OBJECT);
+		public TypeName JSON = ParameterizedTypeName.get(MAP, STRING, OBJECT);
 		public ClassName GEO_JSON = ClassName.get(GeoJsonObject.class);
 	}
 
@@ -114,7 +115,7 @@ public class DictModelNameUtils
 			case ENUM -> ClassName.bestGuess(className(dictField.getEnumId()));
 			case JSON -> TypeNames.JSON;
 			case GEO_JSON -> TypeNames.GEO_JSON;
-			default -> TypeName.OBJECT;
+			default -> TypeNames.OBJECT;
 		};
 
 		if (dictField.isMultivalued())

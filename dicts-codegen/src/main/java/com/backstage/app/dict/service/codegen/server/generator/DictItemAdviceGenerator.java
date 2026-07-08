@@ -32,11 +32,11 @@ public class DictItemAdviceGenerator
 {
 	public TypeSpec generate(JavaFile service, JavaFile model)
 	{
-		var modelSpec = model.typeSpec;
-		var modelClassName = ClassName.get(model.packageName, modelSpec.name);
-		var serviceSpec = service.typeSpec;
-		var serviceClassName = ClassName.get(model.packageName, serviceSpec.name);
-		var className = modelSpec.name + "AbstractAdvice";
+		var modelSpec = model.typeSpec();
+		var modelClassName = ClassName.get(model.packageName(), modelSpec.name());
+		var serviceSpec = service.typeSpec();
+		var serviceClassName = ClassName.get(model.packageName(), serviceSpec.name());
+		var className = modelSpec.name() + "AbstractAdvice";
 
 		return TypeSpec.classBuilder(className)
 				.addModifiers(Modifier.PUBLIC, Modifier.ABSTRACT)
