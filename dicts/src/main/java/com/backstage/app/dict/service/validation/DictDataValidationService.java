@@ -246,9 +246,7 @@ public class DictDataValidationService
 			case DATE -> "'%s'::date".formatted(formatDateValue(value));
 			case TIMESTAMP -> "'%s'::timestamp".formatted(formatTimestampValue(value));
 
-			default -> throw new FieldValidationException(
-					"Поле '%s' с типом '%s' не поддерживается в уникальном ключе.".formatted(field.getId(), field.getType())
-			);
+			default -> throw new FieldValidationException("Поле '%s' с типом '%s' не поддерживается в уникальном ключе.".formatted(field.getId(), field.getType()));
 		};
 	}
 
