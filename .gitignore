@@ -1,6 +1,7 @@
 .idea
 *.iml
 *.log
+logs/
 create.sql
 drop.sql
 generated
