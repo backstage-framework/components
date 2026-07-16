@@ -103,7 +103,7 @@ public class CommonDictDataValidationServiceTest extends CommonTest
 				.build()
 		);
 
-		uniqueConstraintDict.getConstraints().add(buildConstraint("uniqueConstraint", "dateFieldUnique", "integerField", "doubleField", "dateField", "booleanField"));
+		uniqueConstraintDict.getConstraints().add(buildConstraint("uniqueConstraint", "dateFieldUnique", "integerField", "doubleField", "dateField", "timestampField", "booleanField"));
 
 		TESTABLE_UNIQUE_CONSTRAINT_DICT_ID = dictService.create(uniqueConstraintDict).getId();
 

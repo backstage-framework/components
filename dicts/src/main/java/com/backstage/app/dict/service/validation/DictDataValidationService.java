@@ -234,20 +234,29 @@ public class DictDataValidationService
 			return "%s is null".formatted(field.getId());
 		}
 
+		if (field.isMultivalued())
+		{
+			var values = ((List<?>) value).stream()
+					.map(element -> computeQueryValue(field, element))
+					.collect(Collectors.joining(", "));
+
+			return "%s all[%s]".formatted(field.getId(), values);
+		}
+
 		return "%s = %s".formatted(field.getId(), computeQueryValue(field, value));
 	}
 
 	private String computeQueryValue(DictField field, Object value)
 	{
 		return switch (field.getType())
-		{
-			case STRING, ATTACHMENT, DICT, ENUM -> "'%s'".formatted(value);
-			case INTEGER, SERIAL, DECIMAL, BOOLEAN -> "%s".formatted(value);
-			case DATE -> "'%s'::date".formatted(formatDateValue(value));
-			case TIMESTAMP -> "'%s'::timestamp".formatted(formatTimestampValue(value));
+			{
+				case STRING, ATTACHMENT, DICT, ENUM -> "'%s'".formatted(value);
+				case INTEGER, SERIAL, DECIMAL, BOOLEAN -> "%s".formatted(value);
+				case DATE -> "'%s'::date".formatted(formatDateValue(value));
+				case TIMESTAMP -> "'%s'::timestamp".formatted(formatTimestampValue(value));
 
-			default -> throw new FieldValidationException("Поле '%s' с типом '%s' не поддерживается в уникальном ключе.".formatted(field.getId(), field.getType()));
-		};
+				default -> throw new FieldValidationException("Поле '%s' с типом '%s' не поддерживается в уникальном ключе.".formatted(field.getId(), field.getType()));
+			};
 	}
 
 	private String formatDateValue(Object value)
@@ -405,7 +414,7 @@ public class DictDataValidationService
 						return;
 					}
 
-					//TODO: реализовать персистентное хранение значений GEO_JSON как GeoJson обьектов (postgis)
+					//TODO: реализовать персистентное хранение значений GEO_JSON как GeoJson объектов (postgis)
 					if (value instanceof String s)
 					{
 						objectMapper.readValue(s, GeoJsonObject.class);
