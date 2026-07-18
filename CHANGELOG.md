@@ -1,3 +1,10 @@
+## 5.2.31 - 2026-07-18
+### Dependency upgrades
+- Camunda 7.24.0
+
+### BPM
+- Добавили миграции схемы базы данных Camunda в модуле bpm-camunda до версии 7.24.0.
+
 ## 5.2.30 - 2026-07-01
 ### Dependency upgrades
 - Spring Boot 3.5.16
