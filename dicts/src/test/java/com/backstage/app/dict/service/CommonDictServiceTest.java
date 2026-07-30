@@ -201,6 +201,7 @@ public class CommonDictServiceTest extends CommonTest
 				.stream()
 				.peek(it -> it.setId(RandomStringUtils.randomNumeric(1) + StringUtils.substring(generateRandomUUIDWithoutDashes(), 1)))
 				.collect(Collectors.toList()));
+		dict.setIndexes(List.of(buildIndex(dict.getId(), dict.getFieldIds().getFirst())));
 
 		var expected = dictService.create(dict);
 

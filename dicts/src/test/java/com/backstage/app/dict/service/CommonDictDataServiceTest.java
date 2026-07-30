@@ -953,6 +953,7 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		var dict = buildDict(RandomStringUtils.randomNumeric(1) + org.apache.commons.lang3.StringUtils.substring(generateRandomUUIDWithoutDashes(), 1));
 		dict.setFields(fields);
+		dict.setIndexes(List.of(buildIndex(dict.getId(), dict.getFieldIds().getFirst())));
 
 		var dictId = dictService.create(dict)
 				.getId();
