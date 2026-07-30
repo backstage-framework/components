@@ -86,6 +86,8 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		mongoDict.getIndexes()
 				.forEach(it -> mongoTemplate.indexOps(id).ensureIndex(buildIndex(it)));
 
+		mongoDict.getConstraints()
+				.forEach(it -> mongoTemplate.indexOps(id).ensureIndex(buildConstraintIndex(it)));
 	}
 
 	@Override
@@ -159,7 +161,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		addTransactionData(dict, true);
 
-		mongoTemplate.indexOps(dict.getId()).ensureIndex(buildIndex(constraint));
+		mongoTemplate.indexOps(dict.getId()).ensureIndex(buildConstraintIndex(constraint));
 
 		return constraint;
 	}
@@ -229,7 +231,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 				.schema(buildMongoJsonSchema(dict));
 	}
 
-	private Index buildIndex(DictConstraint source)
+	private Index buildConstraintIndex(DictConstraint source)
 	{
 		var target = new Index().named(source.getId());
 

@@ -1,6 +1,8 @@
 .idea
 *.iml
 *.log
+logs
+**/data/jms
 create.sql
 drop.sql
 generated
