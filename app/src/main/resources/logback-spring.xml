@@ -1,14 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-	<springProperty name="customConfig" source="app.logging.logback.custom-config"/>
-	<springProperty name="jsonOutput" source="app.logging.json-output"/>
-	<springProperty name="consoleOutputEnabled" source="app.logging.console.enabled"/>
-	<springProperty name="fileOutputEnabled" source="app.logging.file.enabled"/>
+	<springProperty name="customConfig" source="app.logging.logback.custom-config" defaultValue="false"/>
+	<springProperty name="jsonOutput" source="app.logging.json-output" defaultValue="false"/>
+	<springProperty name="consoleOutputEnabled" source="app.logging.console.enabled" defaultValue="true"/>
+	<springProperty name="fileOutputEnabled" source="app.logging.file.enabled" defaultValue="true"/>
 	<springProperty name="rollingMaxHistory" source="app.logging.file.max-history" defaultValue="100"/>
 	<springProperty name="rollingMaxFileSize" source="app.logging.file.max-size" defaultValue="30MB"/>
 	<springProperty name="rollingTotalSizeCap" source="app.logging.file.total-size-cap" defaultValue="0"/>
 
-	<if condition='p("customConfig").equals("true")'>
+	<condition class="ch.qos.logback.core.boolex.ExpressionPropertyCondition">
+		<expression>propertyEquals("customConfig", "true")</expression>
+	</condition>
+	<if>
 		<then>
 			<include optional="true" resource="customLogback.xml"/>
 		</then>

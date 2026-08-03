@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package com.backstage.app.dict.service.validation;
 import com.backstage.app.dict.api.domain.DictFieldType;
 import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.Dict;
+import com.backstage.app.dict.domain.DictConstraint;
 import com.backstage.app.dict.domain.DictField;
 import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
@@ -31,9 +32,11 @@ import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.exception.dict.field.ForbiddenFieldNameException;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.backend.postgres.PostgresEngine;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
 import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.model.other.date.DateConstants;
+import com.backstage.app.utils.DateUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.geojson.GeoJsonObject;
@@ -46,10 +49,7 @@ import org.springframework.util.Assert;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -145,15 +145,16 @@ public class DictDataValidationService
 	//TODO: Актуализировать, отказавшись от проброса userId
 	public void validateDictDataItem(String dictId, DictItem dictItem, String userId)
 	{
+		var dict = dictService.getById(dictId);
 		var dataItemMap = dictItem.getData();
 
-		var availableFields = dictService.getById(dictId).getFields();
-
+		var availableFields = dict.getFields();
 		var availableFieldIds = getAvailableFieldIds(availableFields);
 
 		dataItemMap.forEach((field, value) -> checkForbiddenField(availableFieldIds, field));
 
 		validateRequiredFields(dictId, dataItemMap, availableFields, userId);
+		validateUniqueConstraints(dict, dictItem, userId);
 	}
 
 	public void validateOptimisticLock(String dictId, String itemId, long version, String userId)
@@ -172,12 +173,130 @@ public class DictDataValidationService
 				.filter(field -> !ServiceFieldConstants.getServiceInsertableFields().contains(field.getId()))
 				.peek(dictField -> checkCast(dictId, dictField, dictData.get(dictField.getId()), userId))
 				.filter(DictField::isRequired)
+				.filter(field -> field.getType() != DictFieldType.SERIAL)
 				.filter(field -> field.getDefaultValue() == null)
 				.filter(dictField -> !dictData.containsKey(dictField.getId()) || dictData.get(dictField.getId()) == null)
 				.findAny()
 				.ifPresent(field -> {
 					throw new FieldValidationException("Отсутствует обязательное поле: %s.".formatted(field.getId()));
 				});
+	}
+
+	private void validateUniqueConstraints(Dict dict, DictItem dictItem, String userId)
+	{
+		var data = dictItem.getData();
+		var itemId = dictItem.getId();
+		var dictFieldMap = dict.getFields()
+				.stream()
+				.collect(Collectors.toMap(DictField::getId, Function.identity()));
+
+		dict.getConstraints()
+				.stream()
+				.filter(constraint -> isApplicable(dict, constraint, data))
+				.forEach(constraint -> {
+					var queryRows = constraint.getFields()
+							.stream()
+							.map(fieldId -> computeQueryRow(dictFieldMap.get(fieldId), data.get(fieldId)))
+							.collect(Collectors.toCollection(LinkedHashSet::new));
+
+					if (itemId != null)
+					{
+						queryRows.add("id != '%s'".formatted(itemId));
+					}
+
+					if (dictDataService.existsByFilter(dict.getId(), String.join(" and ", queryRows), userId))
+					{
+						throw new FieldValidationException("Нарушено ограничение уникального ключа: %s.".formatted(constraint.getId()));
+					}
+				});
+	}
+
+	/**
+	 * В Postgres engine NULL не участвует в unique-сравнении, несколько NULL допустимы.
+	 * В Mongo NULL — полноценное значение уникального индекса.
+	 */
+	private boolean isApplicable(Dict dict, DictConstraint constraint, Map<String, Object> data)
+	{
+		if (!PostgresEngine.POSTGRES.equals(dict.getEngine().getName()))
+		{
+			return true;
+		}
+
+		return constraint.getFields()
+				.stream()
+				.allMatch(fieldId -> data.get(fieldId) != null);
+	}
+
+	private String computeQueryRow(DictField field, Object value)
+	{
+		if (value == null)
+		{
+			return "%s is null".formatted(field.getId());
+		}
+
+		if (field.isMultivalued())
+		{
+			var values = ((List<?>) value).stream()
+					.map(element -> computeQueryValue(field, element))
+					.collect(Collectors.joining(", "));
+
+			return "%s all[%s]".formatted(field.getId(), values);
+		}
+
+		return "%s = %s".formatted(field.getId(), computeQueryValue(field, value));
+	}
+
+	private String computeQueryValue(DictField field, Object value)
+	{
+		return switch (field.getType())
+			{
+				case STRING, ATTACHMENT, DICT, ENUM -> "'%s'".formatted(value);
+				case INTEGER, SERIAL, DECIMAL, BOOLEAN -> "%s".formatted(value);
+				case DATE -> "'%s'::date".formatted(formatDateValue(value));
+				case TIMESTAMP -> "'%s'::timestamp".formatted(formatTimestampValue(value));
+
+				default -> throw new FieldValidationException("Поле '%s' с типом '%s' не поддерживается в уникальном ключе.".formatted(field.getId(), field.getType()));
+			};
+	}
+
+	private String formatDateValue(Object value)
+	{
+		if (value instanceof String stringValue)
+		{
+			return stringValue;
+		}
+
+		if (value instanceof LocalDate localDate)
+		{
+			return DateConstants.ISO_DATE_FORMATTER.format(localDate);
+		}
+
+		if (value instanceof Date date)
+		{
+			return DateConstants.ISO_DATE_FORMATTER.format(DateUtils.toLocalDate(date));
+		}
+
+		throw new FieldValidationException("Некорректный формат date значения для уникального ключа: %s.".formatted(value));
+	}
+
+	private String formatTimestampValue(Object value)
+	{
+		if (value instanceof String stringValue)
+		{
+			return stringValue;
+		}
+
+		if (value instanceof LocalDateTime localDateTime)
+		{
+			return DateConstants.ISO_DATE_TIME_SECONDS_FORMATTER.format(localDateTime);
+		}
+
+		if (value instanceof Date date)
+		{
+			return DateConstants.ISO_DATE_TIME_SECONDS_FORMATTER.format(DateUtils.toLocalDateTime(date));
+		}
+
+		throw new FieldValidationException("Некорректный формат timestamp значения для уникального ключа: %s.".formatted(value));
 	}
 
 	public void checkCast(String dictId, DictField dictField, Object value, String userId)
@@ -210,7 +329,7 @@ public class DictDataValidationService
 		{
 			switch (dictField.getType())
 			{
-				case INTEGER -> {
+				case SERIAL, INTEGER -> {
 					if (checkNumberValue((Long) value, (Integer) dictField.getMinSize(), (Integer) dictField.getMaxSize()))
 					{
 						throw new FieldValidationException("Превышена допустимые ограничения числа: %s.".formatted(dictField.getId()));
@@ -266,7 +385,7 @@ public class DictDataValidationService
 						}
 						catch (JsonProcessingException ex)
 						{
-							throw new FieldValidationException("Некорретный формат json поля: %s.".formatted(dictField.getId()));
+							throw new FieldValidationException("Некорректный формат json поля: %s.".formatted(dictField.getId()));
 						}
 					}
 					else
@@ -295,7 +414,7 @@ public class DictDataValidationService
 						return;
 					}
 
-					//TODO: реализовать персистентное хранение значений GEO_JSON как GeoJson обьектов (postgis)
+					//TODO: реализовать персистентное хранение значений GEO_JSON как GeoJson объектов (postgis)
 					if (value instanceof String s)
 					{
 						objectMapper.readValue(s, GeoJsonObject.class);

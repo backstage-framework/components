@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import com.backstage.app.dict.constant.ServiceFieldConstants;
 import com.backstage.app.dict.domain.*;
 import com.backstage.app.dict.domain.scheme.DictNativeScheme;
 import com.backstage.app.dict.exception.dict.DictAlreadyExistsException;
+import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.constraint.ConstraintNotFoundException;
 import com.backstage.app.dict.exception.dict.enums.EnumAlreadyExistsException;
@@ -174,7 +175,9 @@ public class DictService
 			dictStorageMigrationService.migrate(updated, actualDictEngine, targetDictEngine);
 		}
 
-		schemeBackend(updated).updateDictScheme(updated);
+		var schemeBackend = schemeBackend(updated);
+
+		schemeBackend.updateDictScheme(updated);
 
 		var updatedFieldIds = updated.getFields()
 				.stream()
@@ -195,6 +198,16 @@ public class DictService
 		updated.setConstraints(actualConstraints);
 
 		var updateDict = dictBackend.updateDict(updated);
+
+		var actualDictFieldIds = actualDict.getFieldIds();
+
+		updated.getFields()
+				.stream()
+				.filter(it -> it.getType() == DictFieldType.SERIAL)
+				.filter(it -> !actualDictFieldIds.contains(it.getId()))
+				.forEach(serialField -> {
+					schemeBackend.restartSerialField(dictId, serialField.getId(), 1L);
+				});
 
 		serviceAdviceList.forEach(it -> it.handleAfterUpdate(updateDict));
 
@@ -505,6 +518,28 @@ public class DictService
 		var dict = getByIdInternal(dictId);
 
 		return schemeBackend(dict).getNativeScheme(dict);
+	}
+
+	public void restartSerialField(String dictId, String fieldId, Long startWithValue)
+	{
+		var dict = getByIdInternal(dictId);
+		var field = dict.getFields()
+				.stream()
+				.filter(it -> it.getId().equals(fieldId))
+				.findFirst()
+				.orElseThrow(() -> new FieldNotFoundException(dictId, fieldId));
+
+		if (field.getType() != DictFieldType.SERIAL)
+		{
+			throw new DictException("Поле %s справочника %s не является полем с автоматическим увеличением значения.".formatted(dictId, fieldId));
+		}
+
+		if (startWithValue < 1)
+		{
+			throw new DictException("Начальное значение поля должно быть более или равно 1.");
+		}
+
+		schemeBackend(dict).restartSerialField(dictId, fieldId, startWithValue);
 	}
 
 	// TODO: кэш

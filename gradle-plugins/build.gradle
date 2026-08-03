@@ -79,6 +79,11 @@ gradlePlugin {
 			id = "backstage-dicts-codegen"
 			implementationClass = "com.backstage.gradle.DictsCodegenPlugin"
 		}
+
+		dependencyVersions {
+			id = "backstage-dependency-versions"
+			implementationClass = "com.backstage.gradle.DependencyVersionsPlugin"
+		}
 	}
 }
 

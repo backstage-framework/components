@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -52,6 +52,8 @@ import static org.springframework.data.mongodb.core.schema.JsonSchemaProperty.*;
 @ConditionalOnEngine(MongoEngine.MONGO)
 public class MongoDictSchemeBackend extends AbstractMongoBackend implements DictSchemeBackend
 {
+	private final MongoSequenceService mongoSequenceService;
+
 	@Override
 	public Engine getEngine()
 	{
@@ -64,7 +66,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	}
 
 	@Override
-	public Dict createDictScheme(Dict dict)
+	public void createDictScheme(Dict dict)
 	{
 		var id = dict.getId();
 
@@ -84,11 +86,12 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		mongoDict.getIndexes()
 				.forEach(it -> mongoTemplate.indexOps(id).ensureIndex(buildIndex(it)));
 
-		return dict;
+		mongoDict.getConstraints()
+				.forEach(it -> mongoTemplate.indexOps(id).ensureIndex(buildConstraintIndex(it)));
 	}
 
 	@Override
-	public Dict updateDictScheme(Dict updatedDict)
+	public void updateDictScheme(Dict updatedDict)
 	{
 		addTransactionData(updatedDict, true);
 
@@ -101,7 +104,6 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 
 		mongoTemplate.executeCommand(new Document(params));
 
-		return updatedDict;
 	}
 
 	@Override
@@ -138,6 +140,12 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		addTransactionData(dict, true);
 
+		if (field.getType() == DictFieldType.SERIAL)
+		{
+			restartSerialField(dict.getId(), field.getId(), mongoSequenceService.getSequenceValue(dict.getId(), oldFieldId) + 1);
+			restartSerialField(dict.getId(), oldFieldId, 1L);
+		}
+
 		if (!oldFieldId.equals(field.getId()))
 		{
 			var updateQuery = new BasicDBObject();
@@ -153,7 +161,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		addTransactionData(dict, true);
 
-		mongoTemplate.indexOps(dict.getId()).ensureIndex(buildIndex(constraint));
+		mongoTemplate.indexOps(dict.getId()).ensureIndex(buildConstraintIndex(constraint));
 
 		return constraint;
 	}
@@ -200,6 +208,12 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 				.build();
 	}
 
+	@Override
+	public void restartSerialField(String dictId, String fieldId, Long startWithValue)
+	{
+		mongoSequenceService.setSequenceValue(dictId, fieldId, startWithValue);
+	}
+
 	private static FieldNativeScheme getFieldNativeScheme(String tableId, DictField field)
 	{
 		return FieldNativeScheme.builder()
@@ -217,7 +231,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 				.schema(buildMongoJsonSchema(dict));
 	}
 
-	private Index buildIndex(DictConstraint source)
+	private Index buildConstraintIndex(DictConstraint source)
 	{
 		var target = new Index().named(source.getId());
 
@@ -236,7 +250,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 		dict.getFields()
 				.stream()
 				.filter(DictField::isRequired)
-				.filter(not(it -> it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON || it.getType() == DictFieldType.GEO_JSON))
+				.filter(not(it -> it.getType() == DictFieldType.SERIAL || it.getType() == DictFieldType.ENUM || it.getType() == DictFieldType.JSON || it.getType() == DictFieldType.GEO_JSON))
 				.forEach(it -> {
 					var property = getPropertyByDictField(it.getType(), it.getId());
 
@@ -269,7 +283,7 @@ public class MongoDictSchemeBackend extends AbstractMongoBackend implements Dict
 	{
 		return switch (type)
 				{
-					case INTEGER -> int64(fieldId);
+					case SERIAL, INTEGER -> int64(fieldId);
 					case DECIMAL -> decimal128(fieldId);
 					case STRING, DICT, ATTACHMENT -> string(fieldId);
 					case BOOLEAN -> named(fieldId).ofType(new Type.JsonType("boolean"));

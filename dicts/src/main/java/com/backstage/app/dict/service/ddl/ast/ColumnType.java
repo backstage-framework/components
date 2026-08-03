@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -20,15 +20,14 @@ import com.backstage.app.dict.api.domain.DictFieldType;
 import lombok.Getter;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 public enum ColumnType
 {
 	INT("int"),
+	SERIAL("serial"),
+	VARCHAR("varchar"),
 	DECIMAL("decimal"),
 	TEXT("text"),
 	BOOL("bool", "boolean"),
@@ -46,11 +45,6 @@ public enum ColumnType
 		this.aliases = Set.of(aliases);
 	}
 
-	public static List<String> getAllAliases()
-	{
-		return Arrays.stream(ColumnType.values()).map(ColumnType::getAliases).flatMap(Collection::stream).collect(Collectors.toList());
-	}
-
 	public static ColumnType fromString(String str)
 	{
 		return Arrays.stream(ColumnType.values())
@@ -64,6 +58,7 @@ public enum ColumnType
 		return switch (this)
 			{
 				case INT -> DictFieldType.INTEGER;
+				case SERIAL -> DictFieldType.SERIAL;
 				case DECIMAL -> DictFieldType.DECIMAL;
 				case TEXT -> DictFieldType.STRING;
 				case BOOL -> DictFieldType.BOOLEAN;

@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -78,17 +78,17 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 	}
 
 	@Override
-	public Dict createDictScheme(Dict dict)
+	public void createDictScheme(Dict dict)
 	{
-		return transactionWithResult(() -> createdDictScheme(dict), dict.getId(), DictCreatedException::new);
+		transactionWithResult(() -> createdDictScheme(dict), dict.getId(), DictCreatedException::new);
 	}
 
 	@Override
-	public Dict updateDictScheme(Dict updatedDict)
+	public void updateDictScheme(Dict updatedDict)
 	{
 		var dictId = updatedDict.getId();
 
-		return transactionWithResult(() -> updatedDictScheme(dictId, updatedDict), dictId, DictUpdatedException::new);
+		transactionWithResult(() -> updatedDictScheme(dictId, updatedDict), dictId, DictUpdatedException::new);
 	}
 
 	@Override
@@ -176,6 +176,23 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 				.build();
 	}
 
+	@Override
+	public void restartSerialField(String dictId, String fieldId, Long startWithValue)
+	{
+		var sequenceName = getSequenceName(dictId, fieldId);
+		var wordMap = wordMap(sequenceName);
+
+		var parameterMap = Map.of(
+				"scheme", dictsProperties.getDdl().getScheme(),
+				"sequenceName", wordMap.get(sequenceName).getQuotedIfKeyword(),
+				"value", startWithValue.toString()
+		);
+
+		var sql = sqlWithParameters("alter sequence ${scheme}.${sequenceName} restart with ${value}", parameterMap);
+
+		jdbc.update(sql, EmptySqlParameterSource.INSTANCE);
+	}
+
 	private Dict createdDictScheme(Dict dict)
 	{
 		if (existsDictSchemeById(dict.getId()))
@@ -197,7 +214,10 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 
 		var sql = sqlWithParameters("create table ${scheme}.${dictId} (${definition})", parameterMap);
 
-		jdbc.update(sql, new EmptySqlParameterSource());
+		jdbc.update(sql, EmptySqlParameterSource.INSTANCE);
+
+		dict.getIndexes().forEach(index -> createdIndex(dict, index));
+		dict.getConstraints().forEach(constraint -> createdConstraint(dict, constraint));
 
 		return dict;
 	}
@@ -310,9 +330,31 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 
 		var sql = sqlWithParameters("alter table ${scheme}.${dictId} rename column ${oldColumn} to ${newColumn}", parameterMap);
 
-		jdbc.update(sql, new EmptySqlParameterSource());
+		jdbc.update(sql, EmptySqlParameterSource.INSTANCE);
+
+		if (field.getType() == DictFieldType.SERIAL)
+		{
+			var oldSequenceName = getSequenceName(dict.getId(), oldFieldId);
+			var sequenceName = getSequenceName(dict.getId(), field.getId());
+			wordMap = wordMap(oldSequenceName, sequenceName);
+
+			parameterMap = Map.of(
+					"scheme", dictsProperties.getDdl().getScheme(),
+					"oldSequenceName", wordMap.get(oldSequenceName).getQuotedIfKeyword(),
+					"sequenceName", wordMap.get(sequenceName).getQuotedIfKeyword()
+			);
+
+			sql = sqlWithParameters("alter sequence ${scheme}.${oldSequenceName} rename to ${sequenceName}", parameterMap);
+
+			jdbc.update(sql, EmptySqlParameterSource.INSTANCE);
+		}
 
 		return field;
+	}
+
+	private String getSequenceName(String dictId, String fieldId)
+	{
+		return dictId + "_" + fieldId + "_seq";
 	}
 
 	private DictConstraint createdConstraint(Dict dict, DictConstraint constraint)
@@ -409,6 +451,7 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 		var singleType = switch (field.getType())
 		{
 			case INTEGER -> "bigint";
+			case SERIAL -> "bigserial";
 			case DECIMAL -> "numeric";
 			case STRING, DICT, ENUM, ATTACHMENT -> "text"; //TODO: рассмотреть varchar с max ограничением символов на уровне движка БД
 			case BOOLEAN -> "boolean";

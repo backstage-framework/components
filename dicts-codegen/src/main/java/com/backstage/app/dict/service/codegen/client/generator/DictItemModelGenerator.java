@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -205,7 +205,15 @@ public class DictItemModelGenerator
 		fieldSpecMapping.forEach((fieldSpec, dictField) -> {
 			if (!DEFAULT_FIELDS.contains(dictField.getId()))
 			{
-				if (dictField.getType() == DictFieldType.ENUM)
+				var fieldType = dictField.getType();
+
+				// Исключаем SERIAL поля для скрытия их использования при создании/обновлении записи
+				if (fieldType == DictFieldType.SERIAL)
+				{
+					return;
+				}
+
+				if (fieldType == DictFieldType.ENUM)
 				{
 					methodSpec.addStatement("dataMap.put($L, ($L() != null) ? $L().getValue() : null)", DictModelNameUtils.constantName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name));
 				}

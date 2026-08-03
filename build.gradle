@@ -18,6 +18,8 @@ buildscript {
 	}
 }
 
+apply plugin: 'backstage-dependency-versions'
+
 subprojects {
 	apply plugin: 'java'
 	apply plugin: 'idea'

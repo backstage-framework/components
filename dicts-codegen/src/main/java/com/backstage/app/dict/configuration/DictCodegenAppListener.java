@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
+import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.stereotype.Component;
 
@@ -40,7 +41,7 @@ public class DictCodegenAppListener implements ApplicationContextAware, Applicat
 	@Setter
 	private ApplicationContext applicationContext;
 
-	private final TaskExecutor taskExecutor;
+	private final TaskExecutor taskExecutor = new SimpleAsyncTaskExecutor();
 
 	@Value("${app.dicts.codegen.outputPath}")
 	private String outputPath;

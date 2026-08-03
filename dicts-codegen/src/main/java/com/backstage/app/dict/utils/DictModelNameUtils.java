@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -106,7 +106,7 @@ public class DictModelNameUtils
 		{
 			case DICT, STRING, ATTACHMENT -> TypeNames.STRING;
 			// FIXME: убедиться, что возвращается long
-			case INTEGER -> TypeNames.LONG;
+			case SERIAL, INTEGER -> TypeNames.LONG;
 			case BOOLEAN -> TypeNames.BOOLEAN;
 			case DATE -> TypeNames.LOCAL_DATE;
 			case TIMESTAMP -> TypeNames.LOCAL_DATE_TIME;

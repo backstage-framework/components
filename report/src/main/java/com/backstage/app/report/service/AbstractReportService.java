@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -46,6 +46,8 @@ public abstract class AbstractReportService implements ReportService
 	@Autowired protected GeneratorLocator generatorLocator;
 
 	protected abstract ReportStore getReportStore();
+
+	protected abstract void executeReportGeneratingMessage(ReportMessage message);
 
 	@Override
 	public ReportTask generate(ReportType type)
@@ -126,7 +128,7 @@ public abstract class AbstractReportService implements ReportService
 		var report = reportStore.create(message.getReportFileName(), message.getMimeType(), new byte[]{});
 		reportStore.linkReportWithObject(report.getId(), REPORT_ATTACHMENT_BINDING_KEY, task.getId());
 
-		reportQueueService.executeReportGeneratingMessage(message);
+		executeReportGeneratingMessage(message);
 
 		var reportType = message.getReportFilter()
 				.getReportType();

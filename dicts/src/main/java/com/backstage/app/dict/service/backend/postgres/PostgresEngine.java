@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package com.backstage.app.dict.service.backend.postgres;
 
+import com.backstage.app.dict.configuration.annotation.DictsPostgresJdbcTemplate;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.domain.DictEngine;
 import com.backstage.app.dict.service.backend.Engine;
@@ -35,6 +36,7 @@ public class PostgresEngine implements Engine
 
 	private final DictsProperties dictsProperties;
 
+	@DictsPostgresJdbcTemplate
 	private final NamedParameterJdbcTemplate jdbcTemplate;
 
 	@Override

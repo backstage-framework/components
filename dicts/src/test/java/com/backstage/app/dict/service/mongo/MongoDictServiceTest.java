@@ -147,6 +147,6 @@ public class MongoDictServiceTest extends CommonDictServiceTest
 	@Order(TestPipeline.DICT_GET_ALL_TEST)
 	void getAll()
 	{
-		assertEquals(45, dictService.getAll().size());
+		assertEquals(48, dictService.getAll().size());
 	}
 }

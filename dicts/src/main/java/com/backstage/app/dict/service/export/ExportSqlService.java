@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -86,7 +86,7 @@ public class ExportSqlService implements ExportService
 		DataType<?> type = switch (field.getType())
 		{
 			case BOOLEAN -> SQLDataType.BOOLEAN;
-			case INTEGER -> SQLDataType.BIGINT;
+			case SERIAL, INTEGER -> SQLDataType.BIGINT;
 			case DATE -> SQLDataType.DATE;
 			case TIMESTAMP -> SQLDataType.TIMESTAMPWITHTIMEZONE;
 			case DECIMAL -> SQLDataType.DECIMAL;

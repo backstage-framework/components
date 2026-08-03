@@ -1,5 +1,5 @@
 /*
- *    Copyright 2019-2025 the original author or authors.
+ *    Copyright 2019-2026 the original author or authors.
  *
  *    Licensed under the Apache License, Version 2.0 (the "License");
  *    you may not use this file except in compliance with the License.
@@ -136,7 +136,7 @@ public class ImportCsvService implements ImportService
 		return switch (targetType)
 		{
 			case BOOLEAN -> Boolean.parseBoolean(stringValue);
-			case INTEGER -> Long.parseLong(stringValue);
+			case SERIAL, INTEGER -> Long.parseLong(stringValue);
 			case DECIMAL -> new BigDecimal(stringValue);
 			case ATTACHMENT -> StringUtils.isBlank(stringValue) ? null : stringValue;
 			case STRING, DICT, DATE, TIMESTAMP, JSON, ENUM, GEO_JSON -> stringValue;

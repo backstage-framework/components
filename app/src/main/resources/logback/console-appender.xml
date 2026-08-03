@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <included>
-	<if condition='p("jsonOutput").equals("true")'>
+	<condition class="ch.qos.logback.core.boolex.ExpressionPropertyCondition">
+		<expression>propertyEquals("jsonOutput", "true")</expression>
+	</condition>
+	<if>
 		<then>
 			<appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
 				<encoder class="ch.qos.logback.classic.encoder.JsonEncoder">

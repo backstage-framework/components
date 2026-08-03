@@ -5,13 +5,19 @@
 	<include resource="logback/rolling-file-appender.xml"/>
 
 	<root level="INFO">
-		<if condition='!p("consoleOutputEnabled").equals("false")'>
+		<condition class="ch.qos.logback.core.boolex.ExpressionPropertyCondition">
+			<expression>propertyEquals("consoleOutputEnabled", "true")</expression>
+		</condition>
+		<if>
 			<then>
 				<appender-ref ref="CONSOLE" />
 			</then>
 		</if>
 
-		<if condition='!p("fileOutputEnabled").equals("false")'>
+		<condition class="ch.qos.logback.core.boolex.ExpressionPropertyCondition">
+			<expression>propertyEquals("fileOutputEnabled", "true")</expression>
+		</condition>
+		<if>
 			<then>
 				<appender-ref ref="FILE" />
 			</then>
