@@ -21,21 +21,21 @@ import com.backstage.app.audit.model.other.AuditEventBuilder;
 import com.backstage.app.audit.model.other.AuditFilter;
 import com.backstage.app.audit.repository.AuditRepository;
 import com.backstage.app.utils.TimeUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JpaAuditStoreTest extends AbstractTests
 {
 	@Autowired
+	@Qualifier("jpaAuditWriter")
 	private AuditStore auditStore;
 
 	@Autowired
@@ -61,6 +61,22 @@ class JpaAuditStoreTest extends AbstractTests
 	void tearDown()
 	{
 		auditRepository.deleteAll();
+	}
+
+	@Test
+	void log_AuditEventNullProperty()
+	{
+		assertDoesNotThrow(() -> auditStore.write(AuditEventBuilder.create(AuditServiceTests.TestEventTypes.EVENT_TYPE_4, AuditServiceTests.TestData.USER_1_ID)
+				.withProperty(AuditServiceTests.TestData.TYPE_4_PROPERTY_KEY, null)
+				.build()));
+	}
+
+	@Test
+	void log_AuditEventNullField()
+	{
+		assertDoesNotThrow(() -> auditStore.write(AuditEventBuilder.create(AuditServiceTests.TestEventTypes.EVENT_TYPE_4, AuditServiceTests.TestData.USER_1_ID)
+				.withField(AuditServiceTests.TestData.TYPE_4_FIELD_KEY, AuditServiceTests.TestData.TYPE_4_FIELD_OLD_VALUE, null)
+				.build()));
 	}
 
 	@Test
