@@ -32,8 +32,11 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JpaAuditStoreTest extends AbstractTests
 {
+	private static final int GET_BY_FILTER_TEST_ORDER = -100;
+
 	@Autowired
 	@Qualifier("jpaAuditWriter")
 	private AuditStore auditStore;
@@ -64,6 +67,15 @@ class JpaAuditStoreTest extends AbstractTests
 	}
 
 	@Test
+	@Order(GET_BY_FILTER_TEST_ORDER)
+	void getByFilter()
+	{
+		var actual = auditStore.getByFilter(AuditFilter.builder().build(), Pageable.unpaged());
+
+		assertEquals(7, actual.getTotalElements());
+	}
+
+	@Test
 	void log_AuditEventNullProperty()
 	{
 		assertDoesNotThrow(() -> auditStore.write(AuditEventBuilder.create(AuditServiceTests.TestEventTypes.EVENT_TYPE_4, AuditServiceTests.TestData.USER_1_ID)
@@ -77,13 +89,5 @@ class JpaAuditStoreTest extends AbstractTests
 		assertDoesNotThrow(() -> auditStore.write(AuditEventBuilder.create(AuditServiceTests.TestEventTypes.EVENT_TYPE_4, AuditServiceTests.TestData.USER_1_ID)
 				.withField(AuditServiceTests.TestData.TYPE_4_FIELD_KEY, AuditServiceTests.TestData.TYPE_4_FIELD_OLD_VALUE, null)
 				.build()));
-	}
-
-	@Test
-	void getByFilter()
-	{
-		var actual = auditStore.getByFilter(AuditFilter.builder().build(), Pageable.unpaged());
-
-		assertEquals(7, actual.getTotalElements());
 	}
 }
