@@ -21,21 +21,24 @@ import com.backstage.app.audit.model.other.AuditEventBuilder;
 import com.backstage.app.audit.model.other.AuditFilter;
 import com.backstage.app.audit.repository.AuditRepository;
 import com.backstage.app.utils.TimeUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.domain.Pageable;
 
 import java.util.stream.Stream;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+@TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 class JpaAuditStoreTest extends AbstractTests
 {
+	private static final int GET_BY_FILTER_TEST_ORDER = -100;
+
 	@Autowired
+	@Qualifier("jpaAuditWriter")
 	private AuditStore auditStore;
 
 	@Autowired
@@ -64,10 +67,27 @@ class JpaAuditStoreTest extends AbstractTests
 	}
 
 	@Test
+	@Order(GET_BY_FILTER_TEST_ORDER)
 	void getByFilter()
 	{
 		var actual = auditStore.getByFilter(AuditFilter.builder().build(), Pageable.unpaged());
 
 		assertEquals(7, actual.getTotalElements());
+	}
+
+	@Test
+	void log_AuditEventNullProperty()
+	{
+		assertDoesNotThrow(() -> auditStore.write(AuditEventBuilder.create(AuditServiceTests.TestEventTypes.EVENT_TYPE_4, AuditServiceTests.TestData.USER_1_ID)
+				.withProperty(AuditServiceTests.TestData.TYPE_4_PROPERTY_KEY, null)
+				.build()));
+	}
+
+	@Test
+	void log_AuditEventNullField()
+	{
+		assertDoesNotThrow(() -> auditStore.write(AuditEventBuilder.create(AuditServiceTests.TestEventTypes.EVENT_TYPE_4, AuditServiceTests.TestData.USER_1_ID)
+				.withField(AuditServiceTests.TestData.TYPE_4_FIELD_KEY, AuditServiceTests.TestData.TYPE_4_FIELD_OLD_VALUE, null)
+				.build()));
 	}
 }
