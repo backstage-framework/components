@@ -24,6 +24,7 @@ import com.backstage.app.dict.exception.dict.DictException;
 import com.backstage.app.dict.exception.dict.DictNotFoundException;
 import com.backstage.app.dict.exception.dict.UnavailableDictRefException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
+import com.backstage.app.dict.exception.dict.field.FieldValidationException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.validation.DictDataValidationService;
 import com.backstage.app.utils.SecurityUtils;
@@ -32,12 +33,11 @@ import org.junit.jupiter.api.TestInstance;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.*;
 
 import static com.backstage.app.dict.constant.ServiceFieldConstants.ID;
+import static com.backstage.app.dict.service.CommonDictDataServiceTest.DATA_MAP;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
@@ -47,6 +47,7 @@ public class CommonDictDataValidationServiceTest extends CommonTest
 
 	protected static String TESTABLE_DICT_ID;
 	protected static String TESTABLE_REF_DICT_ID;
+	protected static String TESTABLE_UNIQUE_CONSTRAINT_DICT_ID;
 
 	@Autowired
 	protected DictDataValidationService dictDataValidationService;
@@ -80,6 +81,31 @@ public class CommonDictDataValidationServiceTest extends CommonTest
 		);
 
 		TESTABLE_REF_DICT_ID = dictService.create(refDict).getId();
+
+		var uniqueConstraintDict = buildDict(storageDictId + "dataValidateUnique");
+		var uniqueConstraintDictFields = uniqueConstraintDict.getFields();
+
+		uniqueConstraintDictFields.add(DictField.builder()
+				.id("dateFieldUnique")
+				.name("строка (уникальная)")
+				.type(DictFieldType.STRING)
+				.required(false)
+				.multivalued(false)
+				.build()
+		);
+
+		uniqueConstraintDictFields.add(DictField.builder()
+				.id("dateField")
+				.name("дата")
+				.type(DictFieldType.DATE)
+				.required(true)
+				.multivalued(false)
+				.build()
+		);
+
+		uniqueConstraintDict.getConstraints().add(buildConstraint("uniqueConstraint", "dateFieldUnique", "integerField", "doubleField", "dateField", "timestampField", "booleanField"));
+
+		TESTABLE_UNIQUE_CONSTRAINT_DICT_ID = dictService.create(uniqueConstraintDict).getId();
 
 		addDictData(TESTABLE_DICT_ID);
 		addDictData(TESTABLE_REF_DICT_ID);
@@ -198,6 +224,49 @@ public class CommonDictDataValidationServiceTest extends CommonTest
 				"timestampField", "2021-08-15T06:00:00.000Z");
 
 		//assertThrows(ForbiddenFieldNameException.class, () -> dictDataValidationService.validateDictDataItem(buildDictDataItem(TESTABLE_DICT_ID, map), USER_ID));
+	}
+
+	protected void validateDictDataConstraintCorrect()
+	{
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put("dateFieldUnique", "unique1");
+		dataMap.put("dateField", LocalDate.now());
+
+		dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap));
+
+		dataMap.put("dateFieldUnique", "unique2");
+
+		dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap));
+	}
+
+	protected void validateDictDataConstraintException()
+	{
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put("dateFieldUnique", "unique");
+		dataMap.put("dateField", LocalDate.now());
+
+		dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap));
+
+		assertThrows(FieldValidationException.class, () -> dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap)));
+	}
+
+	protected void validateDictDataConstraintNullable()
+	{
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put("dateField", LocalDate.now());
+
+		dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap));
+		dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap));
+	}
+
+	protected void validateDictDataConstraintNullableException()
+	{
+		var dataMap = new HashMap<>(DATA_MAP);
+		dataMap.put("dateField", LocalDate.now());
+
+		dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap));
+
+		assertThrows(FieldValidationException.class, () -> dictDataService.create(DictDataItem.of(TESTABLE_UNIQUE_CONSTRAINT_DICT_ID, dataMap)));
 	}
 
 	protected void deleteRefDictItemForbidden()

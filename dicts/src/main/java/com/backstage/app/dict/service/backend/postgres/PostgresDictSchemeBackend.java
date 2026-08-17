@@ -216,6 +216,9 @@ public class PostgresDictSchemeBackend extends AbstractPostgresBackend implement
 
 		jdbc.update(sql, EmptySqlParameterSource.INSTANCE);
 
+		dict.getIndexes().forEach(index -> createdIndex(dict, index));
+		dict.getConstraints().forEach(constraint -> createdConstraint(dict, constraint));
+
 		return dict;
 	}
 

@@ -98,7 +98,6 @@ public class CommonTest
 		expectedDict.setId(withRandom(dictId));
 		expectedDict.setFields(buildFields());
 		expectedDict.setIndexes(new ArrayList<>(List.of(buildIndex(dictId, "stringField"), buildIndex(dictId, "integerField"))));
-		expectedDict.setConstraints(new ArrayList<>(List.of(buildConstraint(dictId, "integerField"))));
 		expectedDict.setEnums(new ArrayList<>(List.of(buildEnum(dictId), buildEnum(dictId))));
 		expectedDict.setEngine(dictEngine);
 

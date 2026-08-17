@@ -20,8 +20,6 @@ import com.backstage.app.audit.model.domain.Audit;
 import com.backstage.app.audit.model.domain.AuditProperties;
 import com.backstage.app.audit.model.domain.AuditPropertiesField;
 import com.backstage.app.audit.model.dto.AuditEvent;
-import com.backstage.app.audit.model.dto.AuditEventField;
-import com.backstage.app.audit.model.dto.AuditEventProperty;
 import com.backstage.app.audit.model.other.AuditFilter;
 import com.backstage.app.audit.repository.AuditRepository;
 import com.backstage.app.database.configuration.properties.DDLProperties;
@@ -133,25 +131,13 @@ public class JpaAuditStore implements AuditStore
 	{
 		var auditProperties = new AuditProperties();
 
-		var properties = event.getProperties()
-				.stream()
-				.collect(Collectors.toMap(
-						AuditEventProperty::getKey,
-						AuditEventProperty::getValue)
-				);
+		event.getProperties()
+				.forEach(property -> auditProperties.getProperties()
+						.put(property.getKey(), property.getValue()));
 
-		auditProperties.getProperties()
-				.putAll(properties);
-
-		var fields = event.getFields()
-				.stream()
-				.collect(Collectors.toMap(
-						AuditEventField::getName,
-						field -> new AuditPropertiesField(field.getOldValue(), field.getNewValue())
-				));
-
-		auditProperties.getFields()
-				.putAll(fields);
+		event.getFields()
+				.forEach(field -> auditProperties.getFields()
+						.put(field.getName(), new AuditPropertiesField(field.getOldValue(), field.getNewValue())));
 
 		return auditProperties;
 	}
