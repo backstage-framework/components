@@ -23,17 +23,15 @@ import com.backstage.app.jobs.service.JobHealthIndicator;
 import com.backstage.app.jobs.service.JobManager;
 import com.backstage.app.model.other.exception.ApiStatusCodeImpl;
 import com.backstage.app.utils.TaskUtils;
-import tools.jackson.databind.ObjectMapper;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration;
-import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
+import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import tools.jackson.databind.ObjectMapper;
 
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
@@ -46,9 +44,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@WebMvcTest(value = ScheduledJobsEndpoint.class)
+@WebMvcTest
 @ContextConfiguration(classes = {TestApplication.class, SchedulerConfiguration.class, ScheduledJobsEndpoint.class})
-@ImportAutoConfiguration(exclude = SecurityAutoConfiguration.class)
 @ComponentScan(basePackageClasses = {TestJobs.class, JobManager.class})
 class ScheduledJobsEndpointTest
 {

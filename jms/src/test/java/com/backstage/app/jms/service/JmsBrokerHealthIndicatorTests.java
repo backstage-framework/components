@@ -23,7 +23,7 @@ import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.actuate.health.Status;
+import org.springframework.boot.health.contributor.Status;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -36,12 +36,12 @@ public class JmsBrokerHealthIndicatorTests extends AbstractTests
 	@Test
 	public void brokerHealth()
 	{
-		assertEquals(brokerHealthIndicator.health().getStatus(), Status.UP);
+		assertEquals(Status.UP, brokerHealthIndicator.health().getStatus());
 	}
 
 	@Test
 	public void storeHealth()
 	{
-		assertEquals(storeHealthIndicator.health().getStatus(), Status.UP);
+		assertEquals(Status.UP, storeHealthIndicator.health().getStatus());
 	}
 }

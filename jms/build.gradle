@@ -35,7 +35,7 @@ dependencies {
 
 	compileOnly "org.springframework.cloud:spring-cloud-starter-netflix-eureka-client:$springCloudVersion"
 
-	testImplementation "org.springframework.boot:spring-boot-starter-test"
+	testImplementation "org.springframework.boot:spring-boot-starter-webmvc-test"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion"
 
