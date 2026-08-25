@@ -126,7 +126,25 @@ public class DictItemModelGenerator
 			}
 			else if (dictField.getType() == DictFieldType.ENUM)
 			{
-				methodSpec.addStatement("this.$N = $T.fromValue(($T) dictItem.getData().get($N))", fieldSpec, ClassName.bestGuess(DictModelNameUtils.className(dictField.getEnumId())), String.class, DictModelNameUtils.constantName(fieldSpec.name));
+				var enumClass = ClassName.bestGuess(DictModelNameUtils.className(dictField.getEnumId()));
+				var fieldConstant = DictModelNameUtils.constantName(fieldSpec.name);
+
+				if (dictField.isMultivalued())
+				{
+					suppressWarnings.setTrue();
+
+					methodSpec.addStatement("this.$N = new $T<>((($T) $T.requireNonNullElse(dictItem.getData().get($N), $T.of())).stream().map($T::fromValue).toList())",
+							fieldSpec, ClassName.get(ArrayList.class),
+							ParameterizedTypeName.get(List.class, String.class),
+							ClassName.get(Objects.class),
+							fieldConstant,
+							ClassName.get(List.class),
+							enumClass);
+				}
+				else
+				{
+					methodSpec.addStatement("this.$N = $T.fromValue(($T) dictItem.getData().get($N))", fieldSpec, enumClass, String.class, fieldConstant);
+				}
 			}
 			else
 			{
@@ -215,7 +233,20 @@ public class DictItemModelGenerator
 
 				if (fieldType == DictFieldType.ENUM)
 				{
-					methodSpec.addStatement("dataMap.put($L, ($L() != null) ? $L().getValue() : null)", DictModelNameUtils.constantName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name), DictModelNameUtils.getterName(fieldSpec.name));
+					var fieldConstant = DictModelNameUtils.constantName(fieldSpec.name);
+					var getterName = DictModelNameUtils.getterName(fieldSpec.name);
+
+					if (dictField.isMultivalued())
+					{
+						var enumClass = ClassName.bestGuess(DictModelNameUtils.className(dictField.getEnumId()));
+
+						methodSpec.addStatement("dataMap.put($L, ($L() != null) ? $L().stream().map($T::getValue).toList() : null)",
+								fieldConstant, getterName, getterName, enumClass);
+					}
+					else
+					{
+						methodSpec.addStatement("dataMap.put($L, ($L() != null) ? $L().getValue() : null)", fieldConstant, getterName, getterName);
+					}
 				}
 				else
 				{
