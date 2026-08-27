@@ -261,7 +261,8 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void getByIds()
 	{
-		var ids = dictDataService.createMany(TESTABLE_DICT_ID, List.of(DATA_MAP, DATA_MAP))
+		var dictDataItems = List.of(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP), buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+		var ids = dictDataService.createMany(TESTABLE_DICT_ID, dictDataItems)
 				.stream()
 				.map(DictItem::getId)
 				.toList();
@@ -893,7 +894,11 @@ public class CommonDictDataServiceTest extends CommonTest
 
 	protected void createManyDictItems()
 	{
-		assertNotNull(dictDataService.createMany(TESTABLE_DICT_ID, List.of(DATA_MAP, DATA_MAP, DATA_MAP)));
+		var dictDataItems = List.of(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP),
+				buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP),
+				buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+
+		assertNotNull(dictDataService.createMany(TESTABLE_DICT_ID, dictDataItems));
 	}
 
 	protected void createDictItemWithNullData()
