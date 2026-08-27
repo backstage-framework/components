@@ -306,7 +306,11 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	@Test
 	void getByFilter_withSortAlwaysContainsASCIdField()
 	{
-		dictDataService.createMany(TESTABLE_DICT_ID, List.of(DATA_MAP, DATA_MAP, DATA_MAP));
+		var dictDataItems = List.of(buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP),
+				buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP),
+				buildDictDataItem(TESTABLE_DICT_ID, DATA_MAP));
+
+		dictDataService.createMany(TESTABLE_DICT_ID, dictDataItems);
 
 		var actual = dictDataService.getByFilter(TESTABLE_DICT_ID, List.of("*"), null, PageRequest.of(0, 10))
 				.getContent();
