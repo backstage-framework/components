@@ -1,3 +1,7 @@
+## 5.2.36 - 2026-09-08
+### Dependency upgrades
+- Добавлена версия postgresql в dependencies.
+
 ## 5.2.35 - 2026-08-27
 ### Dicts
 - Добавили методы createMany и deleteAll в сервисы кодогенерации.
