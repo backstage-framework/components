@@ -22,6 +22,8 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.utility.DockerImageName;
 
 public class AppDataSourceInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext>
 {
@@ -42,7 +44,10 @@ public class AppDataSourceInitializer implements ApplicationContextInitializer<C
 		dictDataSource = new PostgreSQLContainer<>("postgres");
 		dictDataSource.start();
 
-		minio = new MinIOContainer("minio/minio");
+		var minioImage = DockerImageName.parse("pgsty/minio")
+				.asCompatibleSubstituteFor("minio/minio");
+
+		minio = new MinIOContainer(minioImage);
 		minio.start();
 	}
 
