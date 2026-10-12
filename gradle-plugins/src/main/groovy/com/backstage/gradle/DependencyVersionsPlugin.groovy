@@ -45,7 +45,7 @@ class DependencyVersionsPlugin implements Plugin<Project> {
 			postgresqlJdbcVersion       : [group: "org.postgresql", artifact: "postgresql"],
 			postgisVersion              : [group: "net.postgis", artifact: "postgis-jdbc"],
 			springBootVersion           : [group: "org.springframework.boot", artifact: "spring-boot"],
-			springCloudVersion          : [group: "org.springframework.cloud", artifact: "spring-cloud-starter-openfeign"],
+			springCloudVersion          : [group: "org.springframework.cloud", artifact: "spring-cloud-starter-netflix-eureka-client"],
 			springDocVersion            : [group: "org.springdoc", artifact: "springdoc-openapi-starter-webmvc-ui"],
 
 			jupiterVersion              : [group: "org.junit.jupiter", artifact: "junit-jupiter-api"],

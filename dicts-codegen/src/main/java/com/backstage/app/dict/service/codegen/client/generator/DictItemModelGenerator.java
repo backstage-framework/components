@@ -127,7 +127,7 @@ public class DictItemModelGenerator
 			else if (dictField.getType() == DictFieldType.ENUM)
 			{
 				var enumClass = ClassName.bestGuess(DictModelNameUtils.className(dictField.getEnumId()));
-				var fieldConstant = DictModelNameUtils.constantName(fieldSpec.name);
+				var fieldConstant = DictModelNameUtils.constantName(fieldSpec.name());
 
 				if (dictField.isMultivalued())
 				{
@@ -233,8 +233,8 @@ public class DictItemModelGenerator
 
 				if (fieldType == DictFieldType.ENUM)
 				{
-					var fieldConstant = DictModelNameUtils.constantName(fieldSpec.name);
-					var getterName = DictModelNameUtils.getterName(fieldSpec.name);
+					var fieldConstant = DictModelNameUtils.constantName(fieldSpec.name());
+					var getterName = DictModelNameUtils.getterName(fieldSpec.name());
 
 					if (dictField.isMultivalued())
 					{
