@@ -17,6 +17,7 @@ catalog {
 		version("nashorn", "$nashornVersion")
 		version("eclipseLink", "$eclipseLinkVersion")
 		version("postgis", "$postgisVersion")
+		version("postgresql", "$postgresqlJdbcVersion")
 		version("geolatte", "$geolatteVersion")
 		version("springDoc", "$springDocVersion")
 		version("flyway", "$flywayVersion")

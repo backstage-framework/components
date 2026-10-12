@@ -1,3 +1,15 @@
+## 5.2.36 - 2026-09-08
+### Dependency upgrades
+- Добавлена версия postgresql в dependencies.
+
+## 5.2.35 - 2026-08-27
+### Dicts
+- Добавили методы createMany и deleteAll в сервисы кодогенерации.
+
+## 5.2.34 - 2026-08-25
+### Dicts
+- Исправили кодогенерацию multivalued enum полей DictItem.
+
 ## 5.2.33 - 2026-08-07
 ### Audit
 - Исправили ошибку при сохранении записей audit c NULL в значениях fields или properties.
