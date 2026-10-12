@@ -34,8 +34,6 @@ import org.testcontainers.containers.PostgreSQLContainer;
 @Import({JacksonAutoConfiguration.class})
 public class AbstractTest
 {
-	public static final String POSTGRES_IMAGE_NAME = "postgres:16";
-
 	public static final String CLICKHOUSE_SECRET = "clickhouse";
 
 	@ClassRule
@@ -46,10 +44,11 @@ public class AbstractTest
 
 	static
 	{
-		postgres = new PostgreSQLContainer<>(POSTGRES_IMAGE_NAME);
+		postgres = new PostgreSQLContainer<>("postgres");
 		postgres.start();
 
-		clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server")
+		// FIXME: в 26.9 проблема с подключением по HTTP
+		clickhouse = new ClickHouseContainer("clickhouse/clickhouse-server:26.8")
 				.withUsername(CLICKHOUSE_SECRET)
 				.withPassword(CLICKHOUSE_SECRET);
 		clickhouse.start();

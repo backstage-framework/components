@@ -27,6 +27,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.test.context.ContextConfiguration;
 import org.testcontainers.containers.MinIOContainer;
 import org.testcontainers.containers.PostgreSQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
 @WebMvcTest
 @ContextConfiguration(classes = TestApplication.class, initializers = {AbstractTests.Initializer.class})
@@ -44,7 +45,10 @@ public abstract class AbstractTests
 		postgres = new PostgreSQLContainer<>("postgres");
 		postgres.start();
 
-		minio = new MinIOContainer("minio/minio");
+		var minioImage = DockerImageName.parse("pgsty/minio")
+				.asCompatibleSubstituteFor("minio/minio");
+
+		minio = new MinIOContainer(minioImage);
 		minio.start();
 	}
 
