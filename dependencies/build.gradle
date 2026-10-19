@@ -17,6 +17,9 @@ catalog {
 		version("nashorn", "$nashornVersion")
 		version("eclipseLink", "$eclipseLinkVersion")
 		version("postgis", "$postgisVersion")
+		// FIXME: Будет удалено в ближ версиях, нужно использовать postgresqlJdbc.
+		version("postgresql", "$postgresqlJdbcVersion")
+		version("postgresqlJdbc", "$postgresqlJdbcVersion")
 		version("geolatte", "$geolatteVersion")
 		version("springDoc", "$springDocVersion")
 		version("flyway", "$flywayVersion")

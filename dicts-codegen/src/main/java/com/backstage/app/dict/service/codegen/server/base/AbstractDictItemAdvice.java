@@ -41,25 +41,65 @@ public abstract class AbstractDictItemAdvice<T extends AbstractDictItem, S exten
 	@Override
 	public final void handleGetByIds(Dict dict, List<String> ids)
 	{
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			handleGetByIds(ids);
+		}
+	}
+
+	public void handleGetByIds(List<String> ids)
+	{
 	}
 
 	@Override
 	public final void handleGetByFilter(Dict dict, List<String> selectFields, String query, Pageable pageable)
+	{
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			handleGetByFilter(selectFields, query, pageable);
+		}
+	}
+
+	public void handleGetByFilter(List<String> selectFields, String query, Pageable pageable)
 	{
 	}
 
 	@Override
 	public final void handleExistsById(Dict dict, String itemId)
 	{
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			handleExistsById(itemId);
+		}
+	}
+
+	public void handleExistsById(String itemId)
+	{
 	}
 
 	@Override
 	public final void handleExistsByFilter(Dict dict, String query)
 	{
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			handleExistsByFilter(query);
+		}
+	}
+
+	public void handleExistsByFilter(String query)
+	{
 	}
 
 	@Override
 	public final void handleCountByFilter(Dict dict, String query)
+	{
+		if (getDictItemService().getDictId().equals(dict.getId()))
+		{
+			handleCountByFilter(query);
+		}
+	}
+
+	public void handleCountByFilter(String query)
 	{
 	}
 

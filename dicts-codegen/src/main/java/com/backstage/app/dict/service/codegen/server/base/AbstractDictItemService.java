@@ -92,6 +92,18 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 		return buildItem(dictDataService.create(DictDataItem.of(getDictId(), item.toMap())));
 	}
 
+	public List<T> createMany(List<T> items)
+	{
+		var dictDataItems = items.stream()
+				.map(item -> DictDataItem.of(getDictId(), item.toMap()))
+				.toList();
+
+		return dictDataService.createMany(getDictId(), dictDataItems)
+				.stream()
+				.map(this::buildItem)
+				.collect(Collectors.toList());
+	}
+
 	public T update(T item)
 	{
 		return buildItem(dictDataService.update(item.getId(), DictDataItem.of(getDictId(), item.toMap()), item.getVersion()));
@@ -105,6 +117,11 @@ public abstract class AbstractDictItemService<T extends AbstractDictItem>
 	public void delete(T item)
 	{
 		dictDataService.delete(getDictId(), item.getId());
+	}
+
+	public void deleteAll()
+	{
+		dictDataService.deleteAll(getDictId());
 	}
 
 	protected abstract String getDictId();

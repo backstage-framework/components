@@ -1,3 +1,34 @@
+## 5.2.38 - 2026-10-19
+### Dicts
+- В сервисы кодогенерации добавили возможность в advice переопределять методы, отвечающие за получение данных.
+
+## 5.2.37 - 2026-10-12
+### Dependency upgrades
+- Spring Doc 2.9.1
+- Groovy 5.1.3
+- jOOQ 3.21.9
+- Flyway ClickHouse 10.26.0
+- ClickHouse JDBC 0.10.0
+- PostgreSQL JDBC 42.7.14
+- Guava 33.7.2-jre
+- Commons-codec 1.23.0
+- Commons-collections4 4.6.0
+
+### App
+- Версия postgresql заменена на postgresqlJdbc в dependencies.
+
+## 5.2.36 - 2026-09-08
+### App
+- Добавлена версия postgresql в dependencies.
+
+## 5.2.35 - 2026-08-27
+### Dicts
+- Добавили методы createMany и deleteAll в сервисы кодогенерации.
+
+## 5.2.34 - 2026-08-25
+### Dicts
+- Исправили кодогенерацию multivalued enum полей DictItem.
+
 ## 5.2.33 - 2026-08-07
 ### Audit
 - Исправили ошибку при сохранении записей audit c NULL в значениях fields или properties.

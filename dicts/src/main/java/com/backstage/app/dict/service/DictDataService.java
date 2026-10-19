@@ -327,11 +327,9 @@ public class DictDataService
 	}
 
 	@Transactional
-	//TODO: перевести вызовы в тестах на вызовы с DictDataItem
-	@Deprecated(forRemoval = true)
-	public List<DictItem> createMany(String dictId, List<Map<String, Object>> dictDataList)
+	public List<DictItem> createMany(String dictId, List<DictDataItem> dictDataItems)
 	{
-		return createMany(dictId, dictDataList.stream().map(it -> buildDictDataItem(dictId, it)).toList(), SecurityUtils.getCurrentUserId());
+		return createMany(dictId, dictDataItems, SecurityUtils.getCurrentUserId());
 	}
 
 	@Transactional
