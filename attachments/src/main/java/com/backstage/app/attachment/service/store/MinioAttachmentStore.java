@@ -138,7 +138,7 @@ public class MinioAttachmentStore implements AttachmentStore
 					.bucket(bucket)
 					.contentType(attachment.getMimeType())
 					.object(attachment.getId())
-					.stream(stream, -1, uploadPartSize)
+					.stream(stream, -1L, uploadPartSize)
 					.build());
 
 			return getAttachment(attachment);

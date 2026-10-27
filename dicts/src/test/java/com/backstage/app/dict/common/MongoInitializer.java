@@ -29,7 +29,7 @@ public class MongoInitializer implements ApplicationContextInitializer<Configura
 
 	static
 	{
-		mongo = new MongoDBContainer("mongo:5");
+		mongo = new MongoDBContainer("mongo:9");
 
 		mongo.start();
 	}
