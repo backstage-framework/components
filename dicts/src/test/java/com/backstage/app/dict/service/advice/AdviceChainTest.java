@@ -23,7 +23,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-class AdviceChainTest
+public class AdviceChainTest
 {
 	private final DictDataServiceAdvice regular = new DictDataServiceAdvice() { };
 
@@ -35,8 +35,8 @@ class AdviceChainTest
 		}
 	};
 
-	private final AdviceChain<DictDataServiceAdvice> chain = new AdviceChain<>(
-			List.of(regular, migrationSafe), DictDataServiceAdvice::applicableDuringMigration);
+	private final AdviceChain<DictDataServiceAdvice> chain = new AdviceChain<>(List.of(regular, migrationSafe),
+			DictDataServiceAdvice::applicableDuringMigration);
 
 	@Test
 	void allAdvicesAreInvokedWithoutSuppression()
