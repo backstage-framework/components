@@ -28,6 +28,7 @@ import com.backstage.app.dict.domain.DictFieldName;
 import com.backstage.app.dict.domain.DictItem;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.model.dictitem.DictItemHistoryMap;
+import com.backstage.app.dict.service.advice.AdviceChain;
 import com.backstage.app.dict.service.advice.DictDataServiceAdvice;
 import com.backstage.app.dict.service.backend.DictDataBackend;
 import com.backstage.app.dict.service.mapping.DictFieldNameMappingService;
@@ -38,7 +39,6 @@ import com.backstage.app.dict.service.validation.DictDataValidationService;
 import com.backstage.app.exception.ObjectNotFoundException;
 import com.backstage.app.utils.ListUtils;
 import com.backstage.app.utils.SecurityUtils;
-import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.function.TriFunction;
 import org.apache.commons.lang3.tuple.Pair;
@@ -69,8 +69,7 @@ public class DictDataService
 
 	private final DictDataBackendProvider backendProvider;
 
-	@Getter
-	private final List<DictDataServiceAdvice> serviceAdviceList;
+	private final AdviceChain<DictDataServiceAdvice> serviceAdviceList;
 
 	private final DictsProperties dictsProperties;
 

@@ -23,8 +23,21 @@ import com.backstage.app.dict.domain.DictIndex;
 import org.springframework.core.annotation.Order;
 
 @Order(0)
+@SuppressWarnings("unused")
 public interface DictServiceAdvice
 {
+	/**
+	 * Нужно ли вызывать advice во время выполнения миграций.
+	 * По умолчанию advice'ы во время миграций не вызываются, см. {@link DictAdviceSuppression}.
+	 * <p>
+	 * Значение должно быть константой: оно читается один раз при создании {@link AdviceChain}.
+	 * Условия, зависящие от справочника или операции, нужно проверять внутри методов advice.
+	 */
+	default boolean applicableDuringMigration()
+	{
+		return false;
+	}
+
 	default void handleGetById(String id)
 	{
 	}

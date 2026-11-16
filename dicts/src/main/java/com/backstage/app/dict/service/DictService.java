@@ -33,6 +33,7 @@ import com.backstage.app.dict.exception.dict.enums.EnumNotFoundException;
 import com.backstage.app.dict.exception.dict.field.FieldNotFoundException;
 import com.backstage.app.dict.exception.dict.index.IndexAlreadyExistsException;
 import com.backstage.app.dict.exception.dict.index.IndexNotFoundException;
+import com.backstage.app.dict.service.advice.AdviceChain;
 import com.backstage.app.dict.service.advice.DictServiceAdvice;
 import com.backstage.app.dict.service.backend.DictBackend;
 import com.backstage.app.dict.service.backend.DictSchemeBackend;
@@ -72,7 +73,7 @@ public class DictService
 
 	private final DictItemMappingService dictItemMappingService;
 
-	private final List<DictServiceAdvice> serviceAdviceList;
+	private final AdviceChain<DictServiceAdvice> serviceAdviceList;
 
 	@Cacheable(value = DictsConfiguration.CACHE_NAME_DICTS, sync = true)
 	public Dict getById(String id)
@@ -205,9 +206,7 @@ public class DictService
 				.stream()
 				.filter(it -> it.getType() == DictFieldType.SERIAL)
 				.filter(it -> !actualDictFieldIds.contains(it.getId()))
-				.forEach(serialField -> {
-					schemeBackend.restartSerialField(dictId, serialField.getId(), 1L);
-				});
+				.forEach(serialField -> schemeBackend.restartSerialField(dictId, serialField.getId(), 1L));
 
 		serviceAdviceList.forEach(it -> it.handleAfterUpdate(updateDict));
 
@@ -558,7 +557,7 @@ public class DictService
 			return;
 		}
 
-		dictFields.add(0, DictField.builder()
+		dictFields.addFirst(DictField.builder()
 				.id(ID)
 				.name("Идентификатор")
 				.type(DictFieldType.STRING)

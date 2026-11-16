@@ -48,6 +48,15 @@ public class AttachmentDictDataServiceAdvice implements DictDataServiceAdvice
 
 	private final Supplier<AttachmentService> attachmentServiceSupplier = SpringContextUtils.createBeanSupplier(AttachmentService.class);
 
+	/**
+	 * Активируем выполнение advice на уровне миграций для корректной работы создания/удаления биндингов.
+	 */
+	@Override
+	public boolean applicableDuringMigration()
+	{
+		return true;
+	}
+
 	@Override
 	public void handleAfterCreate(Dict dict, DictItem item)
 	{

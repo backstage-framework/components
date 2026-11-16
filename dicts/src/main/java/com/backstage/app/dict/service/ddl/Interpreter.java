@@ -26,6 +26,7 @@ import com.backstage.app.dict.exception.dict.index.IndexCreatedException;
 import com.backstage.app.dict.model.dictitem.DictDataItem;
 import com.backstage.app.dict.service.DictDataService;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.advice.DictAdviceSuppression;
 import com.backstage.app.dict.service.ddl.ast.*;
 import com.backstage.app.dict.service.ddl.ast.expression.*;
 import com.backstage.app.dict.service.ddl.ast.expression.table.AlterTable;
@@ -68,7 +69,16 @@ public class Interpreter
 	private final ImportCsvService importCsvService;
 	private final ImportJsonService importJsonService;
 
+	/**
+	 * Выполняет выражения миграции. На время выполнения advice'ы справочников не вызываются,
+	 * кроме тех, что явно применимы к миграциям, см. {@link DictAdviceSuppression}.
+	 */
 	public void execute(List<Expression> expressions)
+	{
+		DictAdviceSuppression.runWithoutAdvice(() -> executeExpressions(expressions));
+	}
+
+	private void executeExpressions(List<Expression> expressions)
 	{
 		for (var expr : expressions)
 		{
@@ -507,7 +517,7 @@ public class Interpreter
 			if (value instanceof ArrayValue arrayValue && !arrayValue.getValue().isEmpty())
 			{
 				var clazz = arrayValue.getValue()
-						.get(0)
+						.getFirst()
 						.getValue()
 						.getClass();
 

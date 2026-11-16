@@ -26,6 +26,18 @@ import java.util.List;
 @Order(0)
 public interface DictDataServiceAdvice
 {
+	/**
+	 * Нужно ли вызывать advice во время выполнения миграций.
+	 * По умолчанию advice'ы во время миграций не вызываются, см. {@link DictAdviceSuppression}.
+	 * <p>
+	 * Значение должно быть константой: оно читается один раз при создании {@link AdviceChain}.
+	 * Условия, зависящие от справочника или операции, нужно проверять внутри методов advice.
+	 */
+	default boolean applicableDuringMigration()
+	{
+		return false;
+	}
+
 	default void handleGetByIds(Dict dict, List<String> ids)
 	{
 	}

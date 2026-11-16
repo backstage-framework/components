@@ -25,6 +25,7 @@ import com.backstage.app.dict.exception.migration.MigrationFileReadException;
 import com.backstage.app.dict.exception.migration.MigrationHasSameVersionException;
 import com.backstage.app.dict.exception.migration.MigrationProcessException;
 import com.backstage.app.dict.service.DictDataService;
+import com.backstage.app.dict.service.advice.DictAdviceSuppression;
 import com.backstage.app.dict.service.DictService;
 import com.backstage.app.dict.service.backend.VersionSchemeBackend;
 import com.backstage.app.dict.service.lock.DictLockInitializer;
@@ -200,11 +201,11 @@ public class DictsDDLProvider implements InitializingBean
 	{
 		log.info("Применяем миграцию для удаления soft delete записей в справочниках после перехода на hard delete.");
 
-		dictService.getAll()
+		DictAdviceSuppression.runWithoutAdvice(() -> dictService.getAll()
 				.stream()
 				.filter(this::irrelevantColumnsPresent)
 				.peek(this::deleteIrrelevantItems)
-				.forEach(this::updateDictSchema);
+				.forEach(this::updateDictSchema));
 	}
 
 	private boolean irrelevantColumnsPresent(Dict dict)

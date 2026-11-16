@@ -26,6 +26,10 @@ import com.backstage.app.dict.configuration.annotation.DictsPostgresJdbcTemplate
 import com.backstage.app.dict.configuration.conditional.ConditionalOnEngine;
 import com.backstage.app.dict.configuration.properties.DictsProperties;
 import com.backstage.app.dict.exception.dict.DictException;
+import com.backstage.app.dict.service.advice.AdviceChain;
+import com.backstage.app.dict.service.advice.DictDataServiceAdvice;
+import com.backstage.app.dict.service.advice.DictServiceAdvice;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -46,6 +50,18 @@ public class DictsConfiguration
 	public static final String CACHE_NAME_DICT_DATA_FIELDS = "dictDataFields";
 
 	private static final int DEFAULT_CACHE_SIZE = 10000;
+
+	@Bean
+	public AdviceChain<DictServiceAdvice> dictServiceAdviceChain(ObjectProvider<DictServiceAdvice> advices)
+	{
+		return new AdviceChain<>(advices.orderedStream().toList(), DictServiceAdvice::applicableDuringMigration);
+	}
+
+	@Bean
+	public AdviceChain<DictDataServiceAdvice> dictDataServiceAdviceChain(ObjectProvider<DictDataServiceAdvice> advices)
+	{
+		return new AdviceChain<>(advices.orderedStream().toList(), DictDataServiceAdvice::applicableDuringMigration);
+	}
 
 	@Bean
 	public CacheSettingsProvider dictsCacheSettingsProvider()
