@@ -1,0 +1,5 @@
+apply plugin: 'maven-publish'
+
+processResources {
+	from rootProject.file('CODEMAP.md')
+}
