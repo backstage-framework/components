@@ -19,6 +19,7 @@ package com.backstage.gradle
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.Task
+import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.Property
 
 class DictsCodegenPlugin implements Plugin<Project>
@@ -78,6 +79,15 @@ class DictsCodegenPlugin implements Plugin<Project>
 
 				environment("app.dicts.codegen.outputPath", outputPath)
 				environment("app.dicts.codegen.targetPackage", extension.targetPackage.get())
+
+				var formatterCommand = extension.intellijFormatterCommand.get()
+				if (!formatterCommand.isEmpty())
+				{
+					var formatter = new DictsCodegenFormatter(new File(outputPath).toPath().normalize(), formatterCommand)
+
+					doFirst { task -> formatter.prepare(task) }
+					doLast { formatter.formatAndWrite() }
+				}
 			})
 		}
 	}
@@ -103,10 +113,14 @@ class DictsCodegenPluginExtension
 
 	Property<String> version
 
+	ListProperty<String> intellijFormatterCommand
+
 	DictsCodegenPluginExtension(Project project)
 	{
 		targetProject = project.objects.property(Project.class).convention(project)
 		targetPackage = project.objects.property(String.class).convention("com.backstage.dicts.generated")
 		version = project.objects.property(String.class)
+		intellijFormatterCommand = project.objects.listProperty(String.class)
+				.convention(project.provider { DictsCodegenFormatter.findIntellijFormatter() })
 	}
 }
