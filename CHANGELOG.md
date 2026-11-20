@@ -1,3 +1,16 @@
+## 6.0.0 - 2026-11-20
+### Dependency upgrades
+- Spring Boot 4.2.0
+- Spring Cloud 5.1.0
+- Spring Doc 3.2.0
+- EclipseLink 5.0.2
+- jOOQ 3.21.10
+- Flyway 13.13.0
+- Flyway ClickHouse 10.26.3
+- ClickHouse JDBC 0.11.2
+- MinIO 9.0.4
+- Guava 33.8.0-jre
+
 ## 5.2.38 - 2026-10-19
 ### Dicts
 - В сервисы кодогенерации добавили возможность в advice переопределять методы, отвечающие за получение данных.
