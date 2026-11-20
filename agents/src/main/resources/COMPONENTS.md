@@ -24,6 +24,8 @@
 
 Используй [skill backstage-dicts](skills/backstage-dicts/SKILL.md). Он направляет к описанию возможностей/API, настройке, жизненному циклу и синтаксису миграций, языку фильтров. Полный набор справочников читать для одной задачи не требуется.
 
+`dictsCodegen` может форматировать сгенерированные классы через IntelliJ CLI по `.editorconfig` приложения-потребителя. Условия запуска и настройки описаны в [справочнике конфигурации](skills/backstage-dicts/references/configuration.md#кодогенерация).
+
 ## Вложения, аудит и отчёты
 
 - `attachments`: используй `AttachmentService` для файлов, метаданных, bind/release и удаления; storage реализуется через `AttachmentStore`. Проверь `app.attachments` и настроенный MinIO/файловый каталог.

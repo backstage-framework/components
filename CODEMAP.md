@@ -136,7 +136,7 @@
 | `backstage-app-version` | `AppVersionPlugin` | Записывает `app.version`, `app.module` в `src/main/resources/config/application.properties` |
 | `backstage-bpmn-pack` | `BpmnPackPlugin` | Задача `pack` экспортирует classpath workflow в JSON; extension `bpmn` |
 | `backstage-checkstyle` | `CheckstylePlugin` | Checkstyle, `checkstyleApplyConfig`, pre-commit hook; настройки в ресурсах `checkstyle/` |
-| `backstage-dicts-codegen` | `DictsCodegenPlugin` | Задача `dictsCodegen` на базе `bootRun`; extension `dictsCodegen` задаёт target project/package/version |
+| `backstage-dicts-codegen` | `DictsCodegenPlugin`, `DictsCodegenFormatter` | Задача `dictsCodegen` на базе `bootRun`. Extension задаёт целевой проект, пакет, версию и опциональную команду `intellijFormatterCommand` |
 | `backstage-dependency-versions` | `DependencyVersionsPlugin` | Задача `updateDependencyVersions` обновляет версии в `gradle.properties` в пределах major |
 | `backstage-agent-docs` | `AgentDocsPlugin` | Установка документации и обновление `AGENTS.md` при конфигурации приложения; конфигурация/extension `agentDocs` |
 
@@ -167,5 +167,6 @@
 - В `dicts` есть общие наборы тестов и отдельные `service/postgres`, `service/mongo`; изменение общей логики требует проверки обеих реализаций.
 - `dicts-codegen` содержит `ModelNameUtilsTests`; `api` — тесты обработчиков исключений и Swagger; `app` — тесты конвертеров, REST и перечислений.
 - `gradle-plugins/src/test/groovy/.../AgentDocsPluginTests` использует Gradle TestKit и локальный Maven-репозиторий: проверяет установку при конфигурации без отдельной задачи, смену версии и удаление старой документации, prebuilt JAR, configuration cache, восстановление файлов, сохранение пользовательских инструкций и CRLF, миграцию старого блока, обработку повреждённых маркеров, применение плагина в подпроекте и сохранность документации после `clean build`.
+- `DictsCodegenPluginTests` проверяет форматирование по `.editorconfig` целевого проекта, автоопределение IntelliJ CLI, запуск без форматтера и сохранение файлов при повторной генерации или ошибке форматтера.
 - Команды: `./gradlew :<module>:test`, `./gradlew :<module>:test --tests '<pattern>'`, `./gradlew :<module>:checkstyleMain`, `./gradlew -p gradle-plugins test validatePlugins`, `./gradlew :agents:jar`.
 - Полная `./gradlew check` требует зависимостей и инфраструктуры всех модулей. Dockerfile запускает публикацию, а не обычную локальную проверку; для проверки изменений его запускать не нужно.
