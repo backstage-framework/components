@@ -18,6 +18,7 @@ package com.backstage.app.dict.service.codegen.client;
 
 import com.backstage.app.api.utils.RemoteServiceUtils;
 import com.backstage.app.dict.api.service.remote.RemoteDictService;
+import com.backstage.app.dict.service.codegen.client.generator.DictCodegenUtils;
 import com.backstage.app.dict.service.codegen.client.generator.DictItemModelGenerator;
 import com.backstage.app.dict.service.codegen.client.generator.DictItemServiceGenerator;
 import lombok.RequiredArgsConstructor;
@@ -52,8 +53,8 @@ public class ClientCodegenExtension
 			{
 				var path = Path.of(outputPath);
 
-				model.writeToPath(path);
-				service.writeToPath(path);
+				DictCodegenUtils.writeIfChanged(model, path);
+				DictCodegenUtils.writeIfChanged(service, path);
 			}
 			catch (IOException e)
 			{

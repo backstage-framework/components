@@ -290,10 +290,13 @@ public class DictItemModelGenerator
 			enumSpec.addJavadoc(dictEnum.getName());
 		}
 
-		dictEnum.getValues().forEach(value -> {
-			enumSpec.addEnumConstant(DictModelNameUtils.enumConstantName(value), TypeSpec.anonymousClassBuilder("$S", value)
-					.build());
-		});
+		dictEnum.getValues()
+				.stream()
+				.sorted()
+				.forEach(value -> {
+					enumSpec.addEnumConstant(DictModelNameUtils.enumConstantName(value), TypeSpec.anonymousClassBuilder("$S", value)
+							.build());
+				});
 
 		return enumSpec.build();
 	}

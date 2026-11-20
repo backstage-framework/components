@@ -16,15 +16,13 @@
 
 package com.backstage.app.dict.service.codegen.server.generator;
 
+import com.backstage.app.dict.service.codegen.client.generator.DictCodegenUtils;
 import com.backstage.app.dict.service.codegen.server.base.AbstractDictItemAdvice;
-import com.backstage.app.utils.DateUtils;
-import jakarta.annotation.Generated;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.javapoet.*;
 
 import javax.lang.model.element.Modifier;
-import java.time.LocalDateTime;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -52,9 +50,6 @@ public class DictItemAdviceGenerator
 
 	protected AnnotationSpec generatedAnnotation()
 	{
-		return AnnotationSpec.builder(Generated.class)
-				.addMember("value", "$S", this.getClass().getName())
-				.addMember("date", "$S", DateUtils.toZonedDateTime(LocalDateTime.now()))
-				.build();
+		return DictCodegenUtils.generatedAnnotation(this);
 	}
 }
