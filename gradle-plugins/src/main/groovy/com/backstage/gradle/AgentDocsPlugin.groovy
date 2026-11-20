@@ -46,7 +46,17 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 	{
 		def extension = project.extensions.create('agentDocs', AgentDocsPluginExtension)
 		def defaultDirectory = project.layout.projectDirectory.dir('.gradle/backstage/agent-docs')
-		extension.version.convention(project.providers.gradleProperty('backstageVersion').orElse(getDefaultBackstageVersion()))
+		def defaultVersion = project.providers.provider {
+			def properties = new Properties()
+
+			AgentDocsPlugin.class.getResourceAsStream('/backstage.properties').withCloseable {
+				properties.load(it)
+			}
+
+			return properties.getProperty('backstageVersion')
+		}
+
+		extension.version.convention(project.providers.gradleProperty('backstageVersion').orElse(defaultVersion))
 		extension.outputDirectory.convention(defaultDirectory)
 
 		def configuration = project.configurations.create('agentDocs') {
@@ -257,17 +267,6 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		}
 
 		return updatedContent
-	}
-
-	private String getDefaultBackstageVersion()
-	{
-		def properties = new Properties()
-
-		getClass().getResourceAsStream('/backstage.properties').withCloseable {
-			properties.load(it)
-		}
-
-		return properties.getProperty('backstageVersion')
 	}
 }
 
