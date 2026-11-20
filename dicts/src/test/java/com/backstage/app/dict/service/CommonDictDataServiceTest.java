@@ -125,20 +125,7 @@ public class CommonDictDataServiceTest extends CommonTest
 	protected void initDictDataTestableHierarchy(String storageDictId)
 	{
 		TESTABLE_DICT_ID = createNewDict(storageDictId + "data").getId();
-
-		var refDict = buildDict(storageDictId + "dataRef");
-
-		refDict.getFields()
-				.add(DictField.builder()
-						.id(TESTABLE_DICT_ID)
-						.name("Ссылка")
-						.type(DictFieldType.DICT)
-						.required(false)
-						.multivalued(false)
-						.dictRef(new DictFieldName(TESTABLE_DICT_ID, ID))
-						.build());
-
-		TESTABLE_REF_DICT_ID = dictService.create(refDict).getId();
+		TESTABLE_REF_DICT_ID = createDictWithReference(storageDictId + "dataRef", TESTABLE_DICT_ID);
 
 		var attachDict = buildDict(storageDictId + "dataAttach");
 
@@ -243,6 +230,23 @@ public class CommonDictDataServiceTest extends CommonTest
 						.build());
 
 		TESTABLE_SERIAL_TYPE_DICT_ID = dictService.create(serialTypeDict).getId();
+	}
+
+	private String createDictWithReference(String dictId, String referencedDictId)
+	{
+		var dict = buildDict(dictId);
+
+		dict.getFields()
+				.add(DictField.builder()
+						.id(referencedDictId)
+						.name("Ссылка")
+						.type(DictFieldType.DICT)
+						.required(false)
+						.multivalued(false)
+						.dictRef(new DictFieldName(referencedDictId, ID))
+						.build());
+
+		return dictService.create(dict).getId();
 	}
 
 	@BeforeAll
@@ -396,6 +400,61 @@ public class CommonDictDataServiceTest extends CommonTest
 
 		assertFalse(result.getContent().isEmpty());
 		assertTrue(allMatchStringField);
+	}
+
+	protected void getByFilterWithNot(boolean includesUnsetValues)
+	{
+		var dictId = createNewDict("dataNot").getId();
+		var first = dictDataService.create(buildDictDataItem(dictId, DATA_MAP)).getId();
+
+		var otherData = new HashMap<>(DATA_MAP);
+		otherData.put("integerField", 2);
+		otherData.put("doubleField", 3.25);
+		var second = dictDataService.create(buildDictDataItem(dictId, otherData)).getId();
+
+		otherData.put("booleanField", false);
+		otherData.put("doubleField", null);
+		var explicitNull = dictDataService.create(buildDictDataItem(dictId, otherData)).getId();
+
+		otherData.remove("doubleField");
+		var missing = dictDataService.create(buildDictDataItem(dictId, otherData)).getId();
+
+		assertEquals(includesUnsetValues ? Set.of(second, explicitNull, missing) : Set.of(second),
+				filterItemIds(dictId, "not (doubleField = 2.558)"));
+		assertEquals(Set.of(second, explicitNull, missing),
+				filterItemIds(dictId, "not (integerField = 1 and booleanField = true)"));
+		assertEquals(Set.of(second),
+				filterItemIds(dictId, "NOT integerField = 1 AND booleanField = true"));
+		assertEquals(Set.of(first),
+				filterItemIds(dictId, "not (not (integerField = 1)) and booleanField = true"));
+	}
+
+	private Set<String> filterItemIds(String dictId, String filter)
+	{
+		return dictDataService.getByFilter(dictId, List.of(ID), filter, Pageable.unpaged())
+				.getContent()
+				.stream()
+				.map(DictItem::getId)
+				.collect(Collectors.toSet());
+	}
+
+	protected void getByFilterWithNotOnReference()
+	{
+		var referencedDictId = createNewDict("dataNot").getId();
+		var dictId = createDictWithReference("dataNotRef", referencedDictId);
+		var excludedRefId = dictDataService.create(buildDictDataItem(referencedDictId, DATA_MAP)).getId();
+
+		var refData = new HashMap<>(DATA_MAP);
+		refData.put("stringField", "other");
+		var includedRefId = dictDataService.create(buildDictDataItem(referencedDictId, refData)).getId();
+
+		var data = new HashMap<>(DATA_MAP);
+		data.put(referencedDictId, excludedRefId);
+		dictDataService.create(buildDictDataItem(dictId, data));
+		data.put(referencedDictId, includedRefId);
+		var includedId = dictDataService.create(buildDictDataItem(dictId, data)).getId();
+
+		assertEquals(Set.of(includedId), filterItemIds(dictId, "not (%s.stringField = 'string')".formatted(referencedDictId)));
 	}
 
 	protected void getByFilterWithPrefixLikeExpression()

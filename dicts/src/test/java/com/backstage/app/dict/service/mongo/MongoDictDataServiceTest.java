@@ -93,6 +93,12 @@ public class MongoDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void getByFilterWithNotCorrect()
+	{
+		getByFilterWithNot(true);
+	}
+
+	@Test
 	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterWithPrefixLikeExpressionCorrect()
 	{

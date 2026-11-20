@@ -84,6 +84,18 @@ public class PostgresDictDataServiceTest extends CommonDictDataServiceTest
 	}
 
 	@Test
+	void getByFilterWithNotCorrect()
+	{
+		getByFilterWithNot(false);
+	}
+
+	@Test
+	void getByFilterWithNotOnReferenceCorrect()
+	{
+		getByFilterWithNotOnReference();
+	}
+
+	@Test
 	@Order(TestPipeline.DICT_DATA_GET_BY_FILTER_TEST)
 	void getByFilterWithPrefixLikeExpressionCorrect()
 	{

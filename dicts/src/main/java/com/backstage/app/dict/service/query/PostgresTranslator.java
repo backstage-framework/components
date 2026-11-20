@@ -40,6 +40,8 @@ import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.Set;
 
+import static com.backstage.app.dict.service.query.ast.LogicQueryExpression.Type.NOT;
+
 @RequiredArgsConstructor
 public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<PostgresQuery, PostgresTranslationContext>
 {
@@ -118,6 +120,16 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 	public PostgresQuery visit(LogicQueryExpression expression, PostgresTranslationContext context)
 	{
 		var left = expression.left.process(this, context);
+
+		if (expression.type == NOT)
+		{
+			return PostgresQuery.builder()
+					.sqlExpression("not (%s)".formatted(left.getSqlExpression()))
+					.participantDictIds(left.getParticipantDictIds())
+					.parameterSource(left.getParameterSource())
+					.build();
+		}
+
 		var right = expression.right.process(this, context);
 
 		var leftExpression = left.getSqlExpression();
@@ -133,7 +145,6 @@ public class PostgresTranslator implements Translator<PostgresQuery>, Visitor<Po
 		{
 			case AND -> "(%s and %s)".formatted(leftExpression, rightExpression);
 			case OR -> "(%s or %s)".formatted(leftExpression, rightExpression);
-			case NOT -> "not (%s)".formatted(leftExpression);
 
 			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
 		};

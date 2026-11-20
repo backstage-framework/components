@@ -35,6 +35,8 @@ import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.Set;
 
+import static com.backstage.app.dict.service.query.ast.LogicQueryExpression.Type.NOT;
+
 @RequiredArgsConstructor
 public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQuery, TranslationContext>
 {
@@ -130,6 +132,15 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 	public MongoQuery visit(LogicQueryExpression expression, TranslationContext context)
 	{
 		var left = expression.left.process(this, context);
+
+		if (expression.type == NOT)
+		{
+			return MongoQuery.builder()
+					.criteria(new Criteria().norOperator(left.getCriteria()))
+					.participantDictIds(left.getParticipantDictIds())
+					.build();
+		}
+
 		var right = expression.right.process(this, context);
 
 		var participantDictIds = Sets.union(left.getParticipantDictIds(), right.getParticipantDictIds());
@@ -138,8 +149,6 @@ public class MongoTranslator implements Translator<MongoQuery>, Visitor<MongoQue
 		{
 			case OR -> new Criteria().orOperator(left.getCriteria(), right.getCriteria());
 			case AND -> new Criteria().andOperator(left.getCriteria(), right.getCriteria());
-			//fixme: исправить
-			case NOT -> throw new UnsupportedOperationException("Оператор '%s' не поддерживается в MongoDictDataBackend.".formatted(expression.type));
 
 			default -> throw new AppException(ApiStatusCodeImpl.ILLEGAL_INPUT, "Не поддерживаемый оператор '%s'".formatted(expression.type));
 		};
