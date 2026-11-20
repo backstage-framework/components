@@ -16,24 +16,51 @@
 
 package com.backstage.app;
 
-import com.backstage.app.common.AbstractTests;
 import com.backstage.app.utils.RestUtils;
+import com.sun.net.httpserver.HttpServer;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpStatus;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class RestUtilsTest extends AbstractTests
+public class RestUtilsTest
 {
-	private static final String TEST_ADDRESS_URL = "https://1.1.1.1/";
-
 	@Test
-	public void testCorrectRequest()
+	public void testCorrectRequest() throws IOException
 	{
-		var restTemplate = RestUtils.createRestTemplate(60);
+		var server = HttpServer.create(new InetSocketAddress("127.0.0.1", 0), 0);
+		server.createContext("/", exchange -> {
+			try (exchange)
+			{
+				var userAgent = String.valueOf(exchange.getRequestHeaders().getFirst("User-Agent"));
+				var body = userAgent.getBytes(StandardCharsets.UTF_8);
 
-		var response = restTemplate.getForEntity(TEST_ADDRESS_URL, String.class);
+				exchange.getResponseHeaders().set("Content-Type", "text/plain; charset=UTF-8");
+				exchange.sendResponseHeaders(200, body.length);
+				exchange.getResponseBody().write(body);
+			}
+		});
+		server.start();
 
-		assertEquals(response.getStatusCode(), HttpStatus.OK);
+		try
+		{
+			var restClient = RestUtils.createRestClient(5, 2, 1,
+					(builder, connectionManager) -> builder.setUserAgent("RestUtilsTest"));
+			var response = restClient.get()
+					.uri("http://127.0.0.1:%s/".formatted(server.getAddress().getPort()))
+					.retrieve()
+					.toEntity(String.class);
+
+			assertEquals(HttpStatus.OK, response.getStatusCode());
+			assertEquals("RestUtilsTest", response.getBody());
+		}
+		finally
+		{
+			server.stop(0);
+		}
 	}
 }

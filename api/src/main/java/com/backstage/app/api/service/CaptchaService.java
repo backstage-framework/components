@@ -23,8 +23,9 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestTemplate;
+import org.springframework.web.client.RestClient;
 import org.springframework.web.util.UriComponentsBuilder;
 
 @Slf4j
@@ -36,13 +37,23 @@ public class CaptchaService
 {
 	private final CaptchaProperties captchaProperties;
 
+	private final RestClient restClient = RestClient.builder()
+			.requestFactory(new SimpleClientHttpRequestFactory())
+			.build();
+
 	public boolean check(String token)
 	{
-		var url = UriComponentsBuilder.fromUriString(captchaProperties.getApi())
+		var uri = UriComponentsBuilder.fromUriString(captchaProperties.getApi())
 				.queryParam("secret", captchaProperties.getSecret())
-				.queryParam("response", token).build().toString();
+				.queryParam("response", token)
+				.build()
+				.encode()
+				.toUri();
 
-		var response = new RestTemplate().getForObject(url, CaptchaResponse.class);
+		var response = restClient.get()
+				.uri(uri)
+				.retrieve()
+				.body(CaptchaResponse.class);
 
 		boolean success = response != null && response.isSuccess();
 		String score = success ? String.valueOf(response.getScore()) : "-";
