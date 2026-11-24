@@ -16,11 +16,14 @@
 
 package com.backstage.gradle
 
+import groovy.transform.TupleConstructor
 import org.gradle.api.GradleException
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.artifacts.component.ModuleComponentIdentifier
 import org.gradle.api.file.ArchiveOperations
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileTree
 import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.provider.Property
 
@@ -33,6 +36,8 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 	static final String BLOCK_START = '<!-- backstage-agent-docs:start -->'
 	static final String BLOCK_END = '<!-- backstage-agent-docs:end -->'
 	private static final String MANAGED_MARKER = '.backstage-agent-docs'
+	private static final String RESOURCE_PREFIX = 'META-INF/backstage/agents/'
+	private static final String LIBRARY_CATALOG = 'LIBRARIES.md'
 	private static final List<String> CATALOG_NAMES = ['README.md', 'index.md']
 
 	@Inject
@@ -79,9 +84,13 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		project.afterEvaluate {
 			def outputDirectory = extension.outputDirectory.get().asFile
 			def content = agentsFile.exists() ? agentsFile.getText('UTF-8') : ''
-			def documentation = configuration.collect { archives.zipTree(it) }
+
+			def documentation = configuration.collect { jar ->
+				def files = archives.zipTree(jar).matching { include '**/*.md' }
+				return new Documentation(files, jar.name, '', '')
+			}
 			def catalogName = CATALOG_NAMES.find { name ->
-				documentation.any { tree -> !tree.matching { include(name) }.isEmpty() }
+				documentation.any { source -> !source.files.matching { include(name) }.isEmpty() }
 			}
 
 			if (catalogName == null)
@@ -89,41 +98,52 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 				throw new GradleException('Backstage agent documentation must contain README.md or index.md at the archive root.')
 			}
 
-			def updatedContent = AgentDocsPlugin.getUpdatedAgentsContent(content, agentsFile, new File(outputDirectory, catalogName))
+			def libraries = AgentDocsPlugin.collectLibraryDocumentation(project, archives)
+			def catalog = new File(outputDirectory, libraries ? LIBRARY_CATALOG : catalogName)
+			def updatedContent = AgentDocsPlugin.getUpdatedAgentsContent(content, agentsFile, catalog)
 			AgentDocsPlugin.validateOutputDirectory(outputDirectory, defaultDirectory.asFile, rootDirectory, content)
 
-			Set<String> skillNames = new LinkedHashSet<>()
-			documentation.each { tree ->
-				tree.matching { include 'skills/*/SKILL.md' }.visit { details ->
-					if (!details.directory)
-					{
-						skillNames.add(details.relativePath.segments[1])
-					}
-				}
-			}
-
+			def sources = documentation + libraries
+			def skills = AgentDocsPlugin.collectSkills(sources)
 			def localSkillsDirectory = skillsDirectory.canonicalFile == skillsDirectory
-			if (!skillNames.isEmpty() && !localSkillsDirectory)
+			if (skills && !localSkillsDirectory)
 			{
 				throw new GradleException("Cannot install Backstage skills: $skillsDirectory points to another location.")
 			}
 
-			AgentDocsPlugin.validateSkillTargets(skillsDirectory, skillNames)
+			AgentDocsPlugin.validateSkillTargets(skillsDirectory, skills.keySet())
 			AgentDocsPlugin.markManagedDirectory(outputDirectory)
 
 			fileSystem.sync {
-				from(documentation) {
-					include '**/*.md'
+				sources.each { source ->
+					from(source.files) {
+						if (libraries)
+						{
+							exclude(LIBRARY_CATALOG)
+						}
+						eachFile { details -> details.path = source.destination(details.relativeSourcePath.pathString) }
+					}
 				}
 
 				into(outputDirectory)
 				includeEmptyDirs = false
-				preserve { include(MANAGED_MARKER) }
+				preserve {
+					include(MANAGED_MARKER)
+					if (libraries)
+					{
+						include(LIBRARY_CATALOG)
+					}
+				}
+			}
+
+			if (libraries)
+			{
+				AgentDocsPlugin.writeLibraryCatalog(catalog, catalogName, libraries, skills)
 			}
 
 			if (localSkillsDirectory)
 			{
-				AgentDocsPlugin.installSkills(fileSystem, outputDirectory, skillsDirectory, skillNames)
+				AgentDocsPlugin.installSkills(fileSystem, outputDirectory, skillsDirectory, skills)
 			}
 
 			if (updatedContent != content)
@@ -132,11 +152,94 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 			}
 
 			// Учитываем созданные файлы при проверке актуальности configuration cache.
-			project.fileTree(outputDirectory).each { it.getText('UTF-8') }
-			skillNames.each { name ->
-				project.fileTree(new File(skillsDirectory, name)).each { it.getText('UTF-8') }
+			AgentDocsPlugin.trackInstalledFiles(project, outputDirectory)
+			skills.keySet().each { name ->
+				AgentDocsPlugin.trackInstalledFiles(project, new File(skillsDirectory, name))
 			}
 			agentsFile.getText('UTF-8')
+		}
+	}
+
+	private static List<Documentation> collectLibraryDocumentation(Project project, ArchiveOperations archives)
+	{
+		def runtimeClasspath = project.configurations.findByName('runtimeClasspath')
+		if (runtimeClasspath == null)
+		{
+			return []
+		}
+
+		def view = runtimeClasspath.incoming.artifactView {
+			componentFilter { it instanceof ModuleComponentIdentifier }
+		}
+		List<Documentation> libraries = []
+
+		view.artifacts.artifacts.sort { it.id.displayName }.each { artifact ->
+			if (artifact.file.name.endsWith('.jar'))
+			{
+				def files = archives.zipTree(artifact.file).matching {
+					include "${RESOURCE_PREFIX}**"
+					exclude "**/$MANAGED_MARKER"
+				}
+				if (!files.isEmpty())
+				{
+					def component = artifact.id.componentIdentifier as ModuleComponentIdentifier
+					libraries.add(new Documentation(files, artifact.id.displayName, RESOURCE_PREFIX, "${component.group}/${component.module}/"))
+				}
+			}
+		}
+
+		return libraries
+	}
+
+	private static Map<String, Documentation> collectSkills(List<Documentation> documentation)
+	{
+		Map<String, Documentation> skills = new TreeMap<>()
+
+		documentation.each { source ->
+			source.files.matching { include "${source.resourcePrefix}skills/*/SKILL.md" }.visit { details ->
+				if (!details.directory)
+				{
+					def name = details.relativePath.segments[-2]
+					def previous = skills.putIfAbsent(name, source)
+					if (previous != null)
+					{
+						throw new GradleException("Cannot install Backstage skill '$name': it is provided by both ${previous.artifact} and ${source.artifact}.")
+					}
+				}
+			}
+		}
+
+		return skills
+	}
+
+	private static void writeLibraryCatalog(File catalog, String backstageCatalog, List<Documentation> libraries, Map<String, Documentation> skills)
+	{
+		def lines = [
+				'# Документация библиотек',
+				'',
+				"- [Компоненты Backstage](<$backstageCatalog>)"
+		]
+
+		libraries.each { source ->
+			def readme = "${source.resourcePrefix}README.md"
+			def link = source.files.matching { include(readme) }.isEmpty() ? source.destinationPrefix : source.destination(readme)
+			lines.add("- [${source.artifact}](<$link>)")
+			skills.findAll { name, owner -> owner == source }.keySet().each { name ->
+				lines.add("  - [${name}](<${source.destinationPrefix}skills/$name/SKILL.md>)")
+			}
+		}
+
+		def content = lines.join('\n') + '\n'
+		if (!catalog.exists() || catalog.getText('UTF-8') != content)
+		{
+			catalog.write(content, 'UTF-8')
+		}
+	}
+
+	private static void trackInstalledFiles(Project project, File directory)
+	{
+		project.fileTree(directory).each { file ->
+			project.providers.fileContents(project.layout.projectDirectory.file(file.absolutePath)).asBytes.get()
 		}
 	}
 
@@ -157,11 +260,11 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 			return
 		}
 
-		// Поддерживаем обновление каталогов, созданных до появления маркера.
+		// Распознаём прежнюю установку по каталогу и ссылке в AGENTS.md.
 		def start = content.indexOf(BLOCK_START)
 		def end = content.indexOf(BLOCK_END)
 		def previousBlock = start >= 0 ? content.substring(start, end) : ''
-		def previousInstallation = CATALOG_NAMES.any { name ->
+		def previousInstallation = (CATALOG_NAMES + [LIBRARY_CATALOG]).any { name ->
 			def catalog = new File(directory, name)
 			catalog.isFile() && (path == defaultPath || previousBlock.contains("](<${relativePath(rootDirectory, catalog)}>)"))
 		}
@@ -184,18 +287,17 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		}
 	}
 
-	private static void installSkills(FileSystemOperations fileSystem, File documentationDirectory, File skillsDirectory, Set<String> skillNames)
+	private static void installSkills(FileSystemOperations fileSystem, File documentationDirectory, File skillsDirectory, Map<String, Documentation> skills)
 	{
-		def sourceDirectory = new File(documentationDirectory, 'skills')
-		skillsDirectory.listFiles()?.findAll { isManagedDirectory(it) && !skillNames.contains(it.name) }
+		skillsDirectory.listFiles()?.findAll { isManagedDirectory(it) && !skills.containsKey(it.name) }
 				?.each { directory -> fileSystem.delete { delete(directory) } }
 
-		skillNames.each { name ->
+		skills.each { name, source ->
 			def target = new File(skillsDirectory, name)
 			markManagedDirectory(target)
 
 			fileSystem.sync {
-				from(new File(sourceDirectory, name))
+				from(new File(documentationDirectory, "${source.destinationPrefix}skills/$name"))
 				into(target)
 				preserve { include(MANAGED_MARKER) }
 			}
@@ -233,9 +335,9 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 				BLOCK_START,
 				'## Компоненты Backstage',
 				'',
-				'Перед изменением кода, использующего библиотеки com.backstage:',
+				'При работе с подключёнными библиотеками выбери подходящий skill или справочник.',
 				'',
-				"- Выбери нужный skill или модуль в [каталоге Backstage](<$indexPath>); читай только материалы по текущей задаче.",
+				"- [Каталог документации](<$indexPath>) содержит ссылки на материалы по модулям.",
 				BLOCK_END
 		].join(lineSeparator)
 
@@ -267,6 +369,20 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		}
 
 		return updatedContent
+	}
+
+	@TupleConstructor(defaults = false)
+	private static class Documentation
+	{
+		final FileTree files
+		final String artifact
+		final String resourcePrefix
+		final String destinationPrefix
+
+		String destination(String resource)
+		{
+			return destinationPrefix + resource.substring(resourcePrefix.length())
+		}
 	}
 }
 

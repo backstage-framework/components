@@ -2,17 +2,19 @@
 ### Dependency upgrades
 - Spring Boot 4.2.0
 - Spring Cloud 5.1.0
-- Spring Doc 3.2.0
+- Spring Doc 3.2.1
 - EclipseLink 5.0.2
 - jOOQ 3.21.10
 - Flyway 13.13.0
 - Flyway ClickHouse 10.26.3
 - ClickHouse JDBC 0.11.2
+- PostgreSQL JDBC 42.7.15
 - MinIO 9.0.4
 - Guava 33.8.0-jre
 
 ### Gradle plugins
 - Добавили артефакт `com.backstage:agents` с документацией и skills. Плагин `backstage-agent-docs` устанавливает их в целевом приложении при конфигурации Gradle и добавляет ссылку на документацию в `AGENTS.md`.
+- `backstage-agent-docs` также устанавливает документацию и skills из `META-INF/backstage/agents/` в опубликованных JAR зависимостей приложения.
 
 ### App
 - Добавили фабрики `RestClient` в `RestUtils` и перевели проверку CAPTCHA на `RestClient`. Методы `RestTemplate` пометили устаревшими и сохранили для совместимости.

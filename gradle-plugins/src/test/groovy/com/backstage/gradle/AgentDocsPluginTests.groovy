@@ -245,11 +245,17 @@ class AgentDocsPluginTests
 	@Test
 	void updatesRootInstructionsWhenAppliedToSubproject()
 	{
-		writeFile('settings.gradle', "rootProject.name = 'agent-docs-test'\ninclude 'application'\n")
+		writeFile('settings.gradle', "rootProject.name = 'agent-docs-test'\ninclude 'application', 'local-library'\n")
 		writeFile('build.gradle', "plugins { id 'backstage-agent-docs' apply false }\n")
+		writeFile('local-library/build.gradle', "plugins { id 'java-library' }\n")
 		writeFile('application/build.gradle', '''
 			plugins {
+				id 'java'
 				id 'backstage-agent-docs'
+			}
+
+			dependencies {
+				implementation project(':local-library')
 			}
 
 			repositories {
@@ -259,8 +265,9 @@ class AgentDocsPluginTests
 			}
 		'''.stripIndent())
 
-		runGradle('help')
+		def result = runGradle('help')
 
+		assertNull(result.task(':local-library:jar'))
 		assertTrue(readFile('AGENTS.md').contains('(<application/.gradle/backstage/agent-docs/README.md>)'))
 		assertFalse(new File(projectDir, 'application/AGENTS.md').exists())
 		assertTrue(new File(projectDir, '.agents/skills/backstage-dicts/SKILL.md').isFile())
@@ -338,6 +345,96 @@ class AgentDocsPluginTests
 		assertEquals('Local documentation', readFile('.gradle/backstage/agent-docs/README.md'))
 	}
 
+	@Test
+	void installsAndUpdatesDocumentationFromResolvedRuntimeJars()
+	{
+		def prefix = 'META-INF/backstage/agents/'
+		publishArtifact('example', 'bot-sdk', '1.0', [
+				("${prefix}README.md"): 'SDK guide',
+				("${prefix}skills/bot-sdk/SKILL.md"): 'SDK 1.0 skill',
+				("${prefix}skills/bot-sdk/assets/example.json"): '{"version": 1}',
+				'skills/ignored/SKILL.md': 'Outside the documentation directory'
+		])
+		publishArtifact('example', 'bot-sdk', '2.0', [
+				("${prefix}skills/bot-sdk/SKILL.md"): 'SDK 2.0 skill'
+		])
+		publishArtifact('example', 'bot-client', '1.0', [:], ['example:bot-sdk:1.0'])
+		publishArtifact('example', 'bot-client', '2.0', [:], ['example:bot-sdk:2.0'])
+		writeFile('.agents/skills/local/SKILL.md', 'Application skill')
+		writeFile('AGENTS.md', 'Application instructions\n')
+
+		new File(projectDir, 'build.gradle').append('''
+			apply plugin: 'java'
+
+			dependencies {
+				if (providers.gradleProperty('clientVersion').isPresent()) {
+					implementation "example:bot-client:${providers.gradleProperty('clientVersion').get()}"
+				}
+				testImplementation 'missing:test-only:1.0'
+			}
+		'''.stripIndent(), 'UTF-8')
+
+		runGradle('help', '-PclientVersion=1.0', '--configuration-cache')
+
+		assertEquals('SDK 1.0 skill', readFile('.agents/skills/bot-sdk/SKILL.md'))
+		assertEquals('{"version": 1}', readFile('.agents/skills/bot-sdk/assets/example.json'))
+		assertEquals('SDK guide', readFile('.gradle/backstage/agent-docs/example/bot-sdk/README.md'))
+		assertTrue(readFile('.gradle/backstage/agent-docs/LIBRARIES.md').contains('example/bot-sdk/README.md'))
+		assertFalse(new File(projectDir, '.agents/skills/ignored').exists())
+		assertTrue(readFile('AGENTS.md').startsWith('Application instructions\n'))
+		assertTrue(readFile('AGENTS.md').contains('(<.gradle/backstage/agent-docs/LIBRARIES.md>)'))
+
+		runGradle('help', '-PclientVersion=1.0', '--configuration-cache')
+		def repeated = runGradle('help', '-PclientVersion=1.0', '--configuration-cache')
+		assertTrue(repeated.output.contains('Reusing configuration cache.'), repeated.output)
+
+		new File(projectDir, '.agents/skills/bot-sdk/assets/example.json').delete()
+		runGradle('help', '-PclientVersion=1.0', '--configuration-cache')
+		assertEquals('{"version": 1}', readFile('.agents/skills/bot-sdk/assets/example.json'))
+
+		runGradle('help', '-PclientVersion=2.0', '--configuration-cache')
+
+		assertEquals('SDK 2.0 skill', readFile('.agents/skills/bot-sdk/SKILL.md'))
+		assertFalse(new File(projectDir, '.agents/skills/bot-sdk/assets/example.json').exists())
+		assertTrue(readFile('.gradle/backstage/agent-docs/LIBRARIES.md').contains('example/bot-sdk/skills/bot-sdk/SKILL.md'))
+		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/example/bot-sdk/README.md').exists())
+
+		runGradle('help', '--configuration-cache')
+
+		assertFalse(new File(projectDir, '.agents/skills/bot-sdk').exists())
+		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/example').exists())
+		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/LIBRARIES.md').exists())
+		assertTrue(readFile('AGENTS.md').contains('(<.gradle/backstage/agent-docs/README.md>)'))
+		assertEquals('Application skill', readFile('.agents/skills/local/SKILL.md'))
+		assertEquals('Default version', readFile('.agents/skills/backstage-dicts/references/capabilities.md'))
+	}
+
+	@Test
+	void rejectsDuplicateSkillsBeforeUpdatingInstalledDocumentation()
+	{
+		runGradle('help')
+		def instructions = readFile('AGENTS.md')
+		publishArtifact('example', 'bot-sdk', '1.0', [
+				'META-INF/backstage/agents/skills/backstage-dicts/SKILL.md': 'Conflicting SDK skill'
+		])
+		new File(projectDir, 'build.gradle').append('''
+			apply plugin: 'java'
+
+			dependencies {
+				implementation 'example:bot-sdk:1.0'
+			}
+		'''.stripIndent(), 'UTF-8')
+
+		def result = createGradleRunner('help').buildAndFail()
+
+		assertTrue(result.output.contains("Cannot install Backstage skill 'backstage-dicts'"))
+		assertTrue(result.output.contains('agents-'))
+		assertTrue(result.output.contains('example:bot-sdk:1.0'))
+		assertEquals(instructions, readFile('AGENTS.md'))
+		assertEquals('Default version', readFile('.agents/skills/backstage-dicts/references/capabilities.md'))
+		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/example').exists())
+	}
+
 	private BuildResult runGradle(String... arguments)
 	{
 		return createGradleRunner(arguments).build()
@@ -362,26 +459,32 @@ class AgentDocsPluginTests
 
 	private void publishDocs(String version, Map<String, String> documents)
 	{
-		def directory = new File(projectDir, "repository/com/backstage/agents/$version")
+		publishArtifact('com.backstage', 'agents', version, documents, ['missing:runtime-dependency:1.0'])
+	}
+
+	private void publishArtifact(String group, String artifact, String version, Map<String, String> documents, List<String> dependencies = [])
+	{
+		def directory = new File(projectDir, "repository/${group.replace('.', '/')}/$artifact/$version")
 		directory.mkdirs()
 
-		new File(directory, "agents-${version}.pom").write("""
+		def pomDependencies = dependencies.collect { dependency ->
+			def (dependencyGroup, dependencyArtifact, dependencyVersion) = dependency.split(':')
+			return "<dependency><groupId>$dependencyGroup</groupId><artifactId>$dependencyArtifact</artifactId><version>$dependencyVersion</version></dependency>"
+		}.join('\n')
+
+		new File(directory, "$artifact-${version}.pom").write("""
 			<project>
 				<modelVersion>4.0.0</modelVersion>
-				<groupId>com.backstage</groupId>
-				<artifactId>agents</artifactId>
+				<groupId>$group</groupId>
+				<artifactId>$artifact</artifactId>
 				<version>$version</version>
 				<dependencies>
-					<dependency>
-						<groupId>missing</groupId>
-						<artifactId>runtime-dependency</artifactId>
-						<version>1.0</version>
-					</dependency>
+					$pomDependencies
 				</dependencies>
 			</project>
 		""".stripIndent(), 'UTF-8')
 
-		new JarOutputStream(new FileOutputStream(new File(directory, "agents-${version}.jar"))).withCloseable { jar ->
+		new JarOutputStream(new FileOutputStream(new File(directory, "$artifact-${version}.jar"))).withCloseable { jar ->
 			def entries = ['META-INF/MANIFEST.MF': 'Manifest-Version: 1.0\n'] + documents
 
 			entries.each { name, content ->
