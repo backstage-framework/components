@@ -67,12 +67,71 @@ class AgentDocsPluginTests
 
 		assertNotNull(result.task(':help'))
 		assertNull(result.task(':syncAgentDocs'))
-		assertEquals('Default version', readFile('.gradle/backstage/agent-docs/README.md'))
-		assertTrue(readFile('AGENTS.md').contains('(<.gradle/backstage/agent-docs/README.md>)'))
+		assertEquals('Default version', readFile('.agents/backstage/README.md'))
+		assertTrue(readFile('AGENTS.md').contains('(<.agents/backstage/README.md>)'))
 		assertFalse(readFile('AGENTS.md').contains('syncAgentDocs'))
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/META-INF').exists())
+		assertFalse(new File(projectDir, '.agents/backstage/META-INF').exists())
+		assertFalse(new File(projectDir, '.agents/backstage/skills').exists())
+		assertFalse(new File(projectDir, '.gitignore').exists())
 		assertTrue(new File(projectDir, '.agents/skills/backstage-dicts/SKILL.md').isFile())
 		assertEquals('Default version', readFile('.agents/skills/backstage-dicts/references/capabilities.md'))
+	}
+
+	@Test
+	void addsAgentsToExistingGitignoreOnce()
+	{
+		runGradle('help', '--configuration-cache')
+		assertFalse(new File(projectDir, '.gitignore').exists())
+		writeFile('.gitignore', '# ignored files\r\n/build')
+
+		runGradle('help', '--configuration-cache')
+		assertEquals('# ignored files\r\n/build\r\n/.agents/\r\n', readFile('.gitignore'))
+
+		runGradle('help', '--configuration-cache')
+		assertEquals('# ignored files\r\n/build\r\n/.agents/\r\n', readFile('.gitignore'))
+	}
+
+	@Test
+	void respectsExistingAgentsIgnoreRule()
+	{
+		writeFile('.gitignore', '/build\n.agents/\n')
+
+		runGradle('help')
+
+		assertEquals('/build\n.agents/\n', readFile('.gitignore'))
+	}
+
+	@Test
+	void relocatesLinksToBaseSkillsWithoutChangingMarkdownExamples()
+	{
+		def documents = documentationWithSkill('1.0')
+		documents['README.md'] = '''
+			|[Dicts](skills/backstage-dicts/SKILL.md#usage)
+			|[Example]: <skills/backstage-dicts/assets/reference guide.json?raw=1>
+			|[External](https://example.com/skills/backstage-dicts/SKILL.md)
+			|`[Inline example](skills/backstage-dicts/SKILL.md)`
+			|
+			|```markdown
+			|[Example](skills/backstage-dicts/SKILL.md)
+			|```
+			|'''.stripMargin()
+		documents['skills/backstage-dicts/assets/reference guide.json'] = '{"version": 1}'
+		publishDocs('1.0', documents)
+
+		runGradle('help', '-PbackstageVersion=1.0')
+
+		assertEquals('''
+			|[Dicts](../skills/backstage-dicts/SKILL.md#usage)
+			|[Example]: <../skills/backstage-dicts/assets/reference%20guide.json?raw=1>
+			|[External](https://example.com/skills/backstage-dicts/SKILL.md)
+			|`[Inline example](skills/backstage-dicts/SKILL.md)`
+			|
+			|```markdown
+			|[Example](skills/backstage-dicts/SKILL.md)
+			|```
+			|'''.stripMargin(), readFile('.agents/backstage/README.md'))
+		assertEquals('{"version": 1}', readFile('.agents/skills/backstage-dicts/assets/reference guide.json'))
+		assertFalse(new File(projectDir, '.agents/backstage/skills').exists())
 	}
 
 	@Test
@@ -85,18 +144,18 @@ class AgentDocsPluginTests
 
 		runGradle('help', '-PbackstageVersion=1.0', '--configuration-cache')
 
-		assertEquals('First version', readFile('.gradle/backstage/agent-docs/index.md'))
-		assertTrue(readFile('AGENTS.md').contains('(<.gradle/backstage/agent-docs/index.md>)'))
-		assertTrue(new File(projectDir, '.gradle/backstage/agent-docs/old.md').exists())
+		assertEquals('First version', readFile('.agents/backstage/index.md'))
+		assertTrue(readFile('AGENTS.md').contains('(<.agents/backstage/index.md>)'))
+		assertTrue(new File(projectDir, '.agents/backstage/old.md').exists())
 
 		runGradle('help', '-PbackstageVersion=2.0', '--configuration-cache')
 
-		assertEquals('Second version', readFile('.gradle/backstage/agent-docs/README.md'))
-		assertEquals('Audit guide', readFile('.gradle/backstage/agent-docs/guides/audit.md'))
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/old.md').exists())
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/index.md').exists())
+		assertEquals('Second version', readFile('.agents/backstage/README.md'))
+		assertEquals('Audit guide', readFile('.agents/backstage/guides/audit.md'))
+		assertFalse(new File(projectDir, '.agents/backstage/old.md').exists())
+		assertFalse(new File(projectDir, '.agents/backstage/index.md').exists())
 		assertTrue(readFile('AGENTS.md').startsWith('Application instructions\n\n'))
-		assertTrue(readFile('AGENTS.md').contains('(<.gradle/backstage/agent-docs/README.md>)'))
+		assertTrue(readFile('AGENTS.md').contains('(<.agents/backstage/README.md>)'))
 		assertEquals('Application code map', readFile('CODEMAP.md'))
 
 		def instructions = readFile('AGENTS.md')
@@ -125,17 +184,21 @@ class AgentDocsPluginTests
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = ['.', 'docs'])
+	@ValueSource(strings = ['.', 'docs', '.agents', '.agents/skills', '.agents/skills/custom', '.agents/user-docs', '.agents/backstage'])
 	void refusesToReplaceApplicationFiles(String outputDirectory)
 	{
 		new File(projectDir, 'build.gradle').append("\nagentDocs.outputDirectory = layout.projectDirectory.dir('$outputDirectory')\n", 'UTF-8')
 		writeFile('docs/user.md', 'Application documentation')
+		writeFile('.agents/backstage/README.md', 'Application documentation')
+		writeFile('.agents/skills/custom/SKILL.md', 'Application skill')
 		writeFile('AGENTS.md', 'Application instructions')
 
 		def result = createGradleRunner('help').buildAndFail()
 
 		assertTrue(result.output.contains('Backstage agent documentation'))
 		assertEquals('Application documentation', readFile('docs/user.md'))
+		assertEquals('Application documentation', readFile('.agents/backstage/README.md'))
+		assertEquals('Application skill', readFile('.agents/skills/custom/SKILL.md'))
 		assertEquals('Application instructions', readFile('AGENTS.md'))
 		assertTrue(new File(projectDir, 'build.gradle').isFile())
 	}
@@ -150,7 +213,7 @@ class AgentDocsPluginTests
 		def result = createGradleRunner('help', '-PbackstageVersion=broken').buildAndFail()
 
 		assertTrue(result.output.contains('must contain README.md or index.md'))
-		assertEquals('Default version', readFile('.gradle/backstage/agent-docs/README.md'))
+		assertEquals('Default version', readFile('.agents/backstage/README.md'))
 		assertEquals('Default version', readFile('.agents/skills/backstage-dicts/references/capabilities.md'))
 		assertEquals(instructions, readFile('AGENTS.md'))
 	}
@@ -238,7 +301,7 @@ class AgentDocsPluginTests
 
 		assertTrue(result.output.contains('expected a single complete Backstage documentation block'))
 		assertEquals(content, readFile('AGENTS.md'))
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs').exists())
+		assertFalse(new File(projectDir, '.agents/backstage').exists())
 		assertFalse(new File(projectDir, '.agents/skills/backstage-dicts').exists())
 	}
 
@@ -249,6 +312,11 @@ class AgentDocsPluginTests
 		writeFile('build.gradle', "plugins { id 'backstage-agent-docs' apply false }\n")
 		writeFile('local-library/build.gradle', "plugins { id 'java-library' }\n")
 		writeFile('AGENTS.md', "Application instructions\n\n${AgentDocsPlugin.BLOCK_START}\n[Backstage](<application/.gradle/backstage/agent-docs/README.md>)\n${AgentDocsPlugin.BLOCK_END}\n")
+		writeFile('.gitignore', '/build\n')
+		writeFile('.gradle/backstage/agent-docs/.backstage-agent-docs', '')
+		writeFile('.gradle/backstage/agent-docs/skills/backstage-dicts/SKILL.md', 'Old Backstage skill')
+		writeFile('application/.gradle/backstage/agent-docs/.backstage-agent-docs', '')
+		writeFile('application/.gradle/backstage/agent-docs/skills/bot-sdk/SKILL.md', 'Old SDK skill')
 		publishArtifact('example', 'bot-sdk', '1.0', [
 				'META-INF/backstage/agents/skills/bot-sdk/SKILL.md': 'SDK skill'
 		])
@@ -275,12 +343,16 @@ class AgentDocsPluginTests
 
 		assertNull(result.task(':local-library:jar'))
 		assertTrue(instructions.startsWith('Application instructions\n\n'))
-		assertTrue(instructions.contains('(<.gradle/backstage/agent-docs/LIBRARIES.md>)'))
+		assertTrue(instructions.contains('(<.agents/backstage/LIBRARIES.md>)'))
 		assertFalse(instructions.contains('application/.gradle/backstage/agent-docs/'))
-		assertEquals('Default version', readFile('.gradle/backstage/agent-docs/README.md'))
-		assertEquals('SDK skill', readFile('.gradle/backstage/agent-docs/example/bot-sdk/skills/bot-sdk/SKILL.md'))
+		assertEquals('Default version', readFile('.agents/backstage/README.md'))
 		assertEquals('SDK skill', readFile('.agents/skills/bot-sdk/SKILL.md'))
+		assertEquals('/build\n/.agents/\n', readFile('.gitignore'))
+		assertFalse(new File(projectDir, 'application/.gitignore').exists())
+		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs').exists())
 		assertFalse(new File(projectDir, 'application/.gradle/backstage/agent-docs').exists())
+		assertFalse(new File(projectDir, '.agents/backstage/example/bot-sdk/skills').exists())
+		assertFalse(new File(projectDir, 'application/.agents/backstage').exists())
 		assertFalse(new File(projectDir, 'application/AGENTS.md').exists())
 		assertTrue(new File(projectDir, '.agents/skills/backstage-dicts/SKILL.md').isFile())
 		assertFalse(new File(projectDir, 'application/.agents/skills/backstage-dicts').exists())
@@ -323,7 +395,7 @@ class AgentDocsPluginTests
 		assertTrue(result.output.contains('already exists and is not managed by backstage-agent-docs'))
 		assertEquals('Application skill', readFile('.agents/skills/backstage-dicts/SKILL.md'))
 		assertEquals('Application instructions', readFile('AGENTS.md'))
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs').exists())
+		assertFalse(new File(projectDir, '.agents/backstage').exists())
 	}
 
 	@Test
@@ -338,7 +410,7 @@ class AgentDocsPluginTests
 		runGradle('clean', 'build')
 
 		assertEquals(instructions, readFile('AGENTS.md'))
-		assertEquals('Default version', readFile('.gradle/backstage/agent-docs/README.md'))
+		assertEquals('Default version', readFile('.agents/backstage/README.md'))
 	}
 
 	@Test
@@ -354,7 +426,7 @@ class AgentDocsPluginTests
 
 		runGradle('help', '-PbackstageVersion=missing')
 
-		assertEquals('Local documentation', readFile('.gradle/backstage/agent-docs/README.md'))
+		assertEquals('Local documentation', readFile('.agents/backstage/README.md'))
 	}
 
 	@Test
@@ -362,8 +434,8 @@ class AgentDocsPluginTests
 	{
 		def prefix = 'META-INF/backstage/agents/'
 		publishArtifact('example', 'bot-sdk', '1.0', [
-				("${prefix}README.md"): 'SDK guide',
-				("${prefix}skills/bot-sdk/SKILL.md"): 'SDK 1.0 skill',
+				("${prefix}README.md"): 'SDK guide\n\n[SDK skill](skills/bot-sdk/SKILL.md#usage)',
+				("${prefix}skills/bot-sdk/SKILL.md"): 'SDK 1.0 skill\n\n[Guide](../../README.md)\n[Example](assets/example.json)',
 				("${prefix}skills/bot-sdk/assets/example.json"): '{"version": 1}',
 				'skills/ignored/SKILL.md': 'Outside the documentation directory'
 		])
@@ -388,13 +460,15 @@ class AgentDocsPluginTests
 
 		runGradle('help', '-PclientVersion=1.0', '--configuration-cache')
 
-		assertEquals('SDK 1.0 skill', readFile('.agents/skills/bot-sdk/SKILL.md'))
+		assertEquals('SDK 1.0 skill\n\n[Guide](../../backstage/example/bot-sdk/README.md)\n[Example](assets/example.json)',
+				readFile('.agents/skills/bot-sdk/SKILL.md'))
 		assertEquals('{"version": 1}', readFile('.agents/skills/bot-sdk/assets/example.json'))
-		assertEquals('SDK guide', readFile('.gradle/backstage/agent-docs/example/bot-sdk/README.md'))
-		assertTrue(readFile('.gradle/backstage/agent-docs/LIBRARIES.md').contains('example/bot-sdk/README.md'))
+		assertEquals('SDK guide\n\n[SDK skill](../../../skills/bot-sdk/SKILL.md#usage)', readFile('.agents/backstage/example/bot-sdk/README.md'))
+		assertTrue(readFile('.agents/backstage/LIBRARIES.md').contains('example/bot-sdk/README.md'))
+		assertFalse(new File(projectDir, '.agents/backstage/example/bot-sdk/skills').exists())
 		assertFalse(new File(projectDir, '.agents/skills/ignored').exists())
 		assertTrue(readFile('AGENTS.md').startsWith('Application instructions\n'))
-		assertTrue(readFile('AGENTS.md').contains('(<.gradle/backstage/agent-docs/LIBRARIES.md>)'))
+		assertTrue(readFile('AGENTS.md').contains('(<.agents/backstage/LIBRARIES.md>)'))
 
 		runGradle('help', '-PclientVersion=1.0', '--configuration-cache')
 		def repeated = runGradle('help', '-PclientVersion=1.0', '--configuration-cache')
@@ -408,15 +482,16 @@ class AgentDocsPluginTests
 
 		assertEquals('SDK 2.0 skill', readFile('.agents/skills/bot-sdk/SKILL.md'))
 		assertFalse(new File(projectDir, '.agents/skills/bot-sdk/assets/example.json').exists())
-		assertTrue(readFile('.gradle/backstage/agent-docs/LIBRARIES.md').contains('example/bot-sdk/skills/bot-sdk/SKILL.md'))
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/example/bot-sdk/README.md').exists())
+		assertTrue(readFile('.agents/backstage/LIBRARIES.md').contains('../skills/bot-sdk/SKILL.md'))
+		assertFalse(readFile('.agents/backstage/LIBRARIES.md').contains('](<example/bot-sdk/>)'))
+		assertFalse(new File(projectDir, '.agents/backstage/example/bot-sdk/README.md').exists())
 
 		runGradle('help', '--configuration-cache')
 
 		assertFalse(new File(projectDir, '.agents/skills/bot-sdk').exists())
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/example').exists())
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/LIBRARIES.md').exists())
-		assertTrue(readFile('AGENTS.md').contains('(<.gradle/backstage/agent-docs/README.md>)'))
+		assertFalse(new File(projectDir, '.agents/backstage/example').exists())
+		assertFalse(new File(projectDir, '.agents/backstage/LIBRARIES.md').exists())
+		assertTrue(readFile('AGENTS.md').contains('(<.agents/backstage/README.md>)'))
 		assertEquals('Application skill', readFile('.agents/skills/local/SKILL.md'))
 		assertEquals('Default version', readFile('.agents/skills/backstage-dicts/references/capabilities.md'))
 	}
@@ -444,7 +519,7 @@ class AgentDocsPluginTests
 		assertTrue(result.output.contains('example:bot-sdk:1.0'))
 		assertEquals(instructions, readFile('AGENTS.md'))
 		assertEquals('Default version', readFile('.agents/skills/backstage-dicts/references/capabilities.md'))
-		assertFalse(new File(projectDir, '.gradle/backstage/agent-docs/example').exists())
+		assertFalse(new File(projectDir, '.agents/backstage/example').exists())
 	}
 
 	private BuildResult runGradle(String... arguments)

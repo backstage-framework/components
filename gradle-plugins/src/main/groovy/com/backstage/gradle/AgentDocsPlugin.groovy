@@ -30,6 +30,7 @@ import org.gradle.api.provider.Property
 import javax.inject.Inject
 import java.nio.file.Files
 import java.nio.file.LinkOption
+import java.nio.file.Path
 
 abstract class AgentDocsPlugin implements Plugin<Project>
 {
@@ -38,6 +39,7 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 	private static final String MANAGED_MARKER = '.backstage-agent-docs'
 	private static final String RESOURCE_PREFIX = 'META-INF/backstage/agents/'
 	private static final String LIBRARY_CATALOG = 'LIBRARIES.md'
+	private static final String LEGACY_OUTPUT_DIRECTORY = '.gradle/backstage/agent-docs'
 	private static final List<String> CATALOG_NAMES = ['README.md', 'index.md']
 
 	@Inject
@@ -50,7 +52,7 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 	void apply(Project project)
 	{
 		def extension = project.extensions.create('agentDocs', AgentDocsPluginExtension)
-		def defaultDirectory = project.rootProject.layout.projectDirectory.dir('.gradle/backstage/agent-docs')
+		def defaultDirectory = project.rootProject.layout.projectDirectory.dir('.agents/backstage')
 		def defaultVersion = project.providers.provider {
 			def properties = new Properties()
 
@@ -80,13 +82,18 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		def rootDirectory = project.rootDir.canonicalFile
 		def agentsFile = new File(rootDirectory, 'AGENTS.md')
 		def skillsDirectory = new File(rootDirectory, '.agents/skills')
+		def legacyDirectories = [new File(rootDirectory, LEGACY_OUTPUT_DIRECTORY),
+				project.layout.projectDirectory.dir(LEGACY_OUTPUT_DIRECTORY).asFile].unique()
 
 		project.afterEvaluate {
 			def outputDirectory = extension.outputDirectory.get().asFile
 			def content = agentsFile.exists() ? agentsFile.getText('UTF-8') : ''
 
 			def documentation = configuration.collect { jar ->
-				def files = archives.zipTree(jar).matching { include '**/*.md' }
+				def files = archives.zipTree(jar).matching {
+					include '**/*.md', 'skills/**'
+					exclude "**/$MANAGED_MARKER"
+				}
 				return new Documentation(files, jar.name, '', '')
 			}
 			def catalogName = CATALOG_NAMES.find { name ->
@@ -117,11 +124,25 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 			fileSystem.sync {
 				sources.each { source ->
 					from(source.files) {
+						filteringCharset = 'UTF-8'
 						if (libraries)
 						{
 							exclude(LIBRARY_CATALOG)
 						}
-						eachFile { details -> details.path = source.destination(details.relativeSourcePath.pathString) }
+						eachFile { details ->
+							def resource = source.resource(details.relativeSourcePath.pathString)
+							if (AgentDocsPlugin.isSkillResource(source, resource, skills))
+							{
+								details.exclude()
+							}
+							else
+							{
+								details.path = source.destinationPrefix + resource
+								AgentDocsMarkdownLinks.relocate(details, resource, new File(outputDirectory, details.path)) { target ->
+									AgentDocsPlugin.getInstalledFile(source, target, outputDirectory, skillsDirectory, skills)
+								}
+							}
+						}
 					}
 				}
 
@@ -138,7 +159,7 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 
 			if (libraries)
 			{
-				AgentDocsPlugin.writeLibraryCatalog(catalog, catalogName, libraries, skills)
+				AgentDocsPlugin.writeLibraryCatalog(catalog, catalogName, libraries, skillsDirectory, skills)
 			}
 
 			if (localSkillsDirectory)
@@ -150,6 +171,9 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 			{
 				agentsFile.write(updatedContent, 'UTF-8')
 			}
+
+			AgentDocsPlugin.ignoreAgentsDirectory(rootDirectory)
+			AgentDocsPlugin.removeLegacyDocumentation(fileSystem, legacyDirectories, outputDirectory)
 
 			// Учитываем созданные файлы при проверке актуальности configuration cache.
 			AgentDocsPlugin.trackInstalledFiles(project, outputDirectory)
@@ -212,7 +236,8 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		return skills
 	}
 
-	private static void writeLibraryCatalog(File catalog, String backstageCatalog, List<Documentation> libraries, Map<String, Documentation> skills)
+	private static void writeLibraryCatalog(File catalog, String backstageCatalog, List<Documentation> libraries,
+											File skillsDirectory, Map<String, Documentation> skills)
 	{
 		def lines = [
 				'# Документация библиотек',
@@ -221,11 +246,20 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		]
 
 		libraries.each { source ->
-			def readme = "${source.resourcePrefix}README.md"
-			def link = source.files.matching { include(readme) }.isEmpty() ? source.destinationPrefix : source.destination(readme)
-			lines.add("- [${source.artifact}](<$link>)")
+			def libraryDirectory = new File(catalog.parentFile, source.destinationPrefix)
+			def readme = new File(libraryDirectory, 'README.md')
+			if (libraryDirectory.isDirectory())
+			{
+				def link = readme.isFile() ? source.destinationPrefix + 'README.md' : source.destinationPrefix
+				lines.add("- [${source.artifact}](<$link>)")
+			}
+			else
+			{
+				lines.add("- ${source.artifact}")
+			}
 			skills.findAll { name, owner -> owner == source }.keySet().each { name ->
-				lines.add("  - [${name}](<${source.destinationPrefix}skills/$name/SKILL.md>)")
+				def link = relativePath(catalog.parentFile, new File(skillsDirectory, "$name/SKILL.md"))
+				lines.add("  - [${name}](<$link>)")
 			}
 		}
 
@@ -246,11 +280,15 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 	private static void validateOutputDirectory(File directory, File defaultDirectory, File rootDirectory, String content)
 	{
 		def path = directory.canonicalFile.toPath()
+		def requestedPath = directory.toPath().toAbsolutePath().normalize()
 		def defaultPath = defaultDirectory.toPath().toAbsolutePath().normalize()
 		def rootPath = rootDirectory.toPath()
+		def agentsPath = rootPath.resolve('.agents')
+		def insideAgents = requestedPath.startsWith(agentsPath) || path.startsWith(agentsPath)
 		if (Files.isSymbolicLink(directory.toPath()) || rootPath.startsWith(path)
 				|| (path != defaultPath && defaultPath.startsWith(path))
-				|| path.startsWith(rootPath.resolve('.agents')) || path.startsWith(rootPath.resolve('.git')))
+				|| (insideAgents && (path != defaultPath || requestedPath != defaultPath))
+				|| path.startsWith(rootPath.resolve('.git')))
 		{
 			throw new GradleException("Invalid Backstage agent documentation output directory: $directory. Choose a dedicated directory.")
 		}
@@ -266,7 +304,7 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		def previousBlock = start >= 0 ? content.substring(start, end) : ''
 		def previousInstallation = (CATALOG_NAMES + [LIBRARY_CATALOG]).any { name ->
 			def catalog = new File(directory, name)
-			catalog.isFile() && (path == defaultPath || previousBlock.contains("](<${relativePath(rootDirectory, catalog)}>)"))
+			catalog.isFile() && previousBlock.contains("](<${relativePath(rootDirectory, catalog)}>)")
 		}
 
 		if (!previousInstallation)
@@ -296,10 +334,76 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 			def target = new File(skillsDirectory, name)
 			markManagedDirectory(target)
 
+			def prefix = "${source.resourcePrefix}skills/$name/"
 			fileSystem.sync {
-				from(new File(documentationDirectory, "${source.destinationPrefix}skills/$name"))
+				from(source.files) {
+					include "${prefix}**"
+					filteringCharset = 'UTF-8'
+					eachFile { details ->
+						def path = details.relativeSourcePath.pathString
+						details.path = path.substring(prefix.length())
+						AgentDocsMarkdownLinks.relocate(details, source.resource(path), new File(target, details.path)) { resource ->
+							AgentDocsPlugin.getInstalledFile(source, resource, documentationDirectory, skillsDirectory, skills)
+						}
+					}
+				}
 				into(target)
+				includeEmptyDirs = false
 				preserve { include(MANAGED_MARKER) }
+			}
+		}
+	}
+
+	private static boolean isSkillResource(Documentation source, String resource, Map<String, Documentation> skills)
+	{
+		def segments = resource.split('/', 3)
+		return segments.length >= 2 && segments[0] == 'skills' && skills.get(segments[1]) == source
+	}
+
+	private static File getInstalledFile(Documentation source, String resource, File outputDirectory, File skillsDirectory,
+										 Map<String, Documentation> skills)
+	{
+		if (resource == 'skills' && skills.containsValue(source))
+		{
+			return skillsDirectory
+		}
+
+		if (isSkillResource(source, resource, skills))
+		{
+			return new File(skillsDirectory, resource.substring('skills/'.length()))
+		}
+
+		return new File(outputDirectory, source.destinationPrefix + resource)
+	}
+
+	private static void ignoreAgentsDirectory(File rootDirectory)
+	{
+		def gitignore = new File(rootDirectory, '.gitignore')
+		if (!gitignore.isFile() || Files.isSymbolicLink(gitignore.toPath()))
+		{
+			return
+		}
+
+		def content = gitignore.getText('UTF-8')
+		if (content.replaceFirst(/^\uFEFF/, '').readLines().any { it.stripTrailing() ==~ /(?:\/|\*\*\/)?\.agents(?:\/\*{0,2})?/ })
+		{
+			return
+		}
+
+		def newline = content.contains('\r\n') ? '\r\n' : '\n'
+		def separator = content && !content.endsWith('\n') ? newline : ''
+		gitignore.append(separator + '/.agents/' + newline, 'UTF-8')
+		gitignore.getText('UTF-8')
+	}
+
+	private static void removeLegacyDocumentation(FileSystemOperations fileSystem, List<File> directories, File outputDirectory)
+	{
+		Path outputPath = outputDirectory.canonicalFile.toPath()
+		directories.each { directory ->
+			def path = directory.toPath().toAbsolutePath().normalize()
+			if (path == directory.canonicalFile.toPath() && !outputPath.startsWith(path) && isManagedDirectory(directory))
+			{
+				fileSystem.delete { delete(directory) }
 			}
 		}
 	}
@@ -379,9 +483,9 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 		final String resourcePrefix
 		final String destinationPrefix
 
-		String destination(String resource)
+		String resource(String archivePath)
 		{
-			return destinationPrefix + resource.substring(resourcePrefix.length())
+			return archivePath.substring(resourcePrefix.length())
 		}
 	}
 }
