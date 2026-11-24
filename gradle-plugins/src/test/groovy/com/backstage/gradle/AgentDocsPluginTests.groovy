@@ -243,11 +243,15 @@ class AgentDocsPluginTests
 	}
 
 	@Test
-	void updatesRootInstructionsWhenAppliedToSubproject()
+	void installsDocumentationAtRootWhenAppliedToSubproject()
 	{
 		writeFile('settings.gradle', "rootProject.name = 'agent-docs-test'\ninclude 'application', 'local-library'\n")
 		writeFile('build.gradle', "plugins { id 'backstage-agent-docs' apply false }\n")
 		writeFile('local-library/build.gradle', "plugins { id 'java-library' }\n")
+		writeFile('AGENTS.md', "Application instructions\n\n${AgentDocsPlugin.BLOCK_START}\n[Backstage](<application/.gradle/backstage/agent-docs/README.md>)\n${AgentDocsPlugin.BLOCK_END}\n")
+		publishArtifact('example', 'bot-sdk', '1.0', [
+				'META-INF/backstage/agents/skills/bot-sdk/SKILL.md': 'SDK skill'
+		])
 		writeFile('application/build.gradle', '''
 			plugins {
 				id 'java'
@@ -256,6 +260,7 @@ class AgentDocsPluginTests
 
 			dependencies {
 				implementation project(':local-library')
+				implementation 'example:bot-sdk:1.0'
 			}
 
 			repositories {
@@ -266,9 +271,16 @@ class AgentDocsPluginTests
 		'''.stripIndent())
 
 		def result = runGradle('help')
+		def instructions = readFile('AGENTS.md')
 
 		assertNull(result.task(':local-library:jar'))
-		assertTrue(readFile('AGENTS.md').contains('(<application/.gradle/backstage/agent-docs/README.md>)'))
+		assertTrue(instructions.startsWith('Application instructions\n\n'))
+		assertTrue(instructions.contains('(<.gradle/backstage/agent-docs/LIBRARIES.md>)'))
+		assertFalse(instructions.contains('application/.gradle/backstage/agent-docs/'))
+		assertEquals('Default version', readFile('.gradle/backstage/agent-docs/README.md'))
+		assertEquals('SDK skill', readFile('.gradle/backstage/agent-docs/example/bot-sdk/skills/bot-sdk/SKILL.md'))
+		assertEquals('SDK skill', readFile('.agents/skills/bot-sdk/SKILL.md'))
+		assertFalse(new File(projectDir, 'application/.gradle/backstage/agent-docs').exists())
 		assertFalse(new File(projectDir, 'application/AGENTS.md').exists())
 		assertTrue(new File(projectDir, '.agents/skills/backstage-dicts/SKILL.md').isFile())
 		assertFalse(new File(projectDir, 'application/.agents/skills/backstage-dicts').exists())

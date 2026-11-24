@@ -50,7 +50,7 @@ abstract class AgentDocsPlugin implements Plugin<Project>
 	void apply(Project project)
 	{
 		def extension = project.extensions.create('agentDocs', AgentDocsPluginExtension)
-		def defaultDirectory = project.layout.projectDirectory.dir('.gradle/backstage/agent-docs')
+		def defaultDirectory = project.rootProject.layout.projectDirectory.dir('.gradle/backstage/agent-docs')
 		def defaultVersion = project.providers.provider {
 			def properties = new Properties()
 
