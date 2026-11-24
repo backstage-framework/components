@@ -18,6 +18,7 @@ package com.backstage.app.dict.service.codegen.server;
 
 import com.backstage.app.dict.conversion.dto.DictConverter;
 import com.backstage.app.dict.service.DictService;
+import com.backstage.app.dict.service.codegen.client.generator.DictCodegenUtils;
 import com.backstage.app.dict.service.codegen.server.generator.DictItemAdviceGenerator;
 import com.backstage.app.dict.service.codegen.server.generator.DictItemModelGenerator;
 import com.backstage.app.dict.service.codegen.server.generator.DictItemServiceGenerator;
@@ -58,10 +59,10 @@ public class ServerCodegenExtension
 			{
 				var path = Path.of(outputPath);
 
-				model.writeToPath(path);
-				service.writeToPath(path);
-				advice.writeToPath(path);
-//				endpoint.writeToPath(path);
+				DictCodegenUtils.writeIfChanged(model, path);
+				DictCodegenUtils.writeIfChanged(service, path);
+				DictCodegenUtils.writeIfChanged(advice, path);
+//				DictCodegenUtils.writeIfChanged(endpoint, path);
 			}
 			catch (IOException e)
 			{

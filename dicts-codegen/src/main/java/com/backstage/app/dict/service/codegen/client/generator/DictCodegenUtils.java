@@ -16,12 +16,19 @@
 
 package com.backstage.app.dict.service.codegen.client.generator;
 
-import com.backstage.app.utils.DateUtils;
 import jakarta.annotation.Generated;
 import lombok.experimental.UtilityClass;
 import org.springframework.javapoet.AnnotationSpec;
+import org.springframework.javapoet.JavaFile;
 
-import java.time.LocalDateTime;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.AtomicMoveNotSupportedException;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.util.Arrays;
 
 @UtilityClass
 public class DictCodegenUtils
@@ -32,7 +39,6 @@ public class DictCodegenUtils
 	{
 		return AnnotationSpec.builder(Generated.class)
 				.addMember("value", "$S", generator.getClass().getName())
-				.addMember("date", "$S", DateUtils.toZonedDateTime(LocalDateTime.now()))
 				.build();
 	}
 
@@ -46,5 +52,45 @@ public class DictCodegenUtils
 		return AnnotationSpec.builder(SuppressWarnings.class)
 				.addMember("value", "$S", value)
 				.build();
+	}
+
+	public void writeIfChanged(JavaFile source, Path directory) throws IOException
+	{
+		var outputDirectory = directory.resolve(source.packageName.replace('.', '/'));
+		var target = outputDirectory.resolve(source.typeSpec.name + ".java");
+		var content = source.toString().getBytes(StandardCharsets.UTF_8);
+
+		try
+		{
+			if (Arrays.equals(Files.readAllBytes(target), content))
+			{
+				return;
+			}
+		}
+		catch (NoSuchFileException ignored)
+		{
+			// Файл нужно создать.
+		}
+
+		Files.createDirectories(outputDirectory);
+		var temporary = Files.createTempFile(outputDirectory, ".codegen-", ".tmp");
+
+		try
+		{
+			Files.write(temporary, content);
+
+			try
+			{
+				Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE, StandardCopyOption.REPLACE_EXISTING);
+			}
+			catch (AtomicMoveNotSupportedException ignored)
+			{
+				Files.move(temporary, target, StandardCopyOption.REPLACE_EXISTING);
+			}
+		}
+		finally
+		{
+			Files.deleteIfExists(temporary);
+		}
 	}
 }

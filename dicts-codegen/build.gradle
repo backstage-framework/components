@@ -24,6 +24,7 @@ dependencies {
 
 	compileOnly project(":dicts")
 
+	testImplementation project(":dicts")
 	testImplementation "org.springframework.boot:spring-boot-starter-test"
 
 	testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion"
