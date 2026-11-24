@@ -64,6 +64,8 @@ class DictsCodegenFormatter
 				format(workspace, stagedSources)
 			}
 
+			DictsCodegenImportsOptimizer.optimize(workspace, sources)
+
 			sources.each { source -> writeIfChanged(source, outputDirectory.resolve(stagedSources.relativize(source))) }
 		}
 		finally
