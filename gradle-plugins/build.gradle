@@ -30,6 +30,14 @@ dependencies {
 
 	implementation "com.google.guava:guava:$guavaVersion"
 	implementation "org.eclipse.persistence:eclipselink:$eclipseLinkVersion"
+
+	testImplementation gradleTestKit()
+	testImplementation "org.junit.jupiter:junit-jupiter:$jupiterVersion"
+	testRuntimeOnly "org.junit.platform:junit-platform-launcher:$jupiterVersion"
+}
+
+test {
+	useJUnitPlatform()
 }
 
 tasks.register('writeProperties', WriteProperties) {
