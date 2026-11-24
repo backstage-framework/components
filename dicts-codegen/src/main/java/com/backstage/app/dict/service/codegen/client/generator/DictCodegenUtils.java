@@ -56,8 +56,8 @@ public class DictCodegenUtils
 
 	public void writeIfChanged(JavaFile source, Path directory) throws IOException
 	{
-		var outputDirectory = directory.resolve(source.packageName().replace('.', '/'));
-		var target = outputDirectory.resolve(source.typeSpec().name() + ".java");
+		var outputDirectory = directory.resolve(source.packageName.replace('.', '/'));
+		var target = outputDirectory.resolve(source.typeSpec.name + ".java");
 		var content = source.toString().getBytes(StandardCharsets.UTF_8);
 
 		try
